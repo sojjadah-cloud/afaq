@@ -5,6 +5,57 @@ import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { RowDataPacket } from 'mysql2'
 
+export async function createProject(formData: FormData) {
+    const session = await getSession()
+    if (!session.isLoggedIn) return { error: 'Not authenticated' }
+
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const category = formData.get('category') as string
+    const status = (formData.get('status') as string) || 'START'
+
+    // Validation
+    if (!title || !description || !category) {
+        return { error: 'All fields are required' }
+    }
+
+    if (title.length > 200) {
+        return { error: 'Title must be 200 characters or less' }
+    }
+
+    const wordCount = description.trim().split(/\s+/).length
+    if (wordCount > 1000) {
+        return { error: `Description exceeds word limit (1000 words). Current: ${wordCount}` }
+    }
+
+    try {
+        const projectId = `proj_${Date.now()}`
+
+        // Create project
+        await query(
+            `INSERT INTO projects (id, title, description, category, status, progress, createdById, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, 0, ?, NOW(), NOW())`,
+            [projectId, title, description, category, status, session.userId]
+        )
+
+        // Auto-add creator as owner/member
+        await query(
+            `INSERT INTO project_members (id, projectId, userId, role, status, joinedAt)
+             VALUES (?, ?, ?, 'Owner', 'APPROVED', NOW())`,
+            [`pm_${Date.now()}`, projectId, session.userId]
+        )
+
+        revalidatePath('/projects')
+        revalidatePath('/projects/start')
+        revalidatePath('/projects/development')
+
+        return { success: true, projectId }
+    } catch (error) {
+        console.error('Create project error:', error)
+        return { error: 'Failed to create project' }
+    }
+}
+
 export async function joinProject(projectId: string) {
     const session = await getSession()
     if (!session.isLoggedIn) return { error: 'Not authenticated' }

@@ -13,7 +13,6 @@
   background: linear-gradient(135deg, white 0%, #fffdf0 100%);
   padding: 4rem 2rem;
   border-radius: 24px;
-  text-align: center;
   margin-bottom: 3rem;
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow:
@@ -21,6 +20,10 @@
     0 8px 10px -6px rgba(0, 0, 0, 0.01);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
 }
 
 .pageHeader::before {
@@ -48,9 +51,10 @@
   font-size: 1.2rem;
   color: #718096;
   max-width: 600px;
-  margin: 0 auto 2rem;
+  margin: 0 auto 0;
   position: relative;
   z-index: 1;
+  text-align: center;
 }
 
 .createBtn {
@@ -163,4 +167,197 @@
 
 .animateDelay3 {
   animation-delay: 0.3s;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+  padding: 2rem;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 24px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 2.5rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.modalHeader h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gold-dark);
+  margin: 0;
+}
+
+.closeBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(226, 232, 240, 0.3);
+  color: #718096;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(226, 232, 240, 0.5);
+  color: #2d3748;
+}
+
+.projectForm {
+  padding: 2.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: white;
+  font-family: inherit;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(226, 183, 20, 0.1);
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.errorMessage {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.cancelBtn,
+.submitBtn {
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.cancelBtn {
+  background: rgba(226, 232, 240, 0.5);
+  color: #4a5568;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: rgba(226, 232, 240, 0.7);
+}
+
+.submitBtn {
+  background: var(--gold);
+  color: white;
+  box-shadow: 0 4px 12px rgba(147, 128, 41, 0.3);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--gold-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(147, 128, 41, 0.4);
+}
+
+.submitBtn:disabled,
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .modalContent {
+    margin: 1rem;
+  }
+
+  .pageHeader h2 {
+    font-size: 2rem;
+  }
 }
