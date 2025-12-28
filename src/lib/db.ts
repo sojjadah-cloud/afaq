@@ -17,8 +17,8 @@ const isProduction = DATABASE_URL.includes('psdb.cloud') ||
 const pool = mysql.createPool({
     uri: DATABASE_URL,
     waitForConnections: true,
-    connectionLimit: isProduction ? 5 : 10, // Lower limit for serverless
-    maxIdle: isProduction ? 2 : 10,
+    connectionLimit: isProduction ? 2 : 10, // Reduced to 2 for free tier database limits
+    maxIdle: isProduction ? 1 : 10,
     idleTimeout: 60000, // 60 seconds
     queueLimit: 0,
     enableKeepAlive: true,
