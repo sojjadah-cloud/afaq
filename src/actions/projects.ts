@@ -143,6 +143,18 @@ export async function editProject(projectId: string, formData: FormData) {
 
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
+import { v2 as cloudinary } from 'cloudinary'
+
+// Configure Cloudinary (only if credentials are available)
+if (process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    })
+}
 
 export async function addAttachment(projectId: string, formData: FormData) {
     const session = await getSession()
@@ -161,35 +173,51 @@ export async function addAttachment(projectId: string, formData: FormData) {
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
 
-        // Check if we're in production (serverless)
         const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL
+        const hasCloudinary = process.env.CLOUDINARY_CLOUD_NAME &&
+            process.env.CLOUDINARY_API_KEY &&
+            process.env.CLOUDINARY_API_SECRET
 
-        if (isProduction) {
-            // In production, file uploads need cloud storage
-            // For now, return error with instructions
+        let url: string
+
+        // Use Cloudinary in production if configured
+        if (isProduction && hasCloudinary) {
+            // Upload to Cloudinary
+            const base64File = `data:${file.type};base64,${buffer.toString('base64')}`
+
+            const uploadResult = await cloudinary.uploader.upload(base64File, {
+                folder: 'afaq-innovation',
+                resource_type: 'auto',
+                public_id: `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`,
+            })
+
+            url = uploadResult.secure_url
+        } else if (isProduction && !hasCloudinary) {
+            // Production but no cloud storage configured
             return {
-                error: 'File uploads require cloud storage configuration. Please set up Cloudinary or another storage provider. Contact your administrator.'
+                error: 'File uploads require cloud storage. Please configure Cloudinary environment variables in Vercel.'
             }
+        } else {
+            // Local development: save to public/uploads
+            const { mkdir } = await import('fs/promises')
+            const extension = file.name.split('.').pop()?.toLowerCase() || 'dat'
+            const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}.${extension}`
+            const uploadsDir = join(process.cwd(), 'public', 'uploads')
+
+            await mkdir(uploadsDir, { recursive: true })
+
+            const path = join(uploadsDir, filename)
+            await writeFile(path, buffer)
+            url = `/uploads/${filename}`
         }
 
-        // Local development: save to public/uploads
-        const { mkdir } = await import('fs/promises')
-        const extension = file.name.split('.').pop()?.toLowerCase() || 'dat'
-        const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}.${extension}`
-        const uploadsDir = join(process.cwd(), 'public', 'uploads')
-
-        // Ensure uploads directory exists
-        await mkdir(uploadsDir, { recursive: true })
-
-        const path = join(uploadsDir, filename)
-        await writeFile(path, buffer)
-        const url = `/uploads/${filename}`
-
+        // Save to database
         await query(
             `INSERT INTO project_attachments (id, projectId, name, url, type, uploadedAt)
              VALUES (?, ?, ?, ?, ?, NOW())`,
             [`att_${Date.now()}`, projectId, file.name, url, file.type.startsWith('image') ? 'IMAGE' : 'DOCUMENT']
         )
+
         revalidatePath(`/projects/${projectId}`)
         return { success: true }
     } catch (error) {
