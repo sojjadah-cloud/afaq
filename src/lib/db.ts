@@ -10,6 +10,7 @@ if (!DATABASE_URL) {
 const isProduction = DATABASE_URL.includes('psdb.cloud') ||
     DATABASE_URL.includes('railway') ||
     DATABASE_URL.includes('neon') ||
+    DATABASE_URL.includes('filess.io') ||
     process.env.NODE_ENV === 'production'
 
 // Create connection pool with production-optimized settings
@@ -25,7 +26,7 @@ const pool = mysql.createPool({
     // SSL configuration for production databases
     ...(isProduction && {
         ssl: {
-            rejectUnauthorized: true
+            rejectUnauthorized: false // Accept self-signed certificates
         }
     })
 })
