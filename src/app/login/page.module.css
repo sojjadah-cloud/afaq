@@ -1,0 +1,133 @@
+.pageWrapper {
+    width: 100%;
+    max-width: 480px;
+    margin: 60px auto;
+    padding: 16px;
+}
+
+.portalHeader {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.portalHeader h1 {
+    font-size: 24px;
+    color: var(--ink);
+    margin: 0;
+    font-weight: 600;
+}
+
+.portalHeader p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.loginCard {
+    background: var(--card);
+    padding: 32px 36px 28px;
+    box-shadow: var(--shadow);
+    border-radius: 4px;
+    border-top: 6px solid var(--gold);
+}
+
+.loginCard label {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.loginCard input[type="text"],
+.loginCard input[type="password"] {
+    width: 100%;
+    padding: 11px 12px;
+    font-size: 15px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    outline: none;
+    margin-bottom: 18px;
+    transition: 0.22s ease;
+    background: #fff;
+}
+
+.loginCard input[type="password"] {
+    background: #edf2ff;
+}
+
+.loginCard input:focus {
+    border-color: #a8b3df;
+    box-shadow: 0 0 0 3px rgba(152, 163, 221, 0.28);
+}
+
+.btnLogin {
+    width: 100%;
+    background: var(--gold);
+    padding: 12px 0;
+    font-size: 16px;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: background 0.2s ease, transform 0.05s ease;
+    font-weight: 600;
+}
+
+.btnLogin:hover:not(:disabled) {
+    background: var(--gold-dark);
+}
+
+.btnLogin:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btnLogin:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error {
+    background: #fee;
+    color: #c33;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    border: 1px solid #fcc;
+}
+
+.linkRow {
+    margin-bottom: 18px;
+}
+
+.linkRow a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.linkRow a:hover {
+    text-decoration: underline;
+}
+
+.loginCard hr {
+    border: none;
+    border-top: 1px solid #e7e8ed;
+    margin-bottom: 18px;
+}
+
+.btnCookies {
+    background: var(--gold);
+    padding: 8px 18px;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btnCookies:hover {
+    background: var(--gold-dark);
+}

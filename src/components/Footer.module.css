@@ -1,0 +1,9 @@
+.footer {
+    background: var(--gold);
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: auto;
+}

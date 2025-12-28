@@ -1,0 +1,247 @@
+/* Premium Home Page Styles */
+
+.page {
+    padding: 2rem;
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, #fffdf0 0%, #fff 40%);
+    animation: fadeIn 1s ease-out;
+}
+
+/* Hero Section */
+.hero {
+    position: relative;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 24px;
+    padding: 5rem 2rem;
+    text-align: center;
+    color: white;
+    margin-bottom: 4rem;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: scaleIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(226, 183, 20, 0.1) 0%, transparent 60%);
+    animation: rotate 20s linear infinite;
+    z-index: 0;
+}
+
+.heroContent {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #fff, #e2b714, #fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% auto;
+    animation: shine 5s linear infinite;
+}
+
+.visionStatement {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+/* Features Grid */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto 5rem;
+}
+
+.featureCard {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-top: 5px solid var(--gold);
+}
+
+.featureCard:hover {
+    transform: translateY(-8px);
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.featureCard h3 {
+    font-size: 1.5rem;
+    color: var(--gold-dark);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.featureCard p {
+    color: #475569;
+    line-height: 1.7;
+    font-size: 1.05rem;
+}
+
+/* Icon Navigation Hub */
+.iconGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.iconCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 2rem;
+    border-radius: 24px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.iconCard:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    border-color: var(--gold);
+}
+
+.iconCircle {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: white;
+    font-size: 2.5rem;
+    box-shadow: 0 10px 20px rgba(147, 128, 41, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.iconCard:hover .iconCircle {
+    transform: rotate(5deg) scale(1.1);
+}
+
+.iconTitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    transition: color 0.2s;
+}
+
+.iconCard:hover .iconTitle {
+    color: var(--gold-dark);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shine {
+    to {
+        background-position: 200% center;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animateDelay1 {
+    animation: slideUp 0.6s ease-out 0.2s backwards;
+}
+
+.animateDelay2 {
+    animation: slideUp 0.6s ease-out 0.4s backwards;
+}
+
+.animateDelay3 {
+    animation: slideUp 0.6s ease-out 0.6s backwards;
+}
+
+.animateDelay4 {
+    animation: slideUp 0.6s ease-out 0.8s backwards;
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 1rem;
+    }
+
+    .hero {
+        padding: 3rem 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+}

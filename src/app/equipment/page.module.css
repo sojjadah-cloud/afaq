@@ -1,0 +1,236 @@
+/* Equipment List Premium Styles */
+
+.main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.header {
+    background: linear-gradient(135deg, white 0%, #fffdf0 100%);
+    padding: 3rem;
+    border-radius: 24px;
+    text-align: center;
+    margin-bottom: 3rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: var(--shadow);
+    animation: slideDown 0.6s ease-out;
+}
+
+.header h2 {
+    font-size: 2.5rem;
+    color: var(--gold-dark);
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: #718096;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: var(--shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    animation: slideUp 0.6s ease-out backwards;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow:
+        0 20px 30px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--gold-soft);
+}
+
+.iconWrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #fffbef, #fff);
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: var(--gold);
+    box-shadow: 0 4px 10px rgba(147, 128, 41, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.card:hover .iconWrapper {
+    transform: scale(1.1) rotate(5deg);
+    background: var(--gold);
+    color: white;
+}
+
+.card h3 {
+    font-size: 1.4rem;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.card p {
+    color: #718096;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* Details Section Styles */
+.detailsSection {
+    margin-top: 3rem;
+    background: white;
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.detailsHeader {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f7fafc;
+}
+
+.detailsHeader h3 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.detailsHeader span {
+    color: #718096;
+    font-size: 1.05rem;
+}
+
+.labList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.labRow a {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    border: 1px solid #edf2f7;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.labRow a:hover {
+    background: white;
+    transform: translateX(6px);
+    border-color: var(--gold);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.labInfo {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+}
+
+.labName {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+    display: block;
+}
+
+.labDesc {
+    font-size: 0.9rem;
+    color: #718096;
+    display: block;
+}
+
+.labTag {
+    background: #ebf8ff;
+    color: #2b6cb0;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.labAction {
+    color: var(--gold);
+    font-size: 1.1rem;
+}
+
+/* Stagger Animations */
+.animateDelay1 {
+    animation-delay: 0.1s;
+}
+
+.animateDelay2 {
+    animation-delay: 0.2s;
+}
+
+.animateDelay3 {
+    animation-delay: 0.3s;
+}
+
+.animateDelay4 {
+    animation-delay: 0.4s;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,0 +1,301 @@
+/* Admin Dashboard Premium Styles */
+
+.main {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.header {
+    margin-bottom: 3rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--gold);
+    border-radius: 2px;
+}
+
+.header h2 {
+    color: var(--gold-dark);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.header p {
+    color: #718096;
+    font-size: 1.1rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+/* Glassmorphism Card Style */
+.statCard {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.statCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-soft));
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+    transform-origin: left;
+}
+
+.statCard:hover {
+    transform: translateY(-8px);
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.statCard:hover::before {
+    transform: scaleX(1);
+}
+
+.statIcon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 10px rgba(183, 156, 48, 0.3);
+}
+
+.statValue {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.statLabel {
+    color: #718096;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.section {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    margin-bottom: 2rem;
+    animation: slideUp 0.8s ease-out 0.2s backwards;
+}
+
+.section h3 {
+    margin-bottom: 2rem;
+    color: #2d3748;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.section h3::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 24px;
+    background: var(--gold);
+    border-radius: 3px;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    background: #f7fafc;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    color: #4a5568;
+    text-align: left;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.table tr:hover td {
+    background: #fffbef;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Project / Event Status Badges */
+.statusBadge {
+    padding: 0.35rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.statusBadge::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Status Colors */
+.pending {
+    background: #fffaf0;
+    color: #d69e2e;
+}
+
+.approved {
+    background: #f0fff4;
+    color: #38a169;
+}
+
+.rejected {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.completed {
+    background: #ebf8ff;
+    color: #3182ce;
+}
+
+.actionBtn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.actionBtn:hover {
+    border-color: var(--gold);
+    color: var(--gold-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.cardAnimate1 {
+    animation: scaleIn 0.5s ease-out 0.1s backwards;
+}
+
+.cardAnimate2 {
+    animation: scaleIn 0.5s ease-out 0.2s backwards;
+}
+
+.cardAnimate3 {
+    animation: scaleIn 0.5s ease-out 0.3s backwards;
+}
+
+.cardAnimate4 {
+    animation: scaleIn 0.5s ease-out 0.4s backwards;
+}

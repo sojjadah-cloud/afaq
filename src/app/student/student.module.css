@@ -1,0 +1,263 @@
+/* Student Profile Premium Styles */
+
+.main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.header {
+    background: linear-gradient(135deg, white 0%, #fffdf0 100%);
+    padding: 3rem;
+    border-radius: 24px;
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.05),
+        0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    margin-bottom: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(226, 183, 20, 0.05));
+    transform: skewX(-20deg) translateX(100px);
+}
+
+.profileInfo {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    z-index: 1;
+}
+
+.avatarPlaceholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    box-shadow: 0 8px 16px rgba(147, 128, 41, 0.3);
+    border: 4px solid white;
+}
+
+.profileInfo h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.2rem;
+    color: #1a202c;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.militaryId {
+    color: #718096;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badges {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.badge {
+    background: #f7fafc;
+    color: #4a5568;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #edf2f7;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.actions {
+    display: flex;
+    gap: 1rem;
+    z-index: 1;
+}
+
+.actionBtn {
+    background: white;
+    color: var(--gold-dark);
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.actionBtn:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+}
+
+.grid {
+    display: grid;
+    gap: 3rem;
+}
+
+.section {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    animation: slideUp 0.8s ease-out backwards;
+}
+
+.section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(226, 183, 20, 0.2);
+    color: #2d3748;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.empty {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 2px dashed #cbd5e0;
+}
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    border: 1px solid #f0f4f8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    border-color: var(--gold-soft);
+}
+
+.card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: #2d3748;
+    font-weight: 700;
+}
+
+.card p {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Status Badges */
+.status {
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pending {
+    background: #fffaf0;
+    color: #d69e2e;
+}
+
+.approved {
+    background: #f0fff4;
+    color: #38a169;
+}
+
+.rejected {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.start {
+    background: #ebf8ff;
+    color: #3182ce;
+}
+
+.development {
+    background: #faf5ff;
+    color: #805ad5;
+}
+
+.completed {
+    background: #f0fff4;
+    color: #38a169;
+}
+
+.link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--gold-dark);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+.link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gold);
+    transition: width 0.3s;
+}
+
+.link:hover::after {
+    width: 100%;
+}

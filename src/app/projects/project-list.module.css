@@ -1,0 +1,137 @@
+.main {
+    flex: 1;
+    padding: 26px 5vw 32px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.pageHeader {
+    margin-bottom: 24px;
+}
+
+.pageHeader h2 {
+    font-size: 26px;
+    color: var(--gold-dark);
+    margin-bottom: 6px;
+}
+
+.pageHeader p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--gold-dark);
+    margin-bottom: 12px;
+    transition: 0.2s;
+}
+
+.backLink:hover {
+    color: var(--gold);
+    transform: translateX(-4px);
+}
+
+.projectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.projectCard {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: 0.25s;
+}
+
+.projectCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-color: var(--gold-soft);
+}
+
+.projectHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.projectCategory {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: white;
+    font-weight: 600;
+}
+
+.projectProgress {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold-dark);
+}
+
+.projectTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 10px;
+}
+
+.projectDesc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.projectMeta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.projectMeta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.projectMeta i {
+    color: var(--gold);
+}
+
+.emptyState {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .projectsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.projectLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.projectLink:hover .projectTitle {
+    color: var(--gold);
+    transition: color 0.2s;
+}
