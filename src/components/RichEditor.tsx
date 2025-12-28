@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useState } from 'react'
 import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
 import { uploadImage } from '@/actions/upload'
@@ -14,7 +14,7 @@ export default function RichEditor({
     value: string
     onChange: (val: string) => void
 }) {
-    const quillRef = useRef<any>(null)
+    const [quillInstance, setQuillInstance] = useState<any>(null)
 
     // Custom image upload handler
     const imageHandler = () => {
@@ -40,11 +40,10 @@ export default function RichEditor({
                 }
 
                 // Get cursor position and insert image
-                const quill = quillRef.current?.getEditor()
-                if (quill) {
-                    const range = quill.getSelection(true)
-                    quill.insertEmbed(range.index, 'image', result.url)
-                    quill.setSelection(range.index + 1)
+                if (quillInstance) {
+                    const range = quillInstance.getSelection(true)
+                    quillInstance.insertEmbed(range.index, 'image', result.url)
+                    quillInstance.setSelection(range.index + 1)
                 }
             } catch (error) {
                 console.error('Image upload failed:', error)
@@ -79,10 +78,15 @@ export default function RichEditor({
     return (
         <div className="rich-editor-wrapper">
             <ReactQuill
-                ref={quillRef}
                 theme="snow"
                 value={value}
-                onChange={onChange}
+                onChange={(content, delta, source, editor) => {
+                    onChange(content)
+                    // Store quill instance on first render
+                    if (!quillInstance) {
+                        setQuillInstance(editor)
+                    }
+                }}
                 modules={modules}
                 formats={formats}
                 style={{ height: '300px', marginBottom: '50px', background: 'white' }}
