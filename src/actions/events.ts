@@ -8,7 +8,7 @@ import { RowDataPacket } from 'mysql2'
 export async function createEvent(formData: FormData) {
     const session = await getSession()
     if (!session.isLoggedIn) return { error: 'Not authenticated' }
-    if (session.userRole !== 'STAFF' && session.userRole !== 'ADMIN') {
+    if (session.role !== 'STAFF' && session.role !== 'ADMIN') {
         return { error: 'Not authorized' }
     }
 
