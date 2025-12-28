@@ -146,26 +146,42 @@ import { join } from 'path'
 
 export async function addAttachment(projectId: string, formData: FormData) {
     const session = await getSession()
-    // Verify member or owner logic here... assuming owner for now
+    if (!session.isLoggedIn) return { error: 'Not authenticated' }
 
     const file = formData.get('file') as File
     if (!file) return { error: 'No file provided' }
 
-    // Validate File Size (Max 50MB)
-    const maxSize = 10 * 1024 * 1024 // 50MB
+    // Validate File Size (Max 10MB)
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-        return { error: 'File too large. Maximum size is 50MB.' }
+        return { error: 'File too large. Maximum size is 10MB.' }
     }
 
     try {
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
 
-        // Sanitize filename
-        const extension = file.name.split('.').pop()?.toLowerCase() || 'dat'
-        const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9]/g, '')}.${extension}`
-        const path = join(process.cwd(), 'public', 'uploads', filename)
+        // Check if we're in production (serverless)
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL
 
+        if (isProduction) {
+            // In production, file uploads need cloud storage
+            // For now, return error with instructions
+            return {
+                error: 'File uploads require cloud storage configuration. Please set up Cloudinary or another storage provider. Contact your administrator.'
+            }
+        }
+
+        // Local development: save to public/uploads
+        const { mkdir } = await import('fs/promises')
+        const extension = file.name.split('.').pop()?.toLowerCase() || 'dat'
+        const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}.${extension}`
+        const uploadsDir = join(process.cwd(), 'public', 'uploads')
+
+        // Ensure uploads directory exists
+        await mkdir(uploadsDir, { recursive: true })
+
+        const path = join(uploadsDir, filename)
         await writeFile(path, buffer)
         const url = `/uploads/${filename}`
 
@@ -178,6 +194,6 @@ export async function addAttachment(projectId: string, formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error('Attachment upload error:', error)
-        return { error: 'Failed to add attachment' }
+        return { error: 'Failed to add attachment. ' + (error instanceof Error ? error.message : 'Unknown error') }
     }
 }
