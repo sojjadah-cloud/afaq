@@ -134,8 +134,8 @@ export async function getAuditLogs(limit: number = 50) {
                 u.militaryId,
                 COALESCE(sp.fullName, u.email) as userName
             FROM audit_logs al
-            LEFT JOIN users u ON al.userId = u.id
-            LEFT JOIN student_profiles sp ON u.id = sp.userId
+            LEFT JOIN users u ON al.userId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
+            LEFT JOIN student_profiles sp ON u.id COLLATE utf8mb4_general_ci = sp.userId COLLATE utf8mb4_general_ci
             ORDER BY al.createdAt DESC
             LIMIT ?
         `, [limit])
