@@ -50,7 +50,16 @@ export default async function AdminDashboard() {
                     <i className="fa fa-chart-simple"></i> Overview
                 </Link>
                 <Link href="/admin/bookings" className={styles.navLink}>
-                    <i className="fa fa-calendar-check"></i> Manage Bookings
+                    <i className="fa fa-calendar-check"></i> Bookings
+                </Link>
+                <Link href="/admin/requests" className={styles.navLink}>
+                    <i className="fa fa-inbox"></i> Requests
+                </Link>
+                <Link href="/admin/analytics" className={styles.navLink}>
+                    <i className="fa fa-chart-pie"></i> Analytics
+                </Link>
+                <Link href="/admin/audit" className={styles.navLink}>
+                    <i className="fa fa-clipboard-list"></i> Audit Log
                 </Link>
             </div>
 

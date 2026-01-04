@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import styles from '../admin.module.css'
 import { approveBooking, rejectBooking, cancelBooking, completeBooking } from '@/actions/bookings'
 
+import Link from 'next/link'
+
 interface Booking {
     id: string
     labName: string
@@ -75,6 +77,24 @@ export default function BookingsClient({ initialBookings }: BookingsClientProps)
             <div className={styles.header}>
                 <h2>Booking Management</h2>
                 <p>Review and manage lab booking requests</p>
+            </div>
+
+            <div className={styles.adminNav}>
+                <Link href="/admin" className={styles.navLink}>
+                    <i className="fa fa-chart-simple"></i> Overview
+                </Link>
+                <Link href="/admin/bookings" className={`${styles.navLink} ${styles.active}`}>
+                    <i className="fa fa-calendar-check"></i> Bookings
+                </Link>
+                <Link href="/admin/requests" className={styles.navLink}>
+                    <i className="fa fa-inbox"></i> Requests
+                </Link>
+                <Link href="/admin/analytics" className={styles.navLink}>
+                    <i className="fa fa-chart-pie"></i> Analytics
+                </Link>
+                <Link href="/admin/audit" className={styles.navLink}>
+                    <i className="fa fa-clipboard-list"></i> Audit Log
+                </Link>
             </div>
 
             <div className={styles.filterBar}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
 import { submitClubRegistration } from '@/actions/club'
@@ -8,6 +8,7 @@ import { submitClubRegistration } from '@/actions/club'
 export default function HomePage() {
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
+    const formRef = useRef<HTMLFormElement>(null)
 
     const heroSlides = [
         {
@@ -36,7 +37,7 @@ export default function HomePage() {
             setMessage({ type: 'error', text: result.error })
         } else {
             setMessage({ type: 'success', text: result.message || 'Registration submitted!' })
-            e.currentTarget.reset()
+            formRef.current?.reset()
         }
         setLoading(false)
     }
@@ -115,7 +116,7 @@ export default function HomePage() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit}>
+                        <form ref={formRef} onSubmit={handleSubmit}>
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="fullName">Full Name *</label>
