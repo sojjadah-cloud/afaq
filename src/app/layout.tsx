@@ -3,7 +3,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
-import Script from 'next/script'
+import { ToastProvider } from '@/components/Toast'
 
 export const metadata: Metadata = {
     title: 'AFAQ Innovation Portal',
@@ -24,10 +24,12 @@ export default function RootLayout({
                 />
             </head>
             <body>
-                <Header />
-                <Nav />
-                {children}
-                <Footer />
+                <ToastProvider>
+                    <Header />
+                    <Nav />
+                    {children}
+                    <Footer />
+                </ToastProvider>
             </body>
         </html>
     )

@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth'
 import Link from 'next/link'
 import styles from './Header.module.css'
 import LogoutButton from './LogoutButton'
+import SearchBar from './SearchBar'
 
 export default async function Header() {
     const session = await getSession()
@@ -15,6 +16,9 @@ export default async function Header() {
     return (
         <header className={styles.header}>
             <h1>AFAQ Innovation Portal – Military Technological College</h1>
+            <div className={styles.headerCenter}>
+                <SearchBar />
+            </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 {session.role === 'ADMIN' && (
                     <Link href="/admin" className={styles.adminLink}>

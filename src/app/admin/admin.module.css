@@ -299,3 +299,133 @@
 .cardAnimate4 {
     animation: scaleIn 0.5s ease-out 0.4s backwards;
 }
+
+/* Filter Bar */
+.filterBar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    color: #4a5568;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.filterBtn:hover {
+    border-color: var(--gold);
+    color: var(--gold-dark);
+}
+
+.filterBtn.active {
+    background: var(--gold);
+    color: white;
+    border-color: var(--gold);
+}
+
+/* Action Buttons */
+.actionBtns {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.approveBtn,
+.rejectBtn,
+.cancelBtn,
+.completeBtn {
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.approveBtn {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.approveBtn:hover:not(:disabled) {
+    background: #bbf7d0;
+}
+
+.rejectBtn {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.rejectBtn:hover:not(:disabled) {
+    background: #fecaca;
+}
+
+.cancelBtn {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.completeBtn {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.completeBtn:hover:not(:disabled) {
+    background: #bfdbfe;
+}
+
+.approveBtn:disabled,
+.rejectBtn:disabled,
+.cancelBtn:disabled,
+.completeBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Admin Navigation Links */
+.adminNav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.navLink {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    color: #4a5568;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navLink:hover {
+    border-color: var(--gold);
+    color: var(--gold-dark);
+}
+
+.navLink.active {
+    background: var(--gold);
+    color: white;
+    border-color: var(--gold);
+}

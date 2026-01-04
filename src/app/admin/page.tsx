@@ -45,6 +45,15 @@ export default async function AdminDashboard() {
                 <p>System Overview & Management</p>
             </div>
 
+            <div className={styles.adminNav}>
+                <Link href="/admin" className={`${styles.navLink} ${styles.active}`}>
+                    <i className="fa fa-chart-simple"></i> Overview
+                </Link>
+                <Link href="/admin/bookings" className={styles.navLink}>
+                    <i className="fa fa-calendar-check"></i> Manage Bookings
+                </Link>
+            </div>
+
             <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.cardAnimate1}`}>
                     <div className={styles.statIcon}><i className="fa fa-users"></i></div>
