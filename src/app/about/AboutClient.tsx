@@ -241,16 +241,17 @@ export default function AboutClient({ managementTeam, contactInfo, isLoggedIn }:
                                 </div>
                             </div>
 
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="department">Department *</label>
                                     <select id="department" name="department" required>
                                         <option value="">Select department</option>
-                                        <option value="Engineering">Engineering</option>
-                                        <option value="IT & Computing">IT & Computing</option>
-                                        <option value="Electronics">Electronics</option>
-                                        <option value="Mechanical">Mechanical</option>
-                                        <option value="Civil">Civil</option>
+                                        <option value="Aeronautical Engineering">Aeronautical Engineering</option>
+                                        <option value="Systems Engineering">Systems Engineering</option>
+                                        <option value="Marin Engineering">Marin Engineering</option>
+                                        <option value="Civil Engineering">Civil Engineering</option>
+                                        <option value="Foundation Department">Foundation Department</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
@@ -263,9 +264,11 @@ export default function AboutClient({ managementTeam, contactInfo, isLoggedIn }:
                                         <option value="Year 3">Year 3</option>
                                         <option value="Year 4">Year 4</option>
                                         <option value="Year 5">Year 5</option>
+                                        <option value="Year 6">Year 6</option>
                                     </select>
                                 </div>
                             </div>
+
 
                             <div className={styles.formGroup}>
                                 <label htmlFor="interests">Areas of Interest</label>

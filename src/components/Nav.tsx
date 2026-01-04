@@ -12,6 +12,7 @@ const navItems = [
     { href: '/equipment', label: 'Equipment', icon: 'fa-gears' },
     { href: '/events', label: 'Events', icon: 'fa-calendar-days' },
     { href: '/about', label: 'About Us', icon: 'fa-info-circle' },
+    { href: '/contact', label: 'Contact', icon: 'fa-envelope' },
 ]
 
 export default function Nav() {
