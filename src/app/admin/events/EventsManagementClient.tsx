@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../admin.module.css'
@@ -40,9 +40,16 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     const [showRegistrations, setShowRegistrations] = useState(false)
     const [registrations, setRegistrations] = useState<Registration[]>([])
     const [viewingEvent, setViewingEvent] = useState<Event | null>(null)
+    const [mounted, setMounted] = useState(false)
 
-    const now = new Date()
+    // Fix hydration mismatch by only using Date after mount
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const now = mounted ? new Date() : new Date(0)
     const filteredEvents = events.filter(e => {
+        if (!mounted) return true // Show all on server
         if (filter === 'upcoming') return new Date(e.startDate) >= now
         if (filter === 'past') return new Date(e.startDate) < now
         return true
@@ -210,9 +217,11 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                         <td>
                                             {formatDate(event.startDate)}
                                             <br />
-                                            <small style={{ color: new Date(event.startDate) < now ? '#ef4444' : '#10b981' }}>
-                                                {new Date(event.startDate) < now ? 'Past' : 'Upcoming'}
-                                            </small>
+                                            {mounted && (
+                                                <small style={{ color: new Date(event.startDate) < now ? '#ef4444' : '#10b981' }}>
+                                                    {new Date(event.startDate) < now ? 'Past' : 'Upcoming'}
+                                                </small>
+                                            )}
                                         </td>
                                         <td>{event.location || '-'}</td>
                                         <td>
