@@ -6,7 +6,6 @@ import styles from './page.module.css'
 import { submitClubRegistration } from '@/actions/club'
 
 export default function HomePage() {
-    const [showForm, setShowForm] = useState(false)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
 
@@ -37,7 +36,6 @@ export default function HomePage() {
             setMessage({ type: 'error', text: result.error })
         } else {
             setMessage({ type: 'success', text: result.message || 'Registration submitted!' })
-            setShowForm(false)
             e.currentTarget.reset()
         }
         setLoading(false)
@@ -51,9 +49,6 @@ export default function HomePage() {
                     <p className={styles.visionStatement}>
                         "A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact."
                     </p>
-                    <button className={styles.joinHeroBtn} onClick={() => setShowForm(true)}>
-                        <i className="fa fa-user-plus"></i> Join AFAQ Innovation Club
-                    </button>
                 </div>
             </section>
 
@@ -96,26 +91,31 @@ export default function HomePage() {
                 </Link>
             </section>
 
-            {/* Success/Error Toast */}
-            {message.text && (
-                <div className={`${styles.toast} ${styles[message.type]}`}>
-                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-                    {message.text}
-                </div>
-            )}
+            {/* Registration Section */}
+            <section className={styles.registerSection}>
+                <div className={styles.registerContent}>
+                    <div className={styles.registerInfo}>
+                        <h2><i className="fa fa-user-plus"></i> Join AFAQ Innovation Club</h2>
+                        <p>Be part of our innovation community and contribute to groundbreaking projects and research.</p>
+                        <ul className={styles.benefits}>
+                            <li><i className="fa fa-check"></i> Access to innovation labs and equipment</li>
+                            <li><i className="fa fa-check"></i> Collaborate on cutting-edge projects</li>
+                            <li><i className="fa fa-check"></i> Networking with industry experts</li>
+                            <li><i className="fa fa-check"></i> Exclusive workshops and training</li>
+                        </ul>
+                    </div>
 
-            {/* Registration Modal */}
-            {showForm && (
-                <div className={styles.modalOverlay} onClick={() => setShowForm(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h3>Join AFAQ Innovation Club</h3>
-                            <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
-                                <i className="fa fa-times"></i>
-                            </button>
-                        </div>
+                    <div className={styles.registerForm}>
+                        <h3>Register Now</h3>
 
-                        <form onSubmit={handleSubmit} className={styles.form}>
+                        {message.text && (
+                            <div className={`${styles.formMessage} ${styles[message.type]}`}>
+                                <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                                {message.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit}>
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="fullName">Full Name *</label>
@@ -184,16 +184,17 @@ export default function HomePage() {
                                 ></textarea>
                             </div>
 
-                            <div className={styles.formActions}>
-                                <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
-                                <button type="submit" className={styles.submitBtn} disabled={loading}>
-                                    {loading ? 'Submitting...' : 'Submit Registration'}
-                                </button>
-                            </div>
+                            <button type="submit" className={styles.registerBtn} disabled={loading}>
+                                {loading ? (
+                                    <><i className="fa fa-spinner fa-spin"></i> Submitting...</>
+                                ) : (
+                                    <><i className="fa fa-paper-plane"></i> Submit Registration</>
+                                )}
+                            </button>
                         </form>
                     </div>
                 </div>
-            )}
+            </section>
         </main>
     )
 }
