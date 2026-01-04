@@ -28,8 +28,17 @@ export default function EventsClient({ events, canCreate }: EventsClientProps) {
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
 
-    const upcomingEvents = events.filter(e => new Date(e.startDate) >= new Date())
-    const pastEvents = events.filter(e => new Date(e.startDate) < new Date())
+    // Get current time once for consistent comparison
+    const now = new Date()
+
+    // Filter and sort events
+    const upcomingEvents = events
+        .filter(e => new Date(e.startDate).getTime() >= now.getTime())
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+
+    const pastEvents = events
+        .filter(e => new Date(e.startDate).getTime() < now.getTime())
+        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
