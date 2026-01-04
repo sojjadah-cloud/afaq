@@ -429,3 +429,12 @@
     color: white;
     border-color: var(--gold);
 }
+
+.viewBtn {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.viewBtn:hover {
+    background: #c7d2fe;
+}
