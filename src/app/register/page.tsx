@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { loginUser } from '@/actions/auth'
-import styles from './page.module.css'
+import { registerUser } from '@/actions/auth'
+import styles from '../login/page.module.css'
 
-export default function LoginPage() {
+export default function RegisterPage() {
     const router = useRouter()
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
@@ -18,7 +18,7 @@ export default function LoginPage() {
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
-        const result = await loginUser(formData)
+        const result = await registerUser(formData)
 
         if (result?.error) {
             setError(result.error)
@@ -38,24 +38,24 @@ export default function LoginPage() {
                         <i className="fa fa-rocket"></i>
                     </div>
                     <h1>AFAQ Innovation</h1>
-                    <p>Military Technological College Innovation Platform</p>
+                    <p>Join the Military Technological College Innovation Community</p>
 
                     <div className={styles.features}>
                         <div className={styles.feature}>
-                            <i className="fa fa-lightbulb"></i>
-                            <span>Showcase Projects</span>
+                            <i className="fa fa-graduation-cap"></i>
+                            <span>Student Access</span>
                         </div>
                         <div className={styles.feature}>
-                            <i className="fa fa-flask"></i>
-                            <span>Book Lab Sessions</span>
+                            <i className="fa fa-project-diagram"></i>
+                            <span>Create Projects</span>
                         </div>
                         <div className={styles.feature}>
-                            <i className="fa fa-users"></i>
-                            <span>Collaborate with Peers</span>
+                            <i className="fa fa-comments"></i>
+                            <span>Join Discussions</span>
                         </div>
                         <div className={styles.feature}>
-                            <i className="fa fa-calendar"></i>
-                            <span>Join Events</span>
+                            <i className="fa fa-trophy"></i>
+                            <span>Earn Recognition</span>
                         </div>
                     </div>
                 </div>
@@ -64,15 +64,29 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            {/* Right Side - Login Form */}
+            {/* Right Side - Register Form */}
             <div className={styles.formSide}>
                 <div className={styles.formContainer}>
                     <div className={styles.formHeader}>
-                        <h2>Welcome Back</h2>
-                        <p>Sign in to continue to your account</p>
+                        <h2>Create Account</h2>
+                        <p>Register to access the innovation portal</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className={styles.form}>
+                        <div className={styles.inputGroup}>
+                            <label htmlFor="fullName">
+                                <i className="fa fa-user"></i> Full Name
+                            </label>
+                            <input
+                                type="text"
+                                id="fullName"
+                                name="fullName"
+                                placeholder="Enter your full name"
+                                required
+                                autoComplete="name"
+                            />
+                        </div>
+
                         <div className={styles.inputGroup}>
                             <label htmlFor="militaryId">
                                 <i className="fa fa-id-card"></i> Military ID
@@ -88,6 +102,20 @@ export default function LoginPage() {
                         </div>
 
                         <div className={styles.inputGroup}>
+                            <label htmlFor="email">
+                                <i className="fa fa-envelope"></i> Email
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Enter your email address"
+                                required
+                                autoComplete="email"
+                            />
+                        </div>
+
+                        <div className={styles.inputGroup}>
                             <label htmlFor="password">
                                 <i className="fa fa-lock"></i> Password
                             </label>
@@ -96,9 +124,10 @@ export default function LoginPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     name="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Create a password (min 6 chars)"
                                     required
-                                    autoComplete="current-password"
+                                    minLength={6}
+                                    autoComplete="new-password"
                                 />
                                 <button
                                     type="button"
@@ -110,6 +139,21 @@ export default function LoginPage() {
                             </div>
                         </div>
 
+                        <div className={styles.inputGroup}>
+                            <label htmlFor="confirmPassword">
+                                <i className="fa fa-lock"></i> Confirm Password
+                            </label>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Confirm your password"
+                                required
+                                minLength={6}
+                                autoComplete="new-password"
+                            />
+                        </div>
+
                         {error && (
                             <div className={styles.error}>
                                 <i className="fa fa-exclamation-circle"></i> {error}
@@ -118,9 +162,9 @@ export default function LoginPage() {
 
                         <button type="submit" className={styles.submitBtn} disabled={loading}>
                             {loading ? (
-                                <><i className="fa fa-spinner fa-spin"></i> Signing in...</>
+                                <><i className="fa fa-spinner fa-spin"></i> Creating Account...</>
                             ) : (
-                                <><i className="fa fa-sign-in-alt"></i> Sign In</>
+                                <><i className="fa fa-user-plus"></i> Create Account</>
                             )}
                         </button>
 
@@ -128,8 +172,8 @@ export default function LoginPage() {
                             <span>or</span>
                         </div>
 
-                        <Link href="/register" className={styles.signupBtn}>
-                            <i className="fa fa-user-plus"></i> Create New Account
+                        <Link href="/login" className={styles.signupBtn}>
+                            <i className="fa fa-sign-in-alt"></i> Already have an account? Sign In
                         </Link>
                     </form>
 
