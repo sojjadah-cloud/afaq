@@ -214,3 +214,27 @@ export async function getUserRegistration(eventId: string) {
     }
 }
 
+export async function getEventRegistrations(eventId: string) {
+    const session = await getSession()
+    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+        return []
+    }
+
+    try {
+        const registrations = await query<RowDataPacket[]>(`
+            SELECT 
+                er.id, er.status, er.registeredAt,
+                u.militaryId, u.email,
+                COALESCE(sp.fullName, u.email) as userName
+            FROM event_registrations er
+            JOIN users u ON er.userId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
+            LEFT JOIN student_profiles sp ON u.id COLLATE utf8mb4_general_ci = sp.userId COLLATE utf8mb4_general_ci
+            WHERE er.eventId = ?
+            ORDER BY er.registeredAt DESC
+        `, [eventId])
+        return registrations
+    } catch (error) {
+        console.error('Get event registrations error:', error)
+        return []
+    }
+}

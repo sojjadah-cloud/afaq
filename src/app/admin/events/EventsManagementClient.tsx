@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../admin.module.css'
-import { createEvent, updateEvent, deleteEvent } from '@/actions/events'
+import { createEvent, updateEvent, deleteEvent, getEventRegistrations } from '@/actions/events'
 
 interface Event {
     id: string
@@ -18,6 +18,15 @@ interface Event {
     registrationCount: number
 }
 
+interface Registration {
+    id: string
+    userName: string
+    militaryId: string
+    email: string
+    status: string
+    registeredAt: string
+}
+
 interface EventsManagementClientProps {
     events: Event[]
 }
@@ -28,6 +37,9 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     const [loading, setLoading] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
     const [editEvent, setEditEvent] = useState<Event | null>(null)
+    const [showRegistrations, setShowRegistrations] = useState(false)
+    const [registrations, setRegistrations] = useState<Registration[]>([])
+    const [viewingEvent, setViewingEvent] = useState<Event | null>(null)
 
     const now = new Date()
     const filteredEvents = events.filter(e => {
@@ -72,6 +84,15 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     const openEditForm = (event: Event) => {
         setEditEvent(event)
         setShowForm(true)
+    }
+
+    const viewRegistrations = async (event: Event) => {
+        setLoading(event.id + '_regs')
+        setViewingEvent(event)
+        const regs = await getEventRegistrations(event.id)
+        setRegistrations(regs as Registration[])
+        setShowRegistrations(true)
+        setLoading(null)
     }
 
     const formatDate = (dateStr: string) => {
@@ -195,8 +216,21 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                         </td>
                                         <td>{event.location || '-'}</td>
                                         <td>
-                                            <strong>{event.registrationCount}</strong>
-                                            {event.capacity && ` / ${event.capacity}`}
+                                            <button
+                                                onClick={() => viewRegistrations(event)}
+                                                style={{
+                                                    background: 'none', border: 'none', cursor: 'pointer',
+                                                    color: '#1d4ed8', fontWeight: 600, textDecoration: 'underline'
+                                                }}
+                                                disabled={loading === event.id + '_regs'}
+                                            >
+                                                {loading === event.id + '_regs' ? '...' : (
+                                                    <>
+                                                        <strong>{event.registrationCount}</strong>
+                                                        {event.capacity && ` / ${event.capacity}`}
+                                                    </>
+                                                )}
+                                            </button>
                                         </td>
                                         <td>
                                             <div className={styles.actionBtns}>
@@ -227,6 +261,96 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                     </table>
                 </div>
             </div>
+
+            {/* Registrations Modal */}
+            {showRegistrations && viewingEvent && (
+                <div
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 1000, padding: '2rem'
+                    }}
+                    onClick={() => { setShowRegistrations(false); setViewingEvent(null) }}
+                >
+                    <div
+                        style={{
+                            background: 'white', borderRadius: '20px', maxWidth: '700px', width: '100%',
+                            maxHeight: '80vh', overflow: 'auto'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div style={{
+                            padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
+                        }}>
+                            <div>
+                                <h3 style={{ margin: 0, color: '#1e293b' }}>Registered Users</h3>
+                                <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+                                    {viewingEvent.title}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => { setShowRegistrations(false); setViewingEvent(null) }}
+                                style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}
+                            >
+                                <i className="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <div style={{ padding: '1.5rem 2rem' }}>
+                            {registrations.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                                    <i className="fa fa-users" style={{ fontSize: '2rem', marginBottom: '0.5rem', display: 'block' }}></i>
+                                    No registrations yet.
+                                </div>
+                            ) : (
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Name</th>
+                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Military ID</th>
+                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Status</th>
+                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Registered</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {registrations.map(reg => (
+                                            <tr key={reg.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <td style={{ padding: '0.75rem' }}>
+                                                    <strong>{reg.userName}</strong>
+                                                    <br />
+                                                    <small style={{ color: '#64748b' }}>{reg.email}</small>
+                                                </td>
+                                                <td style={{ padding: '0.75rem', fontFamily: 'monospace' }}>{reg.militaryId}</td>
+                                                <td style={{ padding: '0.75rem' }}>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: 600,
+                                                        background: reg.status === 'REGISTERED' ? '#dcfce7' : '#fee2e2',
+                                                        color: reg.status === 'REGISTERED' ? '#16a34a' : '#dc2626'
+                                                    }}>
+                                                        {reg.status}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '0.75rem', color: '#64748b', fontSize: '0.9rem' }}>
+                                                    {new Date(reg.registeredAt).toLocaleDateString()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                            <div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#64748b' }}>
+                                <strong>{registrations.filter(r => r.status === 'REGISTERED').length}</strong> active registrations
+                                {viewingEvent.capacity && ` out of ${viewingEvent.capacity} capacity`}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Create/Edit Modal */}
             {showForm && (
