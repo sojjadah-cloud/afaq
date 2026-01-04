@@ -17,26 +17,41 @@ interface RecentBooking extends RowDataPacket {
 }
 
 export default async function AdminDashboard() {
+    // Core stats
     const userCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM users')
     const projectCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM projects')
     const bookingCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM lab_bookings')
     const eventCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM events')
 
-    // Fetch recent bookings with JOINs
+    // Request stats
+    let pendingRegistrations = 0
+    let newMessages = 0
+    let pendingBookings = 0
+
+    try {
+        const regCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM club_registrations WHERE status = 'PENDING'")
+        pendingRegistrations = regCount[0]?.count || 0
+    } catch (e) { /* table may not exist */ }
+
+    try {
+        const msgCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM contact_messages WHERE status = 'NEW'")
+        newMessages = msgCount[0]?.count || 0
+    } catch (e) { /* table may not exist */ }
+
+    const pendingBookingCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM lab_bookings WHERE status = 'PENDING'")
+    pendingBookings = pendingBookingCount[0]?.count || 0
+
+    // Recent bookings
     const recentBookings = await query<RecentBooking[]>(`
-    SELECT 
-      b.id, 
-      l.name as labName, 
-      u.militaryId, 
-      b.bookingDate, 
-      b.timeSlot, 
-      b.status 
-    FROM lab_bookings b
-    JOIN labs l ON b.labId = l.id
-    JOIN users u ON b.userId = u.id
-    ORDER BY b.createdAt DESC
-    LIMIT 5
-  `)
+        SELECT 
+            b.id, l.name as labName, u.militaryId, 
+            b.bookingDate, b.timeSlot, b.status 
+        FROM lab_bookings b
+        JOIN labs l ON b.labId = l.id
+        JOIN users u ON b.userId = u.id
+        ORDER BY b.createdAt DESC
+        LIMIT 5
+    `)
 
     return (
         <main className={styles.main}>
@@ -55,6 +70,9 @@ export default async function AdminDashboard() {
                 <Link href="/admin/requests" className={styles.navLink}>
                     <i className="fa fa-inbox"></i> Requests
                 </Link>
+                <Link href="/admin/events" className={styles.navLink}>
+                    <i className="fa fa-calendar-days"></i> Events
+                </Link>
                 <Link href="/admin/analytics" className={styles.navLink}>
                     <i className="fa fa-chart-pie"></i> Analytics
                 </Link>
@@ -62,6 +80,30 @@ export default async function AdminDashboard() {
                     <i className="fa fa-clipboard-list"></i> Audit Log
                 </Link>
             </div>
+
+            {/* Quick Action Alerts */}
+            {(pendingRegistrations > 0 || newMessages > 0 || pendingBookings > 0) && (
+                <div className={styles.alertsBar}>
+                    {pendingRegistrations > 0 && (
+                        <Link href="/admin/requests" className={styles.alertItem} style={{ background: '#fef3c7', color: '#b45309' }}>
+                            <i className="fa fa-user-plus"></i>
+                            <span>{pendingRegistrations} pending registration{pendingRegistrations > 1 ? 's' : ''}</span>
+                        </Link>
+                    )}
+                    {newMessages > 0 && (
+                        <Link href="/admin/requests" className={styles.alertItem} style={{ background: '#dbeafe', color: '#1d4ed8' }}>
+                            <i className="fa fa-envelope"></i>
+                            <span>{newMessages} new message{newMessages > 1 ? 's' : ''}</span>
+                        </Link>
+                    )}
+                    {pendingBookings > 0 && (
+                        <Link href="/admin/bookings" className={styles.alertItem} style={{ background: '#dcfce7', color: '#16a34a' }}>
+                            <i className="fa fa-calendar-check"></i>
+                            <span>{pendingBookings} pending booking{pendingBookings > 1 ? 's' : ''}</span>
+                        </Link>
+                    )}
+                </div>
+            )}
 
             <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.cardAnimate1}`}>
@@ -103,7 +145,7 @@ export default async function AdminDashboard() {
                         <tbody>
                             {recentBookings.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '1rem' }}>No recently bookings found.</td>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '1rem' }}>No recent bookings found.</td>
                                 </tr>
                             ) : (
                                 recentBookings.map(booking => (
@@ -118,7 +160,7 @@ export default async function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td>
-                                            <button className={styles.actionBtn}>View</button>
+                                            <Link href="/admin/bookings" className={styles.actionBtn}>View</Link>
                                         </td>
                                     </tr>
                                 ))

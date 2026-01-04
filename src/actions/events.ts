@@ -105,3 +105,112 @@ export async function cancelRegistration(eventId: string) {
         return { error: 'Failed to cancel registration' }
     }
 }
+
+export async function updateEvent(eventId: string, formData: FormData) {
+    const session = await getSession()
+    if (!session.isLoggedIn) return { error: 'Not authenticated' }
+    if (session.role !== 'STAFF' && session.role !== 'ADMIN') {
+        return { error: 'Not authorized' }
+    }
+
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const category = formData.get('category') as string
+    const location = formData.get('location') as string
+    const capacity = formData.get('capacity') as string
+    const startDate = formData.get('startDate') as string
+    const endDate = formData.get('endDate') as string
+
+    if (!title || !startDate) return { error: 'Missing required fields' }
+
+    try {
+        await query(
+            `UPDATE events SET 
+                title = ?, description = ?, category = ?, 
+                startDate = ?, endDate = ?, location = ?, 
+                capacity = ?, updatedAt = NOW()
+             WHERE id = ?`,
+            [
+                title,
+                description || '',
+                category || 'General',
+                new Date(startDate),
+                endDate ? new Date(endDate) : null,
+                location || 'TBD',
+                capacity ? parseInt(capacity) : null,
+                eventId
+            ]
+        )
+        revalidatePath('/events')
+        revalidatePath(`/events/${eventId}`)
+        revalidatePath('/admin/events')
+        return { success: true }
+    } catch (error) {
+        console.error('Update event error:', error)
+        return { error: 'Failed to update event' }
+    }
+}
+
+export async function deleteEvent(eventId: string) {
+    const session = await getSession()
+    if (!session.isLoggedIn) return { error: 'Not authenticated' }
+    if (session.role !== 'STAFF' && session.role !== 'ADMIN') {
+        return { error: 'Not authorized' }
+    }
+
+    try {
+        // Delete registrations first
+        await query('DELETE FROM event_registrations WHERE eventId = ?', [eventId])
+        // Delete the event
+        await query('DELETE FROM events WHERE id = ?', [eventId])
+
+        revalidatePath('/events')
+        revalidatePath('/admin/events')
+        return { success: true }
+    } catch (error) {
+        console.error('Delete event error:', error)
+        return { error: 'Failed to delete event' }
+    }
+}
+
+export async function getEvents() {
+    try {
+        const events = await query<RowDataPacket[]>(`
+            SELECT 
+                e.*,
+                (SELECT COUNT(*) FROM event_registrations er WHERE er.eventId = e.id AND er.status = 'REGISTERED') as registrationCount
+            FROM events e
+            ORDER BY e.startDate DESC
+        `)
+        return events
+    } catch (error) {
+        console.error('Get events error:', error)
+        return []
+    }
+}
+
+export async function getEventById(eventId: string) {
+    try {
+        const events = await query<RowDataPacket[]>('SELECT * FROM events WHERE id = ?', [eventId])
+        return events[0] || null
+    } catch (error) {
+        console.error('Get event by ID error:', error)
+        return null
+    }
+}
+
+export async function getUserRegistration(eventId: string) {
+    const session = await getSession()
+    if (!session.isLoggedIn) return null
+
+    try {
+        const regs = await query<RowDataPacket[]>(
+            'SELECT * FROM event_registrations WHERE eventId = ? AND userId = ? AND status = "REGISTERED"',
+            [eventId, session.userId]
+        )
+        return regs[0] || null
+    } catch (error) {
+        return null
+    }
+}
+

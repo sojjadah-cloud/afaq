@@ -85,6 +85,12 @@ export default async function AnalyticsPage() {
                 <Link href="/admin/bookings" className={styles.navLink}>
                     <i className="fa fa-calendar-check"></i> Bookings
                 </Link>
+                <Link href="/admin/requests" className={styles.navLink}>
+                    <i className="fa fa-inbox"></i> Requests
+                </Link>
+                <Link href="/admin/events" className={styles.navLink}>
+                    <i className="fa fa-calendar-days"></i> Events
+                </Link>
                 <Link href="/admin/analytics" className={`${styles.navLink} ${styles.active}`}>
                     <i className="fa fa-chart-pie"></i> Analytics
                 </Link>

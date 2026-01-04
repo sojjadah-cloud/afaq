@@ -119,3 +119,107 @@ export async function exportUsersCSV() {
         return { error: 'Failed to export users' }
     }
 }
+
+export async function exportClubRegistrationsCSV() {
+    const session = await getSession()
+    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+        return { error: 'Not authorized' }
+    }
+
+    try {
+        const registrations = await query<RowDataPacket[]>(`
+            SELECT * FROM club_registrations
+            ORDER BY createdAt DESC
+        `)
+
+        const headers = ['ID', 'Full Name', 'Military ID', 'Email', 'Phone', 'Department', 'Year Level', 'Interests', 'Motivation', 'Status', 'Created At']
+        const rows = registrations.map(r => [
+            r.id,
+            `"${(r.fullName || '').replace(/"/g, '""')}"`,
+            r.militaryId || '',
+            r.email || '',
+            r.phone || '',
+            r.department || '',
+            r.yearLevel || '',
+            `"${(r.interests || '').replace(/"/g, '""')}"`,
+            `"${(r.motivation || '').replace(/"/g, '""').substring(0, 200)}"`,
+            r.status || '',
+            r.createdAt ? new Date(r.createdAt).toISOString() : ''
+        ])
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+        return { success: true, csv, filename: `club_registrations_${Date.now()}.csv` }
+    } catch (error) {
+        console.error('Export registrations error:', error)
+        return { error: 'Failed to export registrations' }
+    }
+}
+
+export async function exportContactMessagesCSV() {
+    const session = await getSession()
+    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+        return { error: 'Not authorized' }
+    }
+
+    try {
+        const messages = await query<RowDataPacket[]>(`
+            SELECT * FROM contact_messages
+            ORDER BY createdAt DESC
+        `)
+
+        const headers = ['ID', 'Name', 'Email', 'Phone', 'Subject', 'Message', 'Status', 'Created At']
+        const rows = messages.map(m => [
+            m.id,
+            `"${(m.name || '').replace(/"/g, '""')}"`,
+            m.email || '',
+            m.phone || '',
+            m.subject || '',
+            `"${(m.message || '').replace(/"/g, '""').substring(0, 200)}"`,
+            m.status || '',
+            m.createdAt ? new Date(m.createdAt).toISOString() : ''
+        ])
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+        return { success: true, csv, filename: `contact_messages_${Date.now()}.csv` }
+    } catch (error) {
+        console.error('Export messages error:', error)
+        return { error: 'Failed to export messages' }
+    }
+}
+
+export async function exportEventsCSV() {
+    const session = await getSession()
+    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+        return { error: 'Not authorized' }
+    }
+
+    try {
+        const events = await query<RowDataPacket[]>(`
+            SELECT 
+                e.*,
+                (SELECT COUNT(*) FROM event_registrations er WHERE er.eventId = e.id AND er.status = 'REGISTERED') as registrationCount
+            FROM events e
+            ORDER BY e.startDate DESC
+        `)
+
+        const headers = ['ID', 'Title', 'Category', 'Start Date', 'End Date', 'Location', 'Capacity', 'Registrations', 'Created At']
+        const rows = events.map(e => [
+            e.id,
+            `"${(e.title || '').replace(/"/g, '""')}"`,
+            e.category || '',
+            e.startDate ? new Date(e.startDate).toISOString() : '',
+            e.endDate ? new Date(e.endDate).toISOString() : '',
+            e.location || '',
+            e.capacity || 'Unlimited',
+            e.registrationCount || 0,
+            e.createdAt ? new Date(e.createdAt).toISOString() : ''
+        ])
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+        return { success: true, csv, filename: `events_${Date.now()}.csv` }
+    } catch (error) {
+        console.error('Export events error:', error)
+        return { error: 'Failed to export events' }
+    }
+}
+
