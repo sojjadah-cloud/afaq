@@ -113,7 +113,37 @@ export default async function StudentProfile() {
                 </div>
             </header>
 
-
+            {/* Quick Stats */}
+            <div className={styles.statsRow}>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}><i className="fa fa-lightbulb"></i></div>
+                    <div className={styles.statInfo}>
+                        <div className={styles.statValue}>{projects.length}</div>
+                        <div className={styles.statLabel}>My Projects</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}><i className="fa fa-flask"></i></div>
+                    <div className={styles.statInfo}>
+                        <div className={styles.statValue}>{bookings.filter(b => b.status === 'PENDING' || b.status === 'APPROVED').length}</div>
+                        <div className={styles.statLabel}>Active Bookings</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}><i className="fa fa-calendar"></i></div>
+                    <div className={styles.statInfo}>
+                        <div className={styles.statValue}>{events.length}</div>
+                        <div className={styles.statLabel}>Registered Events</div>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}><i className="fa fa-check-circle"></i></div>
+                    <div className={styles.statInfo}>
+                        <div className={styles.statValue}>{projects.filter(p => p.status === 'COMPLETED').length}</div>
+                        <div className={styles.statLabel}>Completed</div>
+                    </div>
+                </div>
+            </div>
 
             <div className={styles.grid}>
                 <div className={styles.column} style={{ width: '100%' }}>
@@ -162,7 +192,7 @@ export default async function StudentProfile() {
                     <section className={`${styles.section} animate-slide-up delay-3`}>
                         <h2><i className="fa-solid fa-calendar-check" style={{ color: 'var(--gold)' }}></i> Registered Events</h2>
                         <div className={styles.list}>
-                            {events.length === 0 ? (    
+                            {events.length === 0 ? (
                                 <p className={styles.empty}>No registered events.</p>
                             ) : (
                                 events.map(e => (
