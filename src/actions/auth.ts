@@ -134,10 +134,18 @@ export async function registerUser(formData: FormData) {
         session.isLoggedIn = true
         await session.save()
 
+        // Audit log
+        try {
+            await query(
+                `INSERT INTO audit_logs (id, userId, action, tableName, recordId, newData, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+                [`log_${Date.now()}`, userId, 'USER_REGISTERED', 'users', userId, JSON.stringify({ militaryId, email, fullName })]
+            )
+        } catch (e) { /* Audit log is non-critical */ }
+
         return { success: true }
     } catch (error) {
         console.error('Registration error:', error)
         return { error: 'An error occurred during registration' }
     }
 }
-

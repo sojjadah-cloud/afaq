@@ -38,6 +38,16 @@ export async function createEvent(formData: FormData) {
                 session.userId
             ]
         )
+
+        // Audit log
+        try {
+            await query(
+                `INSERT INTO audit_logs (id, userId, action, tableName, recordId, newData, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+                [`log_${Date.now()}`, session.userId, 'EVENT_CREATED', 'events', eventId, JSON.stringify({ title, category, startDate })]
+            )
+        } catch (e) { /* Audit log is non-critical */ }
+
         revalidatePath('/events')
         return { success: true }
     } catch (error) {
@@ -76,11 +86,21 @@ export async function registerForEvent(eventId: string) {
             return { error: 'Already registered' }
         }
 
+        const regId = `evr_${Date.now()}`
         await query(
             `INSERT INTO event_registrations (id, eventId, userId, status, registeredAt)
              VALUES (?, ?, ?, 'REGISTERED', NOW())`,
-            [`evr_${Date.now()}`, eventId, session.userId]
+            [regId, eventId, session.userId]
         )
+
+        // Audit log
+        try {
+            await query(
+                `INSERT INTO audit_logs (id, userId, action, tableName, recordId, newData, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+                [`log_${Date.now()}`, session.userId, 'EVENT_REGISTERED', 'event_registrations', regId, JSON.stringify({ eventId })]
+            )
+        } catch (e) { /* Audit log is non-critical */ }
 
         revalidatePath('/events')
         return { success: true }

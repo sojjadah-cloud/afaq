@@ -352,9 +352,48 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                     </tbody>
                                 </table>
                             )}
-                            <div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#64748b' }}>
-                                <strong>{registrations.filter(r => r.status === 'REGISTERED').length}</strong> active registrations
-                                {viewingEvent.capacity && ` out of ${viewingEvent.capacity} capacity`}
+                            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ color: '#64748b' }}>
+                                    <strong>{registrations.filter(r => r.status === 'REGISTERED').length}</strong> active registrations
+                                    {viewingEvent.capacity && ` out of ${viewingEvent.capacity} capacity`}
+                                </span>
+                                {registrations.length > 0 && (
+                                    <button
+                                        onClick={async () => {
+                                            setLoading('export')
+                                            const { exportEventRegistrationsCSV } = await import('@/actions/export')
+                                            const result = await exportEventRegistrationsCSV(viewingEvent.id, viewingEvent.title)
+                                            if (result.csv) {
+                                                const blob = new Blob([result.csv], { type: 'text/csv' })
+                                                const url = URL.createObjectURL(blob)
+                                                const a = document.createElement('a')
+                                                a.href = url
+                                                a.download = result.filename || 'registrations.csv'
+                                                a.click()
+                                                URL.revokeObjectURL(url)
+                                            } else if (result.error) {
+                                                alert(result.error)
+                                            }
+                                            setLoading(null)
+                                        }}
+                                        disabled={loading === 'export'}
+                                        style={{
+                                            padding: '0.5rem 1rem',
+                                            background: '#10b981',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: 600,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem'
+                                        }}
+                                    >
+                                        <i className={loading === 'export' ? 'fa fa-spinner fa-spin' : 'fa fa-download'}></i>
+                                        {loading === 'export' ? 'Exporting...' : 'Export to Excel'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

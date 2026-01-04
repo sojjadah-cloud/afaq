@@ -223,3 +223,44 @@ export async function exportEventsCSV() {
     }
 }
 
+export async function exportEventRegistrationsCSV(eventId: string, eventTitle: string) {
+    const session = await getSession()
+    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+        return { error: 'Not authorized' }
+    }
+
+    try {
+        const registrations = await query<RowDataPacket[]>(`
+            SELECT 
+                er.id, er.status, er.registeredAt,
+                u.militaryId, u.email,
+                COALESCE(sp.fullName, u.email) as userName,
+                d.name as department
+            FROM event_registrations er
+            JOIN users u ON er.userId = u.id
+            LEFT JOIN student_profiles sp ON u.id = sp.userId
+            LEFT JOIN departments d ON sp.departmentId = d.id
+            WHERE er.eventId = ?
+            ORDER BY er.registeredAt DESC
+        `, [eventId])
+
+        const headers = ['Name', 'Military ID', 'Email', 'Department', 'Status', 'Registered At']
+        const rows = registrations.map(r => [
+            `"${(r.userName || '').replace(/"/g, '""')}"`,
+            r.militaryId || '',
+            r.email || '',
+            `"${(r.department || 'N/A').replace(/"/g, '""')}"`,
+            r.status || '',
+            r.registeredAt ? new Date(r.registeredAt).toISOString() : ''
+        ])
+
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+        const safeTitle = eventTitle.replace(/[^a-z0-9]/gi, '_').substring(0, 30)
+        return { success: true, csv, filename: `event_registrations_${safeTitle}_${Date.now()}.csv` }
+    } catch (error) {
+        console.error('Export event registrations error:', error)
+        return { error: 'Failed to export registrations' }
+    }
+}
+
+
