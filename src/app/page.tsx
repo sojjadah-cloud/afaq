@@ -1,7 +1,15 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
+import { submitClubRegistration } from '@/actions/club'
 
 export default function HomePage() {
+    const [showForm, setShowForm] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState({ type: '', text: '' })
+
     const heroSlides = [
         {
             title: "Induction Week 2025/2026",
@@ -17,6 +25,24 @@ export default function HomePage() {
         }
     ]
 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        setLoading(true)
+        setMessage({ type: '', text: '' })
+
+        const formData = new FormData(e.currentTarget)
+        const result = await submitClubRegistration(formData)
+
+        if (result.error) {
+            setMessage({ type: 'error', text: result.error })
+        } else {
+            setMessage({ type: 'success', text: result.message || 'Registration submitted!' })
+            setShowForm(false)
+            e.currentTarget.reset()
+        }
+        setLoading(false)
+    }
+
     return (
         <main className={styles.page}>
             <section className={styles.hero}>
@@ -25,6 +51,9 @@ export default function HomePage() {
                     <p className={styles.visionStatement}>
                         "A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact."
                     </p>
+                    <button className={styles.joinHeroBtn} onClick={() => setShowForm(true)}>
+                        <i className="fa fa-user-plus"></i> Join AFAQ Innovation Club
+                    </button>
                 </div>
             </section>
 
@@ -66,6 +95,105 @@ export default function HomePage() {
                     <div className={styles.iconTitle}>Innovation Events</div>
                 </Link>
             </section>
+
+            {/* Success/Error Toast */}
+            {message.text && (
+                <div className={`${styles.toast} ${styles[message.type]}`}>
+                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                    {message.text}
+                </div>
+            )}
+
+            {/* Registration Modal */}
+            {showForm && (
+                <div className={styles.modalOverlay} onClick={() => setShowForm(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Join AFAQ Innovation Club</h3>
+                            <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
+                                <i className="fa fa-times"></i>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className={styles.form}>
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="fullName">Full Name *</label>
+                                    <input type="text" id="fullName" name="fullName" required />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="militaryId">Military ID *</label>
+                                    <input type="text" id="militaryId" name="militaryId" required />
+                                </div>
+                            </div>
+
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="email">Email *</label>
+                                    <input type="email" id="email" name="email" required />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="phone">Phone</label>
+                                    <input type="tel" id="phone" name="phone" />
+                                </div>
+                            </div>
+
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="department">Department *</label>
+                                    <select id="department" name="department" required>
+                                        <option value="">Select department</option>
+                                        <option value="Engineering">Engineering</option>
+                                        <option value="IT & Computing">IT & Computing</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Mechanical">Mechanical</option>
+                                        <option value="Civil">Civil</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="yearLevel">Year Level</label>
+                                    <select id="yearLevel" name="yearLevel">
+                                        <option value="">Select year</option>
+                                        <option value="Year 1">Year 1</option>
+                                        <option value="Year 2">Year 2</option>
+                                        <option value="Year 3">Year 3</option>
+                                        <option value="Year 4">Year 4</option>
+                                        <option value="Year 5">Year 5</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="interests">Areas of Interest</label>
+                                <input
+                                    type="text"
+                                    id="interests"
+                                    name="interests"
+                                    placeholder="e.g., AI, Robotics, IoT, Research"
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="motivation">Why do you want to join?</label>
+                                <textarea
+                                    id="motivation"
+                                    name="motivation"
+                                    rows={3}
+                                    placeholder="Tell us about your motivation..."
+                                ></textarea>
+                            </div>
+
+                            <div className={styles.formActions}>
+                                <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                                <button type="submit" className={styles.submitBtn} disabled={loading}>
+                                    {loading ? 'Submitting...' : 'Submit Registration'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </main>
     )
 }
