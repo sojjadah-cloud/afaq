@@ -11,6 +11,7 @@ const navItems = [
     { href: '/forums', label: 'Forums', icon: 'fa-comments' },
     { href: '/equipment', label: 'Equipment', icon: 'fa-gears' },
     { href: '/events', label: 'Events', icon: 'fa-calendar-days' },
+    { href: '/about', label: 'About Us', icon: 'fa-info-circle' },
 ]
 
 export default function Nav() {
