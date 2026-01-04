@@ -3,6 +3,7 @@ import Link from 'next/link'
 import styles from './Header.module.css'
 import LogoutButton from './LogoutButton'
 import SearchBar from './SearchBar'
+import NotificationBell from './NotificationBell'
 
 export default async function Header() {
     const session = await getSession()
@@ -20,6 +21,7 @@ export default async function Header() {
                 <SearchBar />
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
+                {session.isLoggedIn && <NotificationBell />}
                 {session.role === 'ADMIN' && (
                     <Link href="/admin" className={styles.adminLink}>
                         <i className="fa-solid fa-shield-halved"></i> Admin Panel

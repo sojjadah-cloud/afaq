@@ -1,0 +1,139 @@
+/* Calendar Component Styles */
+
+.calendar {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.header h3 {
+    font-size: 1.2rem;
+    color: #1e293b;
+    font-weight: 700;
+    margin: 0;
+}
+
+.navBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.navBtn:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    padding: 0.5rem 0;
+}
+
+.daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.emptyCell {
+    aspect-ratio: 1;
+}
+
+.dayCell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+}
+
+.dayCell:hover {
+    background: #f8fafc;
+}
+
+.dayNumber {
+    font-weight: 500;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.today {
+    background: var(--gold);
+    color: white;
+}
+
+.today:hover {
+    background: var(--gold-dark);
+}
+
+.today .dayNumber {
+    color: white;
+    font-weight: 700;
+}
+
+.hasEvents {
+    font-weight: 600;
+}
+
+.eventDots {
+    display: flex;
+    gap: 3px;
+    margin-top: 2px;
+}
+
+.eventDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* Compact variant for sidebars */
+.calendarCompact .dayCell {
+    padding: 0.25rem;
+}
+
+.calendarCompact .dayNumber {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+    .calendar {
+        padding: 1rem;
+    }
+
+    .dayNumber {
+        font-size: 0.8rem;
+    }
+}

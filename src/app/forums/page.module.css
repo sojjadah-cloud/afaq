@@ -1,0 +1,446 @@
+/* Forums Premium Styles */
+
+.main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: fadeIn 0.8s ease-out;
+}
+
+.header {
+    background: linear-gradient(135deg, white 0%, #f0f9ff 100%);
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.header h2 {
+    font-size: 2.5rem;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+    font-weight: 800;
+}
+
+.header p {
+    font-size: 1.1rem;
+    color: #64748b;
+}
+
+.categoryGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.categoryCard {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    animation: slideUp 0.5s ease-out backwards;
+}
+
+.categoryCard:hover {
+    transform: translateX(8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: #cbd5e0;
+}
+
+.categoryIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.categoryContent {
+    flex: 1;
+}
+
+.categoryContent h3 {
+    font-size: 1.2rem;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+
+.categoryContent p {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.categoryMeta {
+    display: flex;
+    gap: 1rem;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.categoryMeta span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.categoryArrow {
+    color: #cbd5e0;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.categoryCard:hover .categoryArrow {
+    transform: translateX(4px);
+    color: #64748b;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 20px;
+    border: 2px dashed #e2e8f0;
+}
+
+.emptyState i {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+.emptyState p {
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+/* Topic List Styles */
+.topicHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.backLink:hover {
+    color: #3b82f6;
+}
+
+.newTopicBtn {
+    background: #3b82f6;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s;
+}
+
+.newTopicBtn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.topicList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.topicCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.topicCard:hover {
+    background: #f8fafc;
+    border-color: #cbd5e0;
+}
+
+.topicAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.topicContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.topicTitle {
+    font-size: 1rem;
+    color: #1e293b;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.topicMeta {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.topicStats {
+    display: flex;
+    gap: 1rem;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.topicStats span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.pinnedBadge {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.modalContent {
+    background: white;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modalHeader h3 {
+    font-size: 1.3rem;
+    color: #1e293b;
+    margin: 0;
+}
+
+.closeBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: #e2e8f0;
+}
+
+.form {
+    padding: 1.5rem;
+}
+
+.formGroup {
+    margin-bottom: 1.25rem;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.formGroup input,
+.formGroup textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formGroup textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.formActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 1rem;
+}
+
+.formActions button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.cancelBtn {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.submitBtn {
+    background: #3b82f6;
+    color: white;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.submitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Animations */
+.animateDelay1 {
+    animation-delay: 0.1s;
+}
+
+.animateDelay2 {
+    animation-delay: 0.2s;
+}
+
+.animateDelay3 {
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .categoryCard {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .categoryArrow {
+        display: none;
+    }
+}

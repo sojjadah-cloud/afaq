@@ -8,6 +8,7 @@ const navItems = [
     { href: '/', label: 'Home', icon: 'fa-house' },
     { href: '/projects', label: 'Projects', icon: 'fa-lightbulb' },
     { href: '/research', label: 'Research', icon: 'fa-book-open' },
+    { href: '/forums', label: 'Forums', icon: 'fa-comments' },
     { href: '/equipment', label: 'Equipment', icon: 'fa-gears' },
     { href: '/events', label: 'Events', icon: 'fa-calendar-days' },
 ]

@@ -1,0 +1,199 @@
+/* Notification Bell Styles */
+
+.wrapper {
+    position: relative;
+}
+
+.bellBtn {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    margin-right: 0.75rem;
+}
+
+.bellBtn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--gold);
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    width: 360px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideDown 0.2s ease-out;
+    overflow: hidden;
+}
+
+.dropdownHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dropdownHeader h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.markAllBtn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.markAllBtn:hover {
+    text-decoration: underline;
+}
+
+.notificationList {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notificationItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.notificationItem:hover {
+    background: #f8fafc;
+}
+
+.notificationItem:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.unread {
+    background: #eff6ff;
+}
+
+.unread:hover {
+    background: #dbeafe;
+}
+
+.notifIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.unread .notifIcon {
+    background: #3b82f6;
+    color: white;
+}
+
+.notifContent {
+    flex: 1;
+    min-width: 0;
+}
+
+.notifTitle {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+    margin-bottom: 0.15rem;
+}
+
+.notifMessage {
+    color: #64748b;
+    font-size: 0.85rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 0.25rem;
+}
+
+.notifTime {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.unreadDot {
+    width: 8px;
+    height: 8px;
+    background: #3b82f6;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+}
+
+.loading,
+.empty {
+    padding: 3rem;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.empty i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .dropdown {
+        width: 300px;
+        right: -50px;
+    }
+}
