@@ -138,6 +138,20 @@
     line-height: 1.8;
     color: #4a5568;
     font-size: 1.1rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+}
+
+.description p,
+.description img {
+    max-width: 100%;
+}
+
+.description img {
+    height: auto;
+    border-radius: 8px;
 }
 
 .sidebar {
