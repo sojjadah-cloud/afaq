@@ -23,11 +23,12 @@ export async function createEvent(formData: FormData) {
     if (!title || !startDate) return { error: 'Missing required fields' }
 
     try {
+        const eventId = `evt_${Date.now()}`
         await query(
             `INSERT INTO events (id, title, description, category, startDate, endDate, location, capacity, createdById, createdAt, updatedAt)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
             [
-                `evt_${Date.now()}`,
+                eventId,
                 title,
                 description || '',
                 category || 'General',
