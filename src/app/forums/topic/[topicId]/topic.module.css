@@ -1,9 +1,8 @@
 /* Topic Detail - Modern Chat Style */
 
 .main {
-    max-width: 1400px;
-    margin: 0 auto !important;
-    padding: 1.5rem 3rem;
+    width: 100%;
+    padding: 1.5rem 5%;
     min-height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;
