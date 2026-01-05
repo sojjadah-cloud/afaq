@@ -10,7 +10,7 @@ export default async function AdminEventsPage() {
         redirect('/login')
     }
 
-    const events = await getEvents()
+    const events = await getEvents() as any[]
 
     return <EventsManagementClient events={events} />
 }
