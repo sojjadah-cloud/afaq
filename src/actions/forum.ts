@@ -50,6 +50,30 @@ export async function createForumTopic(formData: FormData) {
             [postId, title, content, categoryId, session.userId]
         )
 
+        // @everyone - If admin posts in announcements, notify all users
+        if (categoryId === 'cat_announcements' && (session.role === 'ADMIN' || session.role === 'STAFF')) {
+            try {
+                // Get all users except the poster
+                const allUsers = await query<RowDataPacket[]>(
+                    'SELECT id FROM users WHERE id != ?',
+                    [session.userId]
+                )
+
+                // Send notification to everyone
+                for (const user of allUsers) {
+                    await createNotification(
+                        user.id,
+                        'ANNOUNCEMENT',
+                        '📢 New Announcement',
+                        `${title.slice(0, 60)}...`,
+                        `/forums/topic/${postId}`
+                    )
+                }
+            } catch (notifError) {
+                console.error('Failed to send @everyone notifications:', notifError)
+            }
+        }
+
         revalidatePath('/forums')
         revalidatePath(`/forums/${categoryId}`)
         return { success: true, postId }
