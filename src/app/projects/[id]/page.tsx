@@ -92,6 +92,9 @@ export default async function ProjectDetails({
         )
     }
 
+    // Approved members for ownership transfer
+    const approvedMembers = members.filter(m => m.status === 'APPROVED')
+
     return (
         <main className={styles.main}>
             {/* ... Existing Header ... */}
@@ -204,6 +207,7 @@ export default async function ProjectDetails({
                                 initialTitle={project.title}
                                 initialDescription={project.description}
                                 projectStatus={project.status}
+                                approvedMembers={approvedMembers}
                             />
                         </div>
                     )}
