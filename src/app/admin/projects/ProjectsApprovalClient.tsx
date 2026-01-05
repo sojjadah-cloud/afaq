@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminApproveProject, adminValidateCompletion, adminRejectProject } from '@/actions/projects'
@@ -109,8 +109,8 @@ export default function ProjectsApprovalClient({ projects }: { projects: Project
                             </tr>
                         ) : (
                             filteredProjects.map(project => (
-                                <>
-                                    <tr key={project.id}>
+                                <React.Fragment key={project.id}>
+                                    <tr>
                                         <td>
                                             <Link
                                                 href={`/projects/${project.id}`}
@@ -229,7 +229,7 @@ export default function ProjectsApprovalClient({ projects }: { projects: Project
                                             </td>
                                         </tr>
                                     )}
-                                </>
+                                </React.Fragment >
                             ))
                         )}
                     </tbody>
