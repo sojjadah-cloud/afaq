@@ -293,12 +293,14 @@
     justify-content: center;
     gap: 0.5rem;
     text-decoration: none;
+    box-sizing: border-box;
 }
 
 .signupBtn:hover {
     border-color: var(--gold);
     color: var(--gold-dark);
     background: #fffbef;
+    transform: translateY(-2px);
 }
 
 .formFooter {
