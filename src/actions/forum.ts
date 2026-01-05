@@ -127,9 +127,9 @@ export async function createForumReply(topicId: string, formData: FormData) {
     }
 
     try {
-        // Get the topic's categoryId
+        // Get the topic's categoryId and authorId
         const topic = await query<RowDataPacket[]>(
-            'SELECT categoryId FROM forum_posts WHERE id = ?',
+            'SELECT categoryId, authorId, title FROM forum_posts WHERE id = ?',
             [topicId]
         )
 
@@ -148,6 +148,27 @@ export async function createForumReply(topicId: string, formData: FormData) {
             'UPDATE forum_posts SET updatedAt = NOW() WHERE id = ?',
             [topicId]
         )
+
+        // Send notification to topic author (if not replying to own topic)
+        if (topic[0].authorId !== session.userId) {
+            try {
+                const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+                await query(
+                    `INSERT INTO notifications (id, userId, type, title, message, link, createdAt)
+                     VALUES (?, ?, 'FORUM_REPLY', ?, ?, ?, NOW())`,
+                    [
+                        notifId,
+                        topic[0].authorId,
+                        'New Reply to Your Topic',
+                        `Someone replied to your topic: "${topic[0].title?.slice(0, 50)}..."`,
+                        `/forums/topic/${topicId}`
+                    ]
+                )
+            } catch (notifError) {
+                console.error('Failed to create notification:', notifError)
+                // Don't fail the reply if notification fails
+            }
+        }
 
         revalidatePath(`/forums/topic/${topicId}`)
         return { success: true }
