@@ -8,6 +8,7 @@ export async function middleware(request: NextRequest) {
     // paths to exclude from authentication check
     const publicPaths = [
         '/login',
+        '/register',
         '/images',
         '/api',
         '/_next',
