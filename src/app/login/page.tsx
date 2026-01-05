@@ -123,15 +123,15 @@ export default function LoginPage() {
                                 <><i className="fa fa-sign-in-alt"></i> Sign In</>
                             )}
                         </button>
-
-                        <div className={styles.divider}>
-                            <span>or</span>
-                        </div>
-
-                        <Link href="/register" className={styles.signupBtn}>
-                            <i className="fa fa-user-plus"></i> Create New Account
-                        </Link>
                     </form>
+
+                    <div className={styles.divider}>
+                        <span>or</span>
+                    </div>
+
+                    <Link href="/register" className={styles.signupBtn}>
+                        <i className="fa fa-user-plus"></i> Create New Account
+                    </Link>
 
                     <div className={styles.formFooter}>
                         <Link href="/" className={styles.backLink}>
