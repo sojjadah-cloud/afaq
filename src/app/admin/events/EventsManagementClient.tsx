@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../admin.module.css'
 import { createEvent, updateEvent, deleteEvent, getEventRegistrations } from '@/actions/events'
+import AdminNav from '@/components/AdminNav'
 
 interface Event {
     id: string
@@ -121,26 +122,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                 <p>Create, edit, and manage all events</p>
             </div>
 
-            <div className={styles.adminNav}>
-                <Link href="/admin" className={styles.navLink}>
-                    <i className="fa fa-chart-simple"></i> Overview
-                </Link>
-                <Link href="/admin/bookings" className={styles.navLink}>
-                    <i className="fa fa-calendar-check"></i> Bookings
-                </Link>
-                <Link href="/admin/requests" className={styles.navLink}>
-                    <i className="fa fa-inbox"></i> Requests
-                </Link>
-                <Link href="/admin/events" className={`${styles.navLink} ${styles.active}`}>
-                    <i className="fa fa-calendar-days"></i> Events
-                </Link>
-                <Link href="/admin/analytics" className={styles.navLink}>
-                    <i className="fa fa-chart-pie"></i> Analytics
-                </Link>
-                <Link href="/admin/audit" className={styles.navLink}>
-                    <i className="fa fa-clipboard-list"></i> Audit Log
-                </Link>
-            </div>
+            <AdminNav />
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div className={styles.filterBar}>

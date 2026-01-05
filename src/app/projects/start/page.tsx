@@ -20,7 +20,7 @@ export default async function StartProjectsPage() {
       p.*,
       (SELECT COUNT(*) FROM project_members pm WHERE pm.projectId = p.id) as memberCount
     FROM projects p
-    WHERE p.status = 'START'
+    WHERE p.status IN ('START', 'PENDING_APPROVAL')
     ORDER BY p.createdAt DESC
   `)
 

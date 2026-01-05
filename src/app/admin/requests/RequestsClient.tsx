@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from '../admin.module.css'
 import { updateRegistrationStatus } from '@/actions/club'
 import { updateContactStatus } from '@/actions/contact'
+import AdminNav from '@/components/AdminNav'
 
 interface Registration {
     id: string
@@ -104,23 +105,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                 <p>Manage Club Registrations & Contact Messages</p>
             </div>
 
-            <div className={styles.adminNav}>
-                <Link href="/admin" className={styles.navLink}>
-                    <i className="fa fa-chart-simple"></i> Overview
-                </Link>
-                <Link href="/admin/bookings" className={styles.navLink}>
-                    <i className="fa fa-calendar-check"></i> Bookings
-                </Link>
-                <Link href="/admin/requests" className={`${styles.navLink} ${styles.active}`}>
-                    <i className="fa fa-inbox"></i> Requests
-                </Link>
-                <Link href="/admin/analytics" className={styles.navLink}>
-                    <i className="fa fa-chart-pie"></i> Analytics
-                </Link>
-                <Link href="/admin/audit" className={styles.navLink}>
-                    <i className="fa fa-clipboard-list"></i> Audit Log
-                </Link>
-            </div>
+            <AdminNav />
 
             {/* Tabs */}
             <div className={styles.filterBar}>

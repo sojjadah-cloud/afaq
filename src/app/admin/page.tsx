@@ -2,6 +2,7 @@ import { query } from '@/lib/db'
 import styles from './admin.module.css'
 import { RowDataPacket } from 'mysql2'
 import Link from 'next/link'
+import AdminNav from '@/components/AdminNav'
 
 interface CountResult extends RowDataPacket {
     count: number
@@ -27,6 +28,7 @@ export default async function AdminDashboard() {
     let pendingRegistrations = 0
     let newMessages = 0
     let pendingBookings = 0
+    let pendingProjects = 0
 
     try {
         const regCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM club_registrations WHERE status = 'PENDING'")
@@ -40,6 +42,11 @@ export default async function AdminDashboard() {
 
     const pendingBookingCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM lab_bookings WHERE status = 'PENDING'")
     pendingBookings = pendingBookingCount[0]?.count || 0
+
+    try {
+        const projCount = await query<CountResult[]>("SELECT COUNT(*) as count FROM projects WHERE status IN ('PENDING_APPROVAL', 'PENDING_COMPLETION')")
+        pendingProjects = projCount[0]?.count || 0
+    } catch (e) { /* status enum may not be updated yet */ }
 
     // Recent bookings
     const recentBookings = await query<RecentBooking[]>(`
@@ -60,34 +67,15 @@ export default async function AdminDashboard() {
                 <p>System Overview & Management</p>
             </div>
 
-            <div className={styles.adminNav}>
-                <Link href="/admin" className={`${styles.navLink} ${styles.active}`}>
-                    <i className="fa fa-chart-simple"></i> Overview
-                </Link>
-                <Link href="/admin/bookings" className={styles.navLink}>
-                    <i className="fa fa-calendar-check"></i> Bookings
-                </Link>
-                <Link href="/admin/requests" className={styles.navLink}>
-                    <i className="fa fa-inbox"></i> Requests
-                </Link>
-                <Link href="/admin/events" className={styles.navLink}>
-                    <i className="fa fa-calendar-days"></i> Events
-                </Link>
-                <Link href="/admin/analytics" className={styles.navLink}>
-                    <i className="fa fa-chart-pie"></i> Analytics
-                </Link>
-                <Link href="/admin/audit" className={styles.navLink}>
-                    <i className="fa fa-clipboard-list"></i> Audit Log
-                </Link>
-            </div>
+            <AdminNav />
 
             {/* Quick Action Alerts */}
-            {(pendingRegistrations > 0 || newMessages > 0 || pendingBookings > 0) && (
+            {(pendingRegistrations > 0 || newMessages > 0 || pendingBookings > 0 || pendingProjects > 0) && (
                 <div className={styles.alertsBar}>
-                    {pendingRegistrations > 0 && (
-                        <Link href="/admin/requests" className={styles.alertItem} style={{ background: '#fef3c7', color: '#b45309' }}>
-                            <i className="fa fa-user-plus"></i>
-                            <span>{pendingRegistrations} pending registration{pendingRegistrations > 1 ? 's' : ''}</span>
+                    {pendingProjects > 0 && (
+                        <Link href="/admin/projects" className={styles.alertItem} style={{ background: '#f3e8ff', color: '#7c3aed' }}>
+                            <i className="fa fa-lightbulb"></i>
+                            <span>{pendingProjects} pending project{pendingProjects > 1 ? 's' : ''}</span>
                         </Link>
                     )}
                     {newMessages > 0 && (

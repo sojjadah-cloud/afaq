@@ -1,6 +1,7 @@
 import { getAuditLogs } from '@/actions/notifications'
 import styles from '../admin.module.css'
 import Link from 'next/link'
+import AdminNav from '@/components/AdminNav'
 
 export default async function AuditLogPage() {
     const logs = await getAuditLogs(100)
@@ -30,23 +31,7 @@ export default async function AuditLogPage() {
                 <p>System Activity & Change History</p>
             </div>
 
-            <div className={styles.adminNav}>
-                <Link href="/admin" className={styles.navLink}>
-                    <i className="fa fa-chart-simple"></i> Overview
-                </Link>
-                <Link href="/admin/bookings" className={styles.navLink}>
-                    <i className="fa fa-calendar-check"></i> Bookings
-                </Link>
-                <Link href="/admin/requests" className={styles.navLink}>
-                    <i className="fa fa-inbox"></i> Requests
-                </Link>
-                <Link href="/admin/analytics" className={styles.navLink}>
-                    <i className="fa fa-chart-pie"></i> Analytics
-                </Link>
-                <Link href="/admin/audit" className={`${styles.navLink} ${styles.active}`}>
-                    <i className="fa fa-clipboard-list"></i> Audit Log
-                </Link>
-            </div>
+            <AdminNav />
 
             <div className={styles.section}>
                 <h3>Recent Activity</h3>
