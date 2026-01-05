@@ -118,12 +118,8 @@ export async function registerUser(formData: FormData) {
             [userId, militaryId, email, hashedPassword]
         )
 
-        // Create student profile
-        await query(
-            `INSERT INTO student_profiles (id, userId, fullName, departmentId, createdAt, updatedAt)
-             VALUES (?, ?, ?, NULL, NOW(), NOW())`,
-            [`sp_${Date.now()}`, userId, fullName]
-        )
+        // Student profile creation skipped - user can complete profile later
+        // The student_profiles table requires departmentId which is NOT NULL
 
         // Auto-login the user
         const session = await getSession()
