@@ -120,8 +120,8 @@ export async function registerUser(formData: FormData) {
 
         // Create student profile
         await query(
-            `INSERT INTO student_profiles (id, userId, fullName, createdAt, updatedAt)
-             VALUES (?, ?, ?, NOW(), NOW())`,
+            `INSERT INTO student_profiles (id, userId, fullName, departmentId, createdAt, updatedAt)
+             VALUES (?, ?, ?, NULL, NOW(), NOW())`,
             [`sp_${Date.now()}`, userId, fullName]
         )
 
