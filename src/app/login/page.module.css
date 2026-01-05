@@ -294,6 +294,8 @@
     gap: 0.5rem;
     text-decoration: none;
     box-sizing: border-box;
+    position: relative;
+    z-index: 10;
 }
 
 .signupBtn:hover {
