@@ -80,15 +80,29 @@ export async function getCurrentUser() {
     return user
 }
 
+export async function getDepartmentsAndProgrammes() {
+    try {
+        const departments = await query<RowDataPacket[]>('SELECT id, name, code FROM departments ORDER BY name')
+        const programmes = await query<RowDataPacket[]>('SELECT id, name, code, departmentId FROM programmes ORDER BY name')
+        return { departments, programmes }
+    } catch (error) {
+        console.error('Get departments error:', error)
+        return { departments: [], programmes: [] }
+    }
+}
+
 export async function registerUser(formData: FormData) {
     const militaryId = formData.get('militaryId') as string
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
     const fullName = formData.get('fullName') as string
+    const departmentId = formData.get('departmentId') as string
+    const programmeId = formData.get('programmeId') as string
+    const yearLevel = formData.get('yearLevel') as string
 
     // Validation
-    if (!militaryId || !email || !password || !fullName) {
+    if (!militaryId || !email || !password || !fullName || !departmentId || !programmeId) {
         return { error: 'All fields are required' }
     }
 
@@ -118,12 +132,11 @@ export async function registerUser(formData: FormData) {
             [userId, militaryId, email, hashedPassword]
         )
 
-        // Create student profile with default department and programme
-        // Users can update these later in their profile settings
+        // Create student profile with selected department and programme
         await query(
-            `INSERT INTO student_profiles (id, userId, fullName, departmentId, programmeId, createdAt, updatedAt)
-             VALUES (?, ?, ?, 'dept_cyber_001', 'prog_cs_001', NOW(), NOW())`,
-            [`sp_${Date.now()}`, userId, fullName]
+            `INSERT INTO student_profiles (id, userId, fullName, departmentId, programmeId, yearLevel, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [`sp_${Date.now()}`, userId, fullName, departmentId, programmeId, yearLevel || null]
         )
 
         // Auto-login the user
@@ -140,7 +153,7 @@ export async function registerUser(formData: FormData) {
             await query(
                 `INSERT INTO audit_logs (id, userId, action, tableName, recordId, newData, createdAt)
                  VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-                [`log_${Date.now()}`, userId, 'USER_REGISTERED', 'users', userId, JSON.stringify({ militaryId, email, fullName })]
+                [`log_${Date.now()}`, userId, 'USER_REGISTERED', 'users', userId, JSON.stringify({ militaryId, email, fullName, departmentId })]
             )
         } catch (e) { /* Audit log is non-critical */ }
 
