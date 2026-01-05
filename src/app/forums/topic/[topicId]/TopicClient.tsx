@@ -130,6 +130,13 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
         })
     }
 
+    const formatShortDate = (date: string) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        })
+    }
+
     const canDelete = (authorId: string) => {
         return userId === authorId || userRole === 'ADMIN'
     }
@@ -141,175 +148,192 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
 
     const isAnnouncement = topic.categoryId === 'cat_announcements'
 
+    // Render a post (either the topic or a reply)
+    const renderPost = (
+        post: { id: string; content: string; authorId: string; authorName: string; authorMilitaryId: string; createdAt: string; replyToId?: string; replyToAuthorName?: string },
+        index: number,
+        isOriginalPost: boolean = false,
+        title?: string
+    ) => {
+        const quotedReply = !isOriginalPost ? getQuotedReply(post.replyToId) : null
+        const isOP = post.authorId === topic.authorId
+
+        return (
+            <article
+                key={post.id}
+                ref={el => { if (!isOriginalPost) replyRefs.current[post.id] = el }}
+                className={`${styles.post} ${highlightedId === post.id ? styles.highlighted : ''} ${isOriginalPost ? styles.originalPost : ''}`}
+            >
+                {/* Left - Author Info */}
+                <aside className={styles.authorSidebar}>
+                    <div className={styles.authorAvatar}>
+                        {post.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
+                    </div>
+                    <div className={styles.authorName}>{post.authorName}</div>
+                    {isOP && <span className={styles.opBadge}>OP</span>}
+                    {isOriginalPost && userRole === 'ADMIN' && (
+                        <span className={styles.adminBadge}>Admin</span>
+                    )}
+                </aside>
+
+                {/* Right - Content */}
+                <div className={styles.postContent}>
+                    {/* Post Header */}
+                    <header className={styles.postHeader}>
+                        <div className={styles.postMeta}>
+                            <span className={styles.postNumber}>#{isOriginalPost ? 1 : index + 2}</span>
+                            <time className={styles.postDate}>{formatDate(post.createdAt)}</time>
+                        </div>
+                        <div className={styles.postActions}>
+                            {isLoggedIn && !isOriginalPost && (
+                                <button
+                                    className={styles.actionBtn}
+                                    onClick={() => setReplyingTo(post as Reply)}
+                                    title="Quote Reply"
+                                >
+                                    <i className="fa fa-quote-left"></i>
+                                </button>
+                            )}
+                            {isLoggedIn && isOriginalPost && (
+                                <button
+                                    className={styles.actionBtn}
+                                    onClick={() => setShowMuteSettings(!showMuteSettings)}
+                                    title="Notification Settings"
+                                >
+                                    <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`}></i>
+                                </button>
+                            )}
+                            {canDelete(post.authorId) && (
+                                <button
+                                    className={`${styles.actionBtn} ${styles.deleteAction}`}
+                                    onClick={() => handleDelete(post.id)}
+                                    title="Delete"
+                                >
+                                    <i className="fa fa-trash"></i>
+                                </button>
+                            )}
+                        </div>
+                    </header>
+
+                    {/* Mute Settings (only for original post) */}
+                    {isOriginalPost && showMuteSettings && (
+                        <div className={styles.mutePanel}>
+                            <label><input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} /> Mute topic replies</label>
+                            <label><input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} /> Mute thread replies</label>
+                            <label><input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} /> Mute quote replies</label>
+                        </div>
+                    )}
+
+                    {/* Title (only for original post) */}
+                    {title && (
+                        <h1 className={styles.postTitle}>
+                            {title}
+                            {isAnnouncement && (
+                                <span className={styles.announcementTag}>
+                                    <i className="fa fa-bullhorn"></i> Announcement
+                                </span>
+                            )}
+                        </h1>
+                    )}
+
+                    {/* Quoted Reply */}
+                    {quotedReply && (
+                        <blockquote
+                            className={styles.quotedPost}
+                            onClick={() => scrollToReply(quotedReply.id)}
+                        >
+                            <div className={styles.quotedHeader}>
+                                <i className="fa fa-reply"></i>
+                                <span>{post.replyToAuthorName || quotedReply.authorName}</span>
+                            </div>
+                            <p>{quotedReply.content.slice(0, 150)}...</p>
+                        </blockquote>
+                    )}
+
+                    {/* Post Body */}
+                    <div className={styles.postBody}>
+                        {post.content}
+                    </div>
+
+                    {/* Footer */}
+                    {!isOriginalPost && isLoggedIn && (
+                        <footer className={styles.postFooter}>
+                            <button
+                                className={styles.replyLink}
+                                onClick={() => setReplyingTo(post as Reply)}
+                            >
+                                <i className="fa fa-reply"></i> Reply
+                            </button>
+                        </footer>
+                    )}
+                </div>
+            </article>
+        )
+    }
+
     return (
         <main className={styles.main}>
-            {/* Back Link */}
-            <Link href={`/forums/${topic.categoryId}`} className={styles.backLink}>
-                <i className="fa fa-arrow-left"></i> Back to Topics
-            </Link>
-
-            {/* Original Post Card - Centered */}
-            <div className={styles.postCard}>
-                <div className={styles.postHeader}>
-                    <div className={styles.postAvatar}>
-                        {topic.authorMilitaryId?.slice(-2).toUpperCase() || 'OP'}
-                    </div>
-                    <div className={styles.postAuthorInfo}>
-                        <span className={styles.postAuthorName}>{topic.authorName}</span>
-                        <span className={styles.postDate}>{formatDate(topic.createdAt)}</span>
-                    </div>
-                    <div className={styles.postActions}>
-                        {isLoggedIn && (
-                            <button
-                                className={styles.muteBtn}
-                                onClick={() => setShowMuteSettings(!showMuteSettings)}
-                                title="Notification Settings"
-                            >
-                                <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`}></i>
-                            </button>
-                        )}
-                        {canDelete(topic.authorId) && (
-                            <button className={styles.deleteBtn} onClick={() => handleDelete(topic.id)}>
-                                <i className="fa fa-trash"></i>
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Mute Settings */}
-                {showMuteSettings && (
-                    <div className={styles.mutePanel}>
-                        <label className={styles.muteOption}>
-                            <input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} />
-                            Mute topic replies
-                        </label>
-                        <label className={styles.muteOption}>
-                            <input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} />
-                            Mute thread replies
-                        </label>
-                        <label className={styles.muteOption}>
-                            <input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} />
-                            Mute quote replies
-                        </label>
-                    </div>
-                )}
-
-                <h1 className={styles.postTitle}>{topic.title}</h1>
-
-                {isAnnouncement && userRole === 'ADMIN' && (
-                    <div className={styles.everyoneTag}>
-                        <i className="fa fa-at"></i> everyone
-                    </div>
-                )}
-
-                <div className={styles.postContent}>
-                    {topic.content}
+            {/* Topic Header */}
+            <div className={styles.topicNav}>
+                <Link href={`/forums/${topic.categoryId}`} className={styles.backLink}>
+                    <i className="fa fa-arrow-left"></i> Back to Topics
+                </Link>
+                <div className={styles.topicStats}>
+                    <span><i className="fa fa-comments"></i> {topic.replies.length} replies</span>
+                    <span><i className="fa fa-clock"></i> {formatShortDate(topic.createdAt)}</span>
                 </div>
             </div>
 
-            {/* Replies Section */}
-            <div className={styles.repliesSection}>
-                <h3 className={styles.repliesTitle}>
-                    <i className="fa fa-comments"></i> {topic.replies.length} {topic.replies.length === 1 ? 'Reply' : 'Replies'}
-                </h3>
+            {/* Posts Container */}
+            <div className={styles.postsContainer}>
+                {/* Original Post */}
+                {renderPost(topic, 0, true, topic.title)}
 
-                {topic.replies.length === 0 ? (
-                    <div className={styles.noReplies}>
-                        <p>No replies yet. Be the first to reply!</p>
-                    </div>
-                ) : (
-                    <div className={styles.repliesList}>
-                        {topic.replies.map((reply) => {
-                            const quotedReply = getQuotedReply(reply.replyToId)
-                            return (
-                                <div
-                                    key={reply.id}
-                                    ref={el => { replyRefs.current[reply.id] = el }}
-                                    className={`${styles.replyCard} ${highlightedId === reply.id ? styles.highlighted : ''}`}
-                                >
-                                    {/* Quoted Reply */}
-                                    {quotedReply && (
-                                        <div
-                                            className={styles.quotedReply}
-                                            onClick={() => scrollToReply(quotedReply.id)}
-                                        >
-                                            <i className="fa fa-quote-left"></i>
-                                            <span className={styles.quotedAuthor}>{reply.replyToAuthorName || quotedReply.authorName}:</span>
-                                            <span className={styles.quotedText}>{quotedReply.content.slice(0, 80)}...</span>
-                                        </div>
-                                    )}
-
-                                    <div className={styles.replyHeader}>
-                                        <div className={styles.replyAvatar}>
-                                            {reply.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
-                                        </div>
-                                        <div className={styles.replyAuthorInfo}>
-                                            <span className={styles.replyAuthorName}>
-                                                {reply.authorName}
-                                                {reply.authorId === topic.authorId && (
-                                                    <span className={styles.opBadge}>OP</span>
-                                                )}
-                                            </span>
-                                            <span className={styles.replyDate}>{formatDate(reply.createdAt)}</span>
-                                        </div>
-                                        <div className={styles.replyActions}>
-                                            {isLoggedIn && (
-                                                <button
-                                                    className={styles.quoteBtn}
-                                                    onClick={() => setReplyingTo(reply)}
-                                                >
-                                                    <i className="fa fa-reply"></i> Reply
-                                                </button>
-                                            )}
-                                            {canDelete(reply.authorId) && (
-                                                <button className={styles.deleteBtn} onClick={() => handleDelete(reply.id)}>
-                                                    <i className="fa fa-trash"></i>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className={styles.replyContent}>
-                                        {reply.content}
-                                    </div>
-                                </div>
-                            )
-                        })}
+                {/* Replies */}
+                {topic.replies.length > 0 && (
+                    <div className={styles.repliesDivider}>
+                        <span>{topic.replies.length} {topic.replies.length === 1 ? 'reply' : 'replies'}</span>
                     </div>
                 )}
 
-                {/* Reply Form */}
-                {isLoggedIn ? (
-                    <div className={styles.replyFormWrapper}>
-                        {replyingTo && (
-                            <div className={styles.replyingToBar}>
-                                <span>
-                                    <i className="fa fa-reply"></i> Replying to <strong>{replyingTo.authorName}</strong>
-                                </span>
-                                <button onClick={() => setReplyingTo(null)}>
-                                    <i className="fa fa-times"></i>
-                                </button>
-                            </div>
-                        )}
-                        <form onSubmit={handleReply} className={styles.replyForm}>
-                            {error && <div className={styles.error}>{error}</div>}
-                            <textarea
-                                value={replyContent}
-                                onChange={(e) => setReplyContent(e.target.value)}
-                                placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Write your reply..."}
-                                required
-                            />
+                {topic.replies.map((reply, index) => renderPost(reply, index))}
+            </div>
+
+            {/* Reply Form */}
+            {isLoggedIn ? (
+                <div className={styles.replyFormWrapper}>
+                    {replyingTo && (
+                        <div className={styles.replyingToBar}>
+                            <span>
+                                <i className="fa fa-reply"></i> Replying to <strong>{replyingTo.authorName}</strong>:
+                                <em>{replyingTo.content.slice(0, 50)}...</em>
+                            </span>
+                            <button onClick={() => setReplyingTo(null)}>
+                                <i className="fa fa-times"></i>
+                            </button>
+                        </div>
+                    )}
+                    <form onSubmit={handleReply} className={styles.replyForm}>
+                        {error && <div className={styles.error}>{error}</div>}
+                        <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Share your thoughts..."}
+                            required
+                        />
+                        <div className={styles.formActions}>
                             <button type="submit" disabled={loading || !replyContent.trim()}>
-                                {loading ? <><i className="fa fa-spinner fa-spin"></i> Posting...</> : <><i className="fa fa-paper-plane"></i> Post Reply</>}
+                                {loading ? <><i className="fa fa-spinner fa-spin"></i> Posting...</> : <><i className="fa fa-paper-plane"></i> Reply</>}
                             </button>
-                        </form>
-                    </div>
-                ) : (
-                    <div className={styles.loginPrompt}>
-                        <Link href="/login">Log in</Link> to reply to this topic
-                    </div>
-                )}
-            </div>
+                        </div>
+                    </form>
+                </div>
+            ) : (
+                <div className={styles.loginPrompt}>
+                    <i className="fa fa-lock"></i>
+                    <span><Link href="/login">Log in</Link> to join the discussion</span>
+                </div>
+            )}
         </main>
     )
 }
