@@ -71,7 +71,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
     useEffect(() => {
         if (isLoggedIn) {
             getMuteSettings(topic.id).then(settings => {
-                if (settings) setMuteSettings(settings)
+                if (settings) setMuteSettings(settings as MuteSettings)
             })
         }
     }, [isLoggedIn, topic.id])
