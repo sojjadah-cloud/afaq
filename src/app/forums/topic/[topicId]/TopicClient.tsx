@@ -35,6 +35,13 @@ interface MuteSettings {
     muteQuoteReplies: boolean
 }
 
+interface UserCardData {
+    id: string
+    name: string
+    militaryId: string
+    postsCount: number
+}
+
 interface TopicClientProps {
     topic: Topic
     isLoggedIn: boolean
@@ -47,15 +54,19 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
     const [replyContent, setReplyContent] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [showReplyForm, setShowReplyForm] = useState(false)
     const [replyingTo, setReplyingTo] = useState<Reply | null>(null)
     const [showMuteSettings, setShowMuteSettings] = useState(false)
     const [highlightedId, setHighlightedId] = useState<string | null>(null)
+    const [userCard, setUserCard] = useState<UserCardData | null>(null)
+    const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 })
     const [muteSettings, setMuteSettings] = useState<MuteSettings>({
         muteTopicReplies: false,
         muteThreadReplies: false,
         muteQuoteReplies: false
     })
     const replyRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+    const cardRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -64,6 +75,33 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
             })
         }
     }, [isLoggedIn, topic.id])
+
+    // Close card when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+                setUserCard(null)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const showUserCard = (e: React.MouseEvent, authorId: string, authorName: string, authorMilitaryId: string) => {
+        e.stopPropagation()
+
+        // Count posts by this user in this topic
+        const postsCount = topic.replies.filter(r => r.authorId === authorId).length + (topic.authorId === authorId ? 1 : 0)
+
+        const rect = (e.target as HTMLElement).getBoundingClientRect()
+        setCardPosition({ x: rect.left, y: rect.bottom + 8 })
+        setUserCard({
+            id: authorId,
+            name: authorName,
+            militaryId: authorMilitaryId,
+            postsCount
+        })
+    }
 
     const scrollToReply = (replyId: string) => {
         const element = replyRefs.current[replyId]
@@ -94,6 +132,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
         } else {
             setReplyContent('')
             setReplyingTo(null)
+            setShowReplyForm(false)
             router.refresh()
         }
         setLoading(false)
@@ -130,13 +169,6 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
         })
     }
 
-    const formatShortDate = (date: string) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric'
-        })
-    }
-
     const canDelete = (authorId: string) => {
         return userId === authorId || userRole === 'ADMIN'
     }
@@ -146,167 +178,125 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
         return topic.replies.find(r => r.id === replyToId)
     }
 
-    const isAnnouncement = topic.categoryId === 'cat_announcements'
-
-    // Render a post (either the topic or a reply)
-    const renderPost = (
-        post: { id: string; content: string; authorId: string; authorName: string; authorMilitaryId: string; createdAt: string; replyToId?: string; replyToAuthorName?: string },
-        index: number,
-        isOriginalPost: boolean = false,
-        title?: string
-    ) => {
-        const quotedReply = !isOriginalPost ? getQuotedReply(post.replyToId) : null
-        const isOP = post.authorId === topic.authorId
-
-        return (
-            <article
-                key={post.id}
-                ref={el => { if (!isOriginalPost) replyRefs.current[post.id] = el }}
-                className={`${styles.post} ${highlightedId === post.id ? styles.highlighted : ''} ${isOriginalPost ? styles.originalPost : ''}`}
-            >
-                {/* Left - Author Info */}
-                <aside className={styles.authorSidebar}>
-                    <div className={styles.authorAvatar}>
-                        {post.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
-                    </div>
-                    <div className={styles.authorName}>{post.authorName}</div>
-                    {isOP && <span className={styles.opBadge}>OP</span>}
-                    {isOriginalPost && userRole === 'ADMIN' && (
-                        <span className={styles.adminBadge}>Admin</span>
-                    )}
-                </aside>
-
-                {/* Right - Content */}
-                <div className={styles.postContent}>
-                    {/* Post Header */}
-                    <header className={styles.postHeader}>
-                        <div className={styles.postMeta}>
-                            <span className={styles.postNumber}>#{isOriginalPost ? 1 : index + 2}</span>
-                            <time className={styles.postDate}>{formatDate(post.createdAt)}</time>
-                        </div>
-                        <div className={styles.postActions}>
-                            {isLoggedIn && !isOriginalPost && (
-                                <button
-                                    className={styles.actionBtn}
-                                    onClick={() => setReplyingTo(post as Reply)}
-                                    title="Quote Reply"
-                                >
-                                    <i className="fa fa-quote-left"></i>
-                                </button>
-                            )}
-                            {isLoggedIn && isOriginalPost && (
-                                <button
-                                    className={styles.actionBtn}
-                                    onClick={() => setShowMuteSettings(!showMuteSettings)}
-                                    title="Notification Settings"
-                                >
-                                    <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`}></i>
-                                </button>
-                            )}
-                            {canDelete(post.authorId) && (
-                                <button
-                                    className={`${styles.actionBtn} ${styles.deleteAction}`}
-                                    onClick={() => handleDelete(post.id)}
-                                    title="Delete"
-                                >
-                                    <i className="fa fa-trash"></i>
-                                </button>
-                            )}
-                        </div>
-                    </header>
-
-                    {/* Mute Settings (only for original post) */}
-                    {isOriginalPost && showMuteSettings && (
-                        <div className={styles.mutePanel}>
-                            <label><input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} /> Mute topic replies</label>
-                            <label><input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} /> Mute thread replies</label>
-                            <label><input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} /> Mute quote replies</label>
-                        </div>
-                    )}
-
-                    {/* Title (only for original post) */}
-                    {title && (
-                        <h1 className={styles.postTitle}>
-                            {title}
-                            {isAnnouncement && (
-                                <span className={styles.announcementTag}>
-                                    <i className="fa fa-bullhorn"></i> Announcement
-                                </span>
-                            )}
-                        </h1>
-                    )}
-
-                    {/* Quoted Reply */}
-                    {quotedReply && (
-                        <blockquote
-                            className={styles.quotedPost}
-                            onClick={() => scrollToReply(quotedReply.id)}
-                        >
-                            <div className={styles.quotedHeader}>
-                                <i className="fa fa-reply"></i>
-                                <span>{post.replyToAuthorName || quotedReply.authorName}</span>
-                            </div>
-                            <p>{quotedReply.content.slice(0, 150)}...</p>
-                        </blockquote>
-                    )}
-
-                    {/* Post Body */}
-                    <div className={styles.postBody}>
-                        {post.content}
-                    </div>
-
-                    {/* Footer */}
-                    {!isOriginalPost && isLoggedIn && (
-                        <footer className={styles.postFooter}>
-                            <button
-                                className={styles.replyLink}
-                                onClick={() => setReplyingTo(post as Reply)}
-                            >
-                                <i className="fa fa-reply"></i> Reply
-                            </button>
-                        </footer>
-                    )}
-                </div>
-            </article>
-        )
+    const openReplyTo = (reply: Reply) => {
+        setReplyingTo(reply)
+        setShowReplyForm(true)
     }
+
+    const isAnnouncement = topic.categoryId === 'cat_announcements'
 
     return (
         <main className={styles.main}>
-            {/* Topic Header */}
-            <div className={styles.topicNav}>
-                <Link href={`/forums/${topic.categoryId}`} className={styles.backLink}>
-                    <i className="fa fa-arrow-left"></i> Back to Topics
-                </Link>
-                <div className={styles.topicStats}>
-                    <span><i className="fa fa-comments"></i> {topic.replies.length} replies</span>
-                    <span><i className="fa fa-clock"></i> {formatShortDate(topic.createdAt)}</span>
+            {/* User Profile Card Popup */}
+            {userCard && (
+                <div
+                    ref={cardRef}
+                    className={styles.userCard}
+                    style={{ left: cardPosition.x, top: cardPosition.y }}
+                >
+                    <div className={styles.userCardAvatar}>
+                        {userCard.militaryId?.slice(-2).toUpperCase() || 'AN'}
+                    </div>
+                    <div className={styles.userCardInfo}>
+                        <div className={styles.userCardName}>{userCard.name}</div>
+                        <div className={styles.userCardMeta}>
+                            <span><i className="fa fa-id-card"></i> {userCard.militaryId || 'N/A'}</span>
+                        </div>
+                        <div className={styles.userCardStats}>
+                            <span><i className="fa fa-comments"></i> {userCard.postsCount} posts in topic</span>
+                        </div>
+                    </div>
+                    <button className={styles.userCardClose} onClick={() => setUserCard(null)}>
+                        <i className="fa fa-times"></i>
+                    </button>
                 </div>
-            </div>
+            )}
 
-            {/* Posts Container */}
-            <div className={styles.postsContainer}>
-                {/* Original Post */}
-                {renderPost(topic, 0, true, topic.title)}
+            {/* Back Link */}
+            <Link href={`/forums/${topic.categoryId}`} className={styles.backLink}>
+                <i className="fa fa-arrow-left"></i> Back to Topics
+            </Link>
 
-                {/* Replies */}
-                {topic.replies.length > 0 && (
-                    <div className={styles.repliesDivider}>
-                        <span>{topic.replies.length} {topic.replies.length === 1 ? 'reply' : 'replies'}</span>
+            {/* Post Card - Centered */}
+            <article className={styles.postCard}>
+                <header className={styles.postHeader}>
+                    <div
+                        className={styles.authorInfo}
+                        onClick={(e) => showUserCard(e, topic.authorId, topic.authorName, topic.authorMilitaryId)}
+                    >
+                        <div className={styles.authorAvatar}>
+                            {topic.authorMilitaryId?.slice(-2).toUpperCase() || 'OP'}
+                        </div>
+                        <div>
+                            <span className={styles.authorName}>{topic.authorName}</span>
+                            <span className={styles.postDate}>{formatDate(topic.createdAt)}</span>
+                        </div>
+                    </div>
+                    <div className={styles.headerActions}>
+                        {isLoggedIn && (
+                            <button
+                                className={styles.iconBtn}
+                                onClick={() => setShowMuteSettings(!showMuteSettings)}
+                                title="Notification Settings"
+                            >
+                                <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`}></i>
+                            </button>
+                        )}
+                        {canDelete(topic.authorId) && (
+                            <button
+                                className={`${styles.iconBtn} ${styles.deleteBtn}`}
+                                onClick={() => handleDelete(topic.id)}
+                            >
+                                <i className="fa fa-trash"></i>
+                            </button>
+                        )}
+                    </div>
+                </header>
+
+                {/* Mute Settings */}
+                {showMuteSettings && (
+                    <div className={styles.mutePanel}>
+                        <label><input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} /> Mute topic replies</label>
+                        <label><input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} /> Mute thread replies</label>
+                        <label><input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} /> Mute quote replies</label>
                     </div>
                 )}
 
-                {topic.replies.map((reply, index) => renderPost(reply, index))}
-            </div>
+                <h1 className={styles.postTitle}>
+                    {topic.title}
+                    {isAnnouncement && (
+                        <span className={styles.announcementBadge}>
+                            <i className="fa fa-bullhorn"></i> Announcement
+                        </span>
+                    )}
+                </h1>
 
-            {/* Reply Form */}
-            {isLoggedIn ? (
+                <div className={styles.postBody}>
+                    {topic.content}
+                </div>
+
+                <footer className={styles.postFooter}>
+                    <div className={styles.postStats}>
+                        <span><i className="fa fa-comments"></i> {topic.replies.length} replies</span>
+                    </div>
+                    {isLoggedIn && (
+                        <button
+                            className={styles.replyBtn}
+                            onClick={() => { setReplyingTo(null); setShowReplyForm(!showReplyForm); }}
+                        >
+                            <i className="fa fa-reply"></i> Reply
+                        </button>
+                    )}
+                </footer>
+            </article>
+
+            {/* Reply Form (below post card) */}
+            {showReplyForm && isLoggedIn && (
                 <div className={styles.replyFormWrapper}>
                     {replyingTo && (
                         <div className={styles.replyingToBar}>
                             <span>
-                                <i className="fa fa-reply"></i> Replying to <strong>{replyingTo.authorName}</strong>:
-                                <em>{replyingTo.content.slice(0, 50)}...</em>
+                                <i className="fa fa-quote-left"></i> Replying to <strong>{replyingTo.authorName}</strong>
                             </span>
                             <button onClick={() => setReplyingTo(null)}>
                                 <i className="fa fa-times"></i>
@@ -318,17 +308,95 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                         <textarea
                             value={replyContent}
                             onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Share your thoughts..."}
+                            placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Write your reply..."}
+                            autoFocus
                             required
                         />
                         <div className={styles.formActions}>
-                            <button type="submit" disabled={loading || !replyContent.trim()}>
-                                {loading ? <><i className="fa fa-spinner fa-spin"></i> Posting...</> : <><i className="fa fa-paper-plane"></i> Reply</>}
+                            <button type="button" className={styles.cancelBtn} onClick={() => setShowReplyForm(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" className={styles.submitBtn} disabled={loading || !replyContent.trim()}>
+                                {loading ? <><i className="fa fa-spinner fa-spin"></i> Sending...</> : <><i className="fa fa-paper-plane"></i> Send Reply</>}
                             </button>
                         </div>
                     </form>
                 </div>
-            ) : (
+            )}
+
+            {/* Replies Section */}
+            {topic.replies.length > 0 && (
+                <section className={styles.repliesSection}>
+                    <h3 className={styles.repliesTitle}>
+                        <i className="fa fa-comments"></i> {topic.replies.length} {topic.replies.length === 1 ? 'Reply' : 'Replies'}
+                    </h3>
+
+                    <div className={styles.repliesList}>
+                        {topic.replies.map((reply, index) => {
+                            const quotedReply = getQuotedReply(reply.replyToId)
+                            const isOP = reply.authorId === topic.authorId
+
+                            return (
+                                <div
+                                    key={reply.id}
+                                    ref={el => { replyRefs.current[reply.id] = el }}
+                                    className={`${styles.replyCard} ${highlightedId === reply.id ? styles.highlighted : ''}`}
+                                >
+                                    {/* Quoted Reply */}
+                                    {quotedReply && (
+                                        <div
+                                            className={styles.quotedReply}
+                                            onClick={() => scrollToReply(quotedReply.id)}
+                                        >
+                                            <i className="fa fa-quote-left"></i>
+                                            <span className={styles.quotedAuthor}>{reply.replyToAuthorName || quotedReply.authorName}:</span>
+                                            <span className={styles.quotedText}>{quotedReply.content.slice(0, 80)}...</span>
+                                        </div>
+                                    )}
+
+                                    <div className={styles.replyHeader}>
+                                        <div
+                                            className={styles.replyAuthorInfo}
+                                            onClick={(e) => showUserCard(e, reply.authorId, reply.authorName, reply.authorMilitaryId)}
+                                        >
+                                            <div className={styles.replyAvatar}>
+                                                {reply.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
+                                            </div>
+                                            <div>
+                                                <span className={styles.replyAuthorName}>
+                                                    {reply.authorName}
+                                                    {isOP && <span className={styles.opBadge}>OP</span>}
+                                                </span>
+                                                <span className={styles.replyDate}>{formatDate(reply.createdAt)}</span>
+                                            </div>
+                                        </div>
+                                        <div className={styles.replyActions}>
+                                            <span className={styles.replyNumber}>#{index + 1}</span>
+                                            {isLoggedIn && (
+                                                <button className={styles.quoteBtn} onClick={() => openReplyTo(reply)}>
+                                                    <i className="fa fa-reply"></i>
+                                                </button>
+                                            )}
+                                            {canDelete(reply.authorId) && (
+                                                <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDelete(reply.id)}>
+                                                    <i className="fa fa-trash"></i>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.replyBody}>
+                                        {reply.content}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </section>
+            )}
+
+            {/* Login Prompt */}
+            {!isLoggedIn && (
                 <div className={styles.loginPrompt}>
                     <i className="fa fa-lock"></i>
                     <span><Link href="/login">Log in</Link> to join the discussion</span>
