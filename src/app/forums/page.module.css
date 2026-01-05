@@ -2,7 +2,7 @@
 
 .main {
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 0 26rem;
     padding: 2rem 3rem;
     animation: fadeIn 0.8s ease-out;
 }

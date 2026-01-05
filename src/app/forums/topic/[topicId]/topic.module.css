@@ -1,305 +1,231 @@
-/* Topic Detail - Modern Chat Style */
+/* Topic Detail - Traditional Forum Layout */
 
 .main {
-    width: 100%;
-    padding: 1.5rem 5%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
     min-height: calc(100vh - 200px);
-    display: flex;
-    flex-direction: column;
 }
 
-/* Header */
-.topicHeader {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    margin-bottom: 1rem;
-    position: sticky;
-    top: 1rem;
-    z-index: 10;
-}
-
+/* Back Link */
 .backLink {
-    width: 40px;
-    height: 40px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: #f1f5f9;
-    border-radius: 50%;
+    gap: 0.5rem;
     color: #64748b;
     text-decoration: none;
-    transition: all 0.2s;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
 }
 
 .backLink:hover {
-    background: #e2e8f0;
     color: #3b82f6;
 }
 
-.headerContent {
+/* Original Post Card */
+.postCard {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+}
+
+.postHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.postAvatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold, #d4a73a), #b8860b);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.postAuthorInfo {
     flex: 1;
 }
 
-.headerContent h1 {
-    font-size: 1.2rem;
-    color: #1e293b;
-    margin: 0;
+.postAuthorName {
+    display: block;
     font-weight: 700;
+    font-size: 1.1rem;
+    color: #1e293b;
 }
 
-.announcementBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #8b5cf6;
-    background: rgba(139, 92, 246, 0.1);
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    margin-top: 0.25rem;
+.postDate {
+    font-size: 0.85rem;
+    color: #94a3b8;
 }
 
-.headerActions {
+.postActions {
     display: flex;
     gap: 0.5rem;
 }
 
-.iconBtn {
+.muteBtn,
+.deleteBtn {
     width: 36px;
     height: 36px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f1f5f9;
-    border: none;
-    border-radius: 50%;
-    color: #64748b;
-    cursor: pointer;
     transition: all 0.2s;
 }
 
-.iconBtn:hover {
+.muteBtn {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.muteBtn:hover {
     background: #e2e8f0;
     color: #3b82f6;
+}
+
+.deleteBtn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.deleteBtn:hover {
+    background: rgba(239, 68, 68, 0.2);
 }
 
 /* Mute Panel */
 .mutePanel {
-    background: white;
-    border-radius: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
     padding: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.mutePanelHeader {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: #475569;
-    margin-bottom: 0.75rem;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .muteOption {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
-    cursor: pointer;
+    gap: 0.5rem;
     font-size: 0.85rem;
-    color: #334155;
+    color: #475569;
+    cursor: pointer;
 }
 
-.muteOption input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+.muteOption input {
     accent-color: #3b82f6;
 }
 
-/* Chat Container */
-.chatContainer {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding-bottom: 1rem;
-}
-
-/* Message Wrapper */
-.messageWrapper {
-    display: flex;
-    gap: 0.75rem;
-    width: 100%;
-}
-
-.messageLeft {
-    align-self: flex-start;
-}
-
-.messageRight {
-    align-self: flex-end;
-    flex-direction: row-reverse;
-}
-
-.highlighted {
-    animation: highlightPulse 2s ease-out;
-}
-
-@keyframes highlightPulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    10% {
-        transform: scale(1.02);
-    }
-
-    20% {
-        transform: scale(1);
-    }
-
-    30% {
-        background: rgba(59, 130, 246, 0.15);
-        border-radius: 16px;
-    }
-
-    100% {
-        background: transparent;
-    }
-}
-
-/* Avatar */
-.avatarCol {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.avatarLarge {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #b8860b);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-.avatarSmall {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #64748b, #94a3b8);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.7rem;
-}
-
-.ownerBadge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: var(--gold);
-    background: rgba(218, 165, 32, 0.15);
-    padding: 0.1rem 0.4rem;
-    border-radius: 4px;
-}
-
-/* Message Card */
-.messageCard {
-    background: white;
-    border-radius: 16px;
-    padding: 1rem 1.25rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
-    position: relative;
-}
-
-.ownerCard {
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border-color: rgba(218, 165, 32, 0.3);
-}
-
-.otherCard {
-    background: #f8fafc;
-}
-
-.messageHeader {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.authorName {
-    font-weight: 600;
-    font-size: 0.9rem;
+.postTitle {
+    font-size: 1.75rem;
+    font-weight: 800;
     color: #1e293b;
-}
-
-.messageTime {
-    font-size: 0.75rem;
-    color: #94a3b8;
-}
-
-.messageContent {
-    color: #334155;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
+    margin: 0 0 1rem;
+    line-height: 1.3;
 }
 
 .everyoneTag {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    margin-top: 0.75rem;
-    padding: 0.35rem 0.75rem;
+    padding: 0.4rem 0.75rem;
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     color: white;
     font-size: 0.8rem;
     font-weight: 600;
     border-radius: 20px;
+    margin-bottom: 1rem;
 }
 
-/* Quoted Message */
-.quotedMessage {
+.postContent {
+    font-size: 1.05rem;
+    color: #334155;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+/* Replies Section */
+.repliesSection {
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 2rem;
+}
+
+.repliesTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+}
+
+.noReplies {
+    text-align: center;
+    padding: 2rem;
+    color: #94a3b8;
+}
+
+.repliesList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Reply Card */
+.replyCard {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+}
+
+.replyCard.highlighted {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.quotedReply {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
     margin-bottom: 0.75rem;
-    background: rgba(59, 130, 246, 0.08);
+    background: #f1f5f9;
     border-left: 3px solid #3b82f6;
     border-radius: 0 8px 8px 0;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    transition: background 0.2s;
 }
 
-.quotedMessage:hover {
-    background: rgba(59, 130, 246, 0.15);
+.quotedReply:hover {
+    background: #e2e8f0;
 }
 
-.quotedMessage i {
+.quotedReply i {
     color: #3b82f6;
+    font-size: 0.75rem;
 }
 
 .quotedAuthor {
@@ -315,22 +241,65 @@
     white-space: nowrap;
 }
 
-/* Message Actions */
-.messageActions {
+.replyHeader {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
-.replyBtn {
+.replyAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #64748b, #94a3b8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.replyAuthorInfo {
+    flex: 1;
+}
+
+.replyAuthorName {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.opBadge {
+    background: linear-gradient(135deg, var(--gold, #d4a73a), #b8860b);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+.replyDate {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.replyActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quoteBtn {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.35rem 0.75rem;
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    padding: 0.4rem 0.75rem;
+    background: #f1f5f9;
+    color: #475569;
     border: none;
     border-radius: 6px;
     font-size: 0.8rem;
@@ -339,45 +308,28 @@
     transition: all 0.2s;
 }
 
-.replyBtn:hover {
-    background: rgba(59, 130, 246, 0.2);
+.quoteBtn:hover {
+    background: #dbeafe;
+    color: #3b82f6;
 }
 
-.deleteBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.75rem;
-}
-
-.deleteBtn:hover {
-    background: rgba(239, 68, 68, 0.2);
+.replyContent {
+    color: #334155;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    font-size: 0.95rem;
 }
 
 /* Reply Form */
-.replyFormContainer {
-    position: sticky;
-    bottom: 0;
-    background: white;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-    padding: 1rem;
-    margin: 0 -0.5rem;
+.replyFormWrapper {
+    margin-top: 1.5rem;
 }
 
 .replyingToBar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem 1rem;
     background: #dbeafe;
     border-radius: 8px;
     margin-bottom: 0.75rem;
@@ -385,24 +337,8 @@
     color: #1e40af;
 }
 
-.replyingToContent {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    min-width: 0;
-}
-
-.replyingToContent i {
-    color: #3b82f6;
-}
-
-.replyingToPreview {
-    color: #64748b;
-    font-style: italic;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.replyingToBar i {
+    margin-right: 0.5rem;
 }
 
 .replyingToBar button {
@@ -410,7 +346,7 @@
     border: none;
     color: #64748b;
     cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem;
 }
 
 .replyingToBar button:hover {
@@ -418,27 +354,23 @@
 }
 
 .replyForm {
-    display: flex;
-    flex-direction: column;
-}
-
-.inputRow {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-end;
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
 }
 
 .replyForm textarea {
-    flex: 1;
+    width: 100%;
+    min-height: 100px;
     padding: 0.75rem 1rem;
     border: 2px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 10px;
     font-family: inherit;
     font-size: 0.95rem;
-    resize: none;
-    min-height: 44px;
-    max-height: 120px;
+    resize: vertical;
     transition: border-color 0.2s;
+    margin-bottom: 1rem;
 }
 
 .replyForm textarea:focus {
@@ -447,23 +379,21 @@
 }
 
 .replyForm button[type="submit"] {
-    width: 44px;
-    height: 44px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
     color: white;
     border: none;
-    border-radius: 50%;
+    border-radius: 10px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    flex-shrink: 0;
 }
 
 .replyForm button[type="submit"]:hover:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    background: #2563eb;
 }
 
 .replyForm button[type="submit"]:disabled {
@@ -474,19 +404,20 @@
 .error {
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 8px;
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
 }
 
 .loginPrompt {
     text-align: center;
     padding: 1.5rem;
-    color: #64748b;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    margin-top: 1.5rem;
 }
 
 .loginPrompt a {
@@ -496,23 +427,21 @@
 
 /* Responsive */
 @media (max-width: 640px) {
-    .messageWrapper {
-        max-width: 95%;
+    .main {
+        padding: 1rem;
     }
 
-    .headerContent h1 {
-        font-size: 1rem;
+    .postCard {
+        padding: 1.25rem;
     }
 
-    .avatarLarge {
-        width: 36px;
-        height: 36px;
-        font-size: 0.75rem;
+    .postTitle {
+        font-size: 1.4rem;
     }
 
-    .avatarSmall {
-        width: 28px;
-        height: 28px;
-        font-size: 0.65rem;
+    .postAvatar {
+        width: 44px;
+        height: 44px;
+        font-size: 0.9rem;
     }
 }
