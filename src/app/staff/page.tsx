@@ -43,13 +43,13 @@ export default async function StaffDashboard() {
             'join_request' as type,
             p.title,
             COALESCE(sp.fullName, u.email) as userName,
-            pm.requestedAt as createdAt
+            pm.joinedAt as createdAt
         FROM project_members pm
         JOIN projects p ON pm.projectId = p.id
         JOIN users u ON pm.userId = u.id
         LEFT JOIN student_profiles sp ON u.id = sp.userId
-        WHERE pm.memberStatus = 'PENDING'
-        ORDER BY pm.requestedAt ASC
+        WHERE pm.status = 'PENDING'
+        ORDER BY pm.joinedAt ASC
     `)
 
     // Get user stats

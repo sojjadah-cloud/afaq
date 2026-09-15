@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth'
 import bcrypt from 'bcrypt'
 import { redirect } from 'next/navigation'
 import { RowDataPacket } from 'mysql2'
+import { randomBytes } from 'crypto'
 
 interface User extends RowDataPacket {
     id: string
@@ -50,6 +51,58 @@ export async function loginUser(formData: FormData) {
         return { success: true }
     } catch (error) {
         console.error('Login error:', error)
+        return { error: 'An error occurred during login' }
+    }
+}
+
+// TEMPORARY: password-less login by role (for development/demo only).
+// Signs in as the first existing user with the chosen role, creating a demo
+// user if none exists yet. Remove before going to production.
+const ROLE_HOME: Record<string, string> = {
+    STUDENT: '/',
+    STAFF: '/staff',
+    ADMIN: '/admin',
+}
+
+export async function loginAsRole(role: string) {
+    if (!(role in ROLE_HOME)) {
+        return { error: 'Invalid role' }
+    }
+
+    try {
+        const users = await query<User[]>(
+            'SELECT * FROM users WHERE role = ? ORDER BY createdAt ASC LIMIT 1',
+            [role]
+        )
+        let user = users[0]
+
+        if (!user) {
+            const key = role.toLowerCase()
+            const userId = `usr_demo_${key}`
+            // Random, never-shown password so the account can't be used with the normal login
+            const hashedPassword = await bcrypt.hash(randomBytes(32).toString('hex'), 10)
+
+            await query(
+                `INSERT INTO users (id, militaryId, email, password, role, createdAt, updatedAt)
+                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+                [userId, `DEMO-${role}`, `demo.${key}@afaq.local`, hashedPassword, role]
+            )
+
+            const created = await query<User[]>('SELECT * FROM users WHERE id = ?', [userId])
+            user = created[0]
+        }
+
+        const session = await getSession()
+        session.userId = user.id
+        session.militaryId = user.militaryId
+        session.email = user.email
+        session.role = user.role
+        session.isLoggedIn = true
+        await session.save()
+
+        return { success: true, redirectTo: ROLE_HOME[role] }
+    } catch (error) {
+        console.error('Role login error:', error)
         return { error: 'An error occurred during login' }
     }
 }
