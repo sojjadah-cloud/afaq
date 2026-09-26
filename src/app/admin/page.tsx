@@ -4,6 +4,8 @@ import { RowDataPacket } from 'mysql2'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
 
+export const dynamic = 'force-dynamic'
+
 interface CountResult extends RowDataPacket {
     count: number
 }

@@ -2,6 +2,8 @@ import { query } from '@/lib/db'
 import { RowDataPacket } from 'mysql2'
 import BookingsClient from './BookingsClient'
 
+export const dynamic = 'force-dynamic'
+
 interface Booking extends RowDataPacket {
     id: string
     labId: string

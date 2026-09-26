@@ -2,6 +2,8 @@ import { query } from '@/lib/db'
 import { RowDataPacket } from 'mysql2'
 import ProjectsClient from './ProjectsClient'
 
+export const dynamic = 'force-dynamic'
+
 interface CountResult extends RowDataPacket {
     count: number
 }

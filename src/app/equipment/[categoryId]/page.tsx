@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { RowDataPacket } from 'mysql2'
 import styles from '../page.module.css'
 
+export const dynamic = 'force-dynamic'
+
 interface LabCategory extends RowDataPacket {
     id: string
     label: string

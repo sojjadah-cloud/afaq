@@ -4,6 +4,8 @@ import { RowDataPacket } from 'mysql2'
 import { notFound } from 'next/navigation'
 import TypeNewsClient from './TypeNewsClient'
 
+export const dynamic = 'force-dynamic'
+
 interface NewsItem extends RowDataPacket {
     id: string
     title: string

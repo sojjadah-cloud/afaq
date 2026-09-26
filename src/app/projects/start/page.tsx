@@ -4,6 +4,8 @@ import styles from '../project-list.module.css'
 import { RowDataPacket } from 'mysql2'
 import { stripMarkdown } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 interface Project extends RowDataPacket {
     id: string
     title: string

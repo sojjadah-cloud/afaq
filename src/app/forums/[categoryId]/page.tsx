@@ -5,6 +5,8 @@ import { RowDataPacket } from 'mysql2'
 import { notFound } from 'next/navigation'
 import CategoryClient from './CategoryClient'
 
+export const dynamic = 'force-dynamic'
+
 interface Category extends RowDataPacket {
     id: string
     name: string

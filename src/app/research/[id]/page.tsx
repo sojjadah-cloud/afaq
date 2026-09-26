@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import styles from './page.module.css'
 
+export const dynamic = 'force-dynamic'
+
 interface Research extends RowDataPacket {
     id: string
     title: string

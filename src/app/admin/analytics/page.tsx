@@ -4,6 +4,8 @@ import styles from '../admin.module.css'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
 
+export const dynamic = 'force-dynamic'
+
 interface Stats extends RowDataPacket {
     count: number
 }

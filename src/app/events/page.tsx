@@ -3,6 +3,8 @@ import { RowDataPacket } from 'mysql2'
 import { getSession } from '@/lib/auth'
 import EventsClient from './EventsClient'
 
+export const dynamic = 'force-dynamic'
+
 interface Event extends RowDataPacket {
     id: string
     title: string

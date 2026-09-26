@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { RowDataPacket } from 'mysql2'
 import styles from '../admin/admin.module.css'
 
+export const dynamic = 'force-dynamic'
+
 interface PendingItem extends RowDataPacket {
     id: string
     type: string

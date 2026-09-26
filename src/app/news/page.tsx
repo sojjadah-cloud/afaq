@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth'
 import { RowDataPacket } from 'mysql2'
 import NewsClient from './NewsClient'
 
+export const dynamic = 'force-dynamic'
+
 interface NewsItem extends RowDataPacket {
     id: string
     title: string

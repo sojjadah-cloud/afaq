@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import EventActions from './EventActions'
 
+export const dynamic = 'force-dynamic'
+
 interface Event extends RowDataPacket {
     id: string
     title: string

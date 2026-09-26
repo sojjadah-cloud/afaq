@@ -3,6 +3,8 @@ import styles from '../admin.module.css'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AuditLogPage() {
     const logs = await getAuditLogs(100)
 

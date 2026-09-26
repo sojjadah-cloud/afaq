@@ -3,6 +3,8 @@ import { getForumTopic } from '@/actions/forum'
 import { notFound } from 'next/navigation'
 import TopicClient from './TopicClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function TopicPage({ params }: { params: Promise<{ topicId: string }> }) {
     const { topicId } = await params
     const session = await getSession()

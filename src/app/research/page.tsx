@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth'
 import { RowDataPacket } from 'mysql2'
 import ResearchClient from './ResearchClient'
 
+export const dynamic = 'force-dynamic'
+
 interface Research extends RowDataPacket {
     id: string
     title: string

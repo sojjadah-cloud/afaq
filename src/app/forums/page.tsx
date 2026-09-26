@@ -2,6 +2,8 @@ import { getForumCategories } from '@/actions/forum'
 import Link from 'next/link'
 import styles from './page.module.css'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ForumsPage() {
     const categories = await getForumCategories()
 

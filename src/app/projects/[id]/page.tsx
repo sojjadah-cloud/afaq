@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation'
 import ProjectActions from './ProjectActions'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 
+export const dynamic = 'force-dynamic'
+
 interface Project extends RowDataPacket {
     id: string
     title: string

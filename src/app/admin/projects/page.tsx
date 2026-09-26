@@ -5,6 +5,8 @@ import ProjectsApprovalClient from './ProjectsApprovalClient'
 import styles from '../admin.module.css'
 import AdminNav from '@/components/AdminNav'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminProjectsPage() {
     const session = await getSession()
 

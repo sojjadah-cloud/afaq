@@ -3,6 +3,8 @@ import styles from './page.module.css'
 import LabDisplay from './LabDisplay'
 import { RowDataPacket } from 'mysql2'
 
+export const dynamic = 'force-dynamic'
+
 interface LabCategory extends RowDataPacket {
     id: string
     key: string

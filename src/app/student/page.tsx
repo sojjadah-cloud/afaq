@@ -6,6 +6,8 @@ import styles from './student.module.css'
 import { RowDataPacket } from 'mysql2'
 
 
+export const dynamic = 'force-dynamic'
+
 interface UserData extends RowDataPacket {
     id: string
     name: string

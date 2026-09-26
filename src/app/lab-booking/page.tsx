@@ -4,6 +4,8 @@ import BookingForm from './booking-form'
 import { RowDataPacket } from 'mysql2'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 interface Lab extends RowDataPacket {
     id: string
     name: string

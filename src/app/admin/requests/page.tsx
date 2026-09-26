@@ -4,6 +4,8 @@ import { getClubRegistrations } from '@/actions/club'
 import { getContactMessages } from '@/actions/contact'
 import RequestsClient from './RequestsClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminRequestsPage() {
     const session = await getSession()
 
