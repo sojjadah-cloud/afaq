@@ -49,7 +49,7 @@ export default async function LabBookingPage({
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <Link href="/equipment" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#718096', fontWeight: 600 }}>
+                <Link href="/equipment" className={styles.backLink}>
                     <i className="fa-solid fa-arrow-left"></i> Back to Equipment
                 </Link>
                 <h2>Book {lab.name}</h2>
@@ -59,10 +59,34 @@ export default async function LabBookingPage({
             <div className={styles.content}>
                 <div className={`${styles.infoSection} animate-slide-up delay-1`}>
                     <h3>Lab Details</h3>
-                    <div className={styles.infoText}>
-                        <p style={{ marginBottom: '0.5rem' }}><i className="fa-solid fa-users" style={{ color: 'var(--gold)', marginRight: '8px' }}></i> <strong>Capacity:</strong> {lab.capacity} people</p>
-                        <p style={{ marginBottom: '0.5rem' }}><i className="fa-solid fa-location-dot" style={{ color: 'var(--gold)', marginRight: '8px' }}></i> <strong>Location:</strong> {lab.location || 'Main Building'}</p>
-                        <p><i className="fa-solid fa-screwdriver-wrench" style={{ color: 'var(--gold)', marginRight: '8px' }}></i> <strong>Equipment:</strong> Standard workbench, soldering station, 3D printer access</p>
+                    <div className={styles.infoList}>
+                        <div className={styles.infoItem}>
+                            <div className={styles.infoIcon}>
+                                <i className="fa-solid fa-users"></i>
+                            </div>
+                            <div className={styles.infoItemText}>
+                                <h4>Capacity</h4>
+                                <p>{lab.capacity} people</p>
+                            </div>
+                        </div>
+                        <div className={styles.infoItem}>
+                            <div className={styles.infoIcon}>
+                                <i className="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div className={styles.infoItemText}>
+                                <h4>Location</h4>
+                                <p>{lab.location || 'Main Building'}</p>
+                            </div>
+                        </div>
+                        <div className={styles.infoItem}>
+                            <div className={styles.infoIcon}>
+                                <i className="fa-solid fa-screwdriver-wrench"></i>
+                            </div>
+                            <div className={styles.infoItemText}>
+                                <h4>Equipment</h4>
+                                <p>Standard workbench, soldering station, 3D printer access</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

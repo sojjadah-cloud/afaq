@@ -1,39 +1,34 @@
-import { getSession } from '@/lib/auth'
 import AboutClient from './AboutClient'
 
-export default async function AboutPage() {
-    const session = await getSession()
-
+export default function AboutPage() {
     // Management hierarchy data
     const managementTeam = {
         patron: {
-            name: 'Col. Ahmed Al-Harthi',
+            name: 'Brig. Ahmed Al-Hadidi',
             title: 'Patron',
             role: 'Commandant, MTC',
             image: null
         },
         advisor: {
-            name: 'Dr. Khalid Al-Rashdi',
+            name: 'Dr. Talib Al-Harthi',
             title: 'Faculty Advisor',
-            role: 'Head of Engineering Department',
+            role: 'Academic Supervisor',
             image: null
         },
         president: {
-            name: 'Capt. Salim Al-Balushi',
-            title: 'Club President',
-            role: 'Senior Lecturer, Innovation Hub',
+            name: '1st Lt. (Air) Wahab',
+            title: 'Coordinating Officer',
+            role: 'Club Supervisor',
             image: null
         },
         executives: [
-            { name: 'Lt. Mohammed Al-Hinai', title: 'Vice President', role: 'Research Coordinator' },
-            { name: 'WO1 Fatima Al-Zadjali', title: 'Secretary General', role: 'Admin Operations' },
-            { name: 'Sgt. Yusuf Al-Kindi', title: 'Treasurer', role: 'Financial Management' }
+            { name: 'President', title: 'Club Leadership', role: 'AFAQ Scientific Club' },
+            { name: 'Vice President', title: 'Club Leadership', role: 'AFAQ Scientific Club' }
         ],
         heads: [
-            { name: 'Cpl. Mariam Al-Lawati', title: 'Head of Projects', role: 'Project Management' },
-            { name: 'Cpl. Hassan Al-Siyabi', title: 'Head of Research', role: 'Research Division' },
-            { name: 'LCpl. Sara Al-Habsi', title: 'Head of Events', role: 'Events & Workshops' },
-            { name: 'LCpl. Omar Al-Maskari', title: 'Head of Media', role: 'Communications' }
+            { name: 'Research Committee', title: 'Scientific Research & Innovation', role: 'Committee' },
+            { name: 'Media Committee', title: 'Media & Public Relations', role: 'Committee' },
+            { name: 'Admin Committee', title: 'Administration & Development', role: 'Committee' }
         ]
     }
 
@@ -52,7 +47,6 @@ export default async function AboutPage() {
         <AboutClient
             managementTeam={managementTeam}
             contactInfo={contactInfo}
-            isLoggedIn={session.isLoggedIn || false}
         />
     )
 }

@@ -1,7 +1,7 @@
 /* Lab Booking Premium Styles */
 
 .main {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
     animation: fadeIn 0.8s ease-out;
@@ -34,6 +34,21 @@
     color: #718096;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #718096;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.backLink:hover {
+    color: var(--gold-dark);
 }
 
 .content {
@@ -76,10 +91,52 @@
     font-weight: 700;
 }
 
-.infoText {
-    color: #4a5568;
-    line-height: 1.7;
-    font-size: 1.05rem;
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.infoIcon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #fffbef, #fff);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    box-shadow: 0 4px 6px rgba(147, 128, 41, 0.1);
+}
+
+.infoItemText {
+    min-width: 0;
+}
+
+.infoItemText h4 {
+    margin: 0 0 0.2rem;
+    font-size: 0.8rem;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.infoItemText p {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #2d3748;
+    line-height: 1.4;
 }
 
 .formGroup {

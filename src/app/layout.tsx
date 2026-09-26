@@ -3,6 +3,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
+import SiteChrome from '@/components/SiteChrome'
 import { ToastProvider } from '@/components/Toast'
 
 export const metadata: Metadata = {
@@ -25,10 +26,9 @@ export default function RootLayout({
             </head>
             <body>
                 <ToastProvider>
-                    <Header />
-                    <Nav />
-                    {children}
-                    <Footer />
+                    <SiteChrome header={<Header />} nav={<Nav />} footer={<Footer />}>
+                        {children}
+                    </SiteChrome>
                 </ToastProvider>
             </body>
         </html>

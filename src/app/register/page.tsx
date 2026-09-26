@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { registerUser, getDepartmentsAndProgrammes } from '@/actions/auth'
-import styles from '../login/page.module.css'
+import styles from './page.module.css'
 
 interface Department {
     id: string

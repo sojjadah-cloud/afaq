@@ -69,8 +69,8 @@ export default function ProjectsPage({ initialCounts }: ProjectsPageProps) {
                 </Link>
 
                 <Link href="/projects/development" className={`${styles.statusCard} animate-delay-2`}>
-                    <div className={styles.statusIcon} style={{ borderColor: '#4A90E2' }}>
-                        <i className="fa-solid fa-code" style={{ color: '#4A90E2' }}></i>
+                    <div className={styles.statusIcon}>
+                        <i className="fa-solid fa-diagram-project"></i>
                     </div>
                     <div className={styles.statusTitle}>In Development</div>
                     <div className={styles.statusCount}>{initialCounts.development} projects</div>
@@ -78,8 +78,8 @@ export default function ProjectsPage({ initialCounts }: ProjectsPageProps) {
                 </Link>
 
                 <Link href="/projects/completed" className={`${styles.statusCard} animate-delay-3`}>
-                    <div className={styles.statusIcon} style={{ borderColor: '#50C878' }}>
-                        <i className="fa-solid fa-check-circle" style={{ color: '#50C878' }}></i>
+                    <div className={styles.statusIcon}>
+                        <i className="fa-solid fa-circle-check"></i>
                     </div>
                     <div className={styles.statusTitle}>Completed</div>
                     <div className={styles.statusCount}>{initialCounts.completed} projects</div>

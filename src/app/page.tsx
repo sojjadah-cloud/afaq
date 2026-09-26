@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { submitClubRegistration } from '@/actions/club'
 
 export default function HomePage() {
+    const [showForm, setShowForm] = useState(false)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
     const formRef = useRef<HTMLFormElement>(null)
@@ -38,6 +39,7 @@ export default function HomePage() {
         } else {
             setMessage({ type: 'success', text: result.message || 'Registration submitted!' })
             formRef.current?.reset()
+            setShowForm(false)
         }
         setLoading(false)
     }
@@ -92,31 +94,49 @@ export default function HomePage() {
                 </Link>
             </section>
 
-            {/* Registration Section */}
-            <section className={styles.registerSection}>
-                <div className={styles.registerContent}>
-                    <div className={styles.registerInfo}>
-                        <h2><i className="fa fa-user-plus"></i> Join AFAQ Innovation Club</h2>
-                        <p>Be part of our innovation community and contribute to groundbreaking projects and research.</p>
-                        <ul className={styles.benefits}>
-                            <li><i className="fa fa-check"></i> Access to innovation labs and equipment</li>
-                            <li><i className="fa fa-check"></i> Collaborate on cutting-edge projects</li>
-                            <li><i className="fa fa-check"></i> Networking with industry experts</li>
-                            <li><i className="fa fa-check"></i> Exclusive workshops and training</li>
-                        </ul>
+            {/* Join CTA */}
+            <section id="join" className={styles.registerSection}>
+                <div className={styles.registerCta}>
+                    <div className={styles.registerCtaIcon}>
+                        <i className="fa fa-user-plus"></i>
                     </div>
+                    <div className={styles.registerCtaText}>
+                        <h2>Join the Scientific Club</h2>
+                        <p>Be part of our innovation community and contribute to groundbreaking projects and research.</p>
+                    </div>
+                    <button className={styles.registerCtaBtn} onClick={() => setShowForm(true)}>
+                        <i className="fa fa-paper-plane"></i> Register Now
+                    </button>
+                </div>
+            </section>
 
-                    <div className={styles.registerForm}>
-                        <h3>Register Now</h3>
+            {/* Success/Error Toast */}
+            {message.text && (
+                <div className={`${styles.toast} ${styles[message.type]}`}>
+                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                    {message.text}
+                </div>
+            )}
 
-                        {message.text && (
-                            <div className={`${styles.formMessage} ${styles[message.type]}`}>
-                                <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-                                {message.text}
-                            </div>
-                        )}
+            {/* Registration Modal */}
+            {showForm && (
+                <div className={styles.modalOverlay} onClick={() => setShowForm(false)}>
+                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Join the Scientific Club</h3>
+                            <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
+                                <i className="fa fa-times"></i>
+                            </button>
+                        </div>
 
-                        <form ref={formRef} onSubmit={handleSubmit}>
+                        <form ref={formRef} onSubmit={handleSubmit} className={styles.form}>
+                            <ul className={styles.modalBenefits}>
+                                <li><i className="fa fa-check"></i> Access to innovation labs and equipment</li>
+                                <li><i className="fa fa-check"></i> Collaborate on cutting-edge projects</li>
+                                <li><i className="fa fa-check"></i> Networking with industry experts</li>
+                                <li><i className="fa fa-check"></i> Exclusive workshops and training</li>
+                            </ul>
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="fullName">Full Name *</label>
@@ -186,17 +206,20 @@ export default function HomePage() {
                                 ></textarea>
                             </div>
 
-                            <button type="submit" className={styles.registerBtn} disabled={loading}>
-                                {loading ? (
-                                    <><i className="fa fa-spinner fa-spin"></i> Submitting...</>
-                                ) : (
-                                    <><i className="fa fa-paper-plane"></i> Submit Registration</>
-                                )}
-                            </button>
+                            <div className={styles.formActions}>
+                                <button type="button" onClick={() => setShowForm(false)} disabled={loading}>Cancel</button>
+                                <button type="submit" className={styles.submitBtn} disabled={loading}>
+                                    {loading ? (
+                                        <><i className="fa fa-spinner fa-spin"></i> Submitting...</>
+                                    ) : (
+                                        <><i className="fa fa-paper-plane"></i> Submit Registration</>
+                                    )}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
-            </section>
+            )}
         </main>
     )
 }

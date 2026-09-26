@@ -21,7 +21,7 @@ export default async function Header() {
             <div className={styles.headerCenter}>
                 <SearchBar />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div className={styles.headerActions}>
                 {session.isLoggedIn && <NotificationBell />}
                 {session.role === 'ADMIN' && (
                     <Link href="/admin" className={styles.adminLink}>

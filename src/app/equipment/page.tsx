@@ -17,9 +17,9 @@ export default async function EquipmentPage() {
     const labs = await query<any[]>('SELECT * FROM labs')
 
     // Transform data to match component structure
-    const categoriesWithLabs = categories.map(cat => ({
+    const categoriesWithCounts = categories.map(cat => ({
         ...cat,
-        labs: labs.filter(lab => lab.categoryId === cat.id)
+        labCount: labs.filter(lab => lab.categoryId === cat.id).length
     }));
 
     return (
@@ -31,7 +31,7 @@ export default async function EquipmentPage() {
                 </p>
             </div>
 
-            <LabDisplay categories={categoriesWithLabs} />
+            <LabDisplay categories={categoriesWithCounts} />
         </main>
     )
 }

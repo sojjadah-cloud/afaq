@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
   --gold: #938029;
   --gold-dark: #6f6224;
@@ -9,11 +11,12 @@
   --shadow: 0 8px 26px rgba(0, 0, 0, 0.06);
   --radius: 16px;
   --border: #e3e0d4;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 * {
   box-sizing: border-box;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-sans);
   margin: 0;
   padding: 0;
 }
@@ -24,11 +27,34 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
   text-decoration: none;
   color: inherit;
+}
+
+/* Consistent, visible keyboard focus everywhere (accessibility) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* Global Animations */

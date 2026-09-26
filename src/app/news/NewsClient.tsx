@@ -4,34 +4,30 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { createResearch } from '@/actions/research'
+import { createNews } from '@/actions/news'
+import { uploadImage } from '@/actions/upload'
 
-interface Research {
+interface NewsItem {
     id: string
     title: string
-    abstract: string
-    authors: string
-    category: string
-    publicationDate: string | null
-    url: string | null
+    summary: string
+    type: 'NEWS' | 'ACHIEVEMENT'
+    eventDate: string | null
     createdAt: string
 }
 
-interface ResearchClientProps {
-    initialResearch: Research[]
+interface NewsClientProps {
+    initialNews: NewsItem[]
     userRole: string | undefined
     isLoggedIn: boolean
 }
 
-const CATEGORY_META: Record<string, { icon: string }> = {
-    Published: { icon: 'fa-check-double' },
-    Ongoing: { icon: 'fa-hourglass-half' },
-    Thesis: { icon: 'fa-graduation-cap' },
-    Conference: { icon: 'fa-people-group' },
-    Patent: { icon: 'fa-lightbulb' },
+const TYPE_META = {
+    NEWS: { label: 'News', icon: 'fa-bullhorn', desc: 'Announcements and updates from AFAQ' },
+    ACHIEVEMENT: { label: 'Achievements', icon: 'fa-trophy', desc: 'Wins, awards, and milestones' },
 }
 
-export default function ResearchClient({ initialResearch, userRole, isLoggedIn }: ResearchClientProps) {
+export default function NewsClient({ initialNews, userRole, isLoggedIn }: NewsClientProps) {
     const router = useRouter()
     const [showModal, setShowModal] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -39,11 +35,13 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
 
     const canCreate = isLoggedIn && (userRole === 'STAFF' || userRole === 'ADMIN')
 
-    const categories = ['Published', 'Ongoing', 'Thesis', 'Conference', 'Patent']
+    const newsCount = initialNews.filter(n => n.type === 'NEWS').length
+    const achievementCount = initialNews.filter(n => n.type === 'ACHIEVEMENT').length
 
-    const groups = categories
-        .map(cat => ({ category: cat, items: initialResearch.filter(r => r.category === cat) }))
-        .filter(group => group.items.length > 0)
+    const groups = [
+        { type: 'NEWS' as const, count: newsCount },
+        { type: 'ACHIEVEMENT' as const, count: achievementCount },
+    ]
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -51,7 +49,23 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
         setLoading(true)
 
         const formData = new FormData(e.currentTarget)
-        const result = await createResearch(formData)
+        const imageFile = formData.get('image') as File
+
+        if (imageFile && imageFile.size > 0) {
+            const uploadData = new FormData()
+            uploadData.set('file', imageFile)
+            const uploadResult = await uploadImage(uploadData)
+
+            if (uploadResult.error) {
+                setError(uploadResult.error)
+                setLoading(false)
+                return
+            }
+            formData.set('imageUrl', uploadResult.url || '')
+        }
+        formData.delete('image')
+
+        const result = await createNews(formData)
 
         if (result.error) {
             setError(result.error)
@@ -66,34 +80,35 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Research Hub</h2>
-                <p>Academic research, publications, theses, and ongoing scholarly work within AFAQ.</p>
+                <h2>News &amp; Achievements</h2>
+                <p>Latest updates, milestones, and wins from the AFAQ Scientific Club.</p>
                 {canCreate && (
                     <button className={styles.createBtn} onClick={() => setShowModal(true)}>
-                        <i className="fa fa-plus"></i> Add Research
+                        <i className="fa fa-plus"></i> Add Entry
                     </button>
                 )}
             </div>
 
-            {groups.length === 0 ? (
+            {initialNews.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <i className="fa fa-scroll"></i>
-                    <p>No research entries found.</p>
-                    {canCreate && <p>Click "Add Research" to create the first entry.</p>}
+                    <i className="fa fa-newspaper"></i>
+                    <p>No entries found.</p>
+                    {canCreate && <p>Click &quot;Add Entry&quot; to post the first update.</p>}
                 </div>
             ) : (
                 <div className={styles.groupGrid}>
                     {groups.map(group => (
                         <Link
-                            key={group.category}
-                            href={`/research/category/${group.category}`}
-                            className={styles.groupCard}
+                            key={group.type}
+                            href={`/news/${group.type.toLowerCase()}`}
+                            className={`${styles.groupCard} ${group.type === 'ACHIEVEMENT' ? styles.achievementGroupCard : ''}`}
                         >
                             <div className={styles.groupIcon}>
-                                <i className={`fa-solid ${CATEGORY_META[group.category]?.icon || 'fa-folder'}`}></i>
+                                <i className={`fa-solid ${TYPE_META[group.type].icon}`}></i>
                             </div>
-                            <div className={styles.groupTitle}>{group.category}</div>
-                            <div className={styles.groupCount}>{group.items.length} {group.items.length === 1 ? 'entry' : 'entries'}</div>
+                            <div className={styles.groupTitle}>{TYPE_META[group.type].label}</div>
+                            <div className={styles.groupDesc}>{TYPE_META[group.type].desc}</div>
+                            <div className={styles.groupCount}>{group.count} {group.count === 1 ? 'entry' : 'entries'}</div>
                         </Link>
                     ))}
                 </div>
@@ -104,7 +119,7 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>Add New Research</h3>
+                            <h3>Add News / Achievement</h3>
                             <button className={styles.closeBtn} onClick={() => setShowModal(false)}>
                                 <i className="fa fa-times"></i>
                             </button>
@@ -118,52 +133,34 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
                                 <input type="text" id="title" name="title" required />
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="authors">Authors *</label>
-                                <input
-                                    type="text"
-                                    id="authors"
-                                    name="authors"
-                                    placeholder="e.g., John Doe, Jane Smith"
-                                    required
-                                />
-                            </div>
-
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="category">Category *</label>
-                                    <select id="category" name="category" required>
-                                        <option value="">Select category</option>
-                                        {categories.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
+                                    <label htmlFor="type">Type *</label>
+                                    <select id="type" name="type" required defaultValue="NEWS">
+                                        <option value="NEWS">News</option>
+                                        <option value="ACHIEVEMENT">Achievement</option>
                                     </select>
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="publicationDate">Publication Date</label>
-                                    <input type="date" id="publicationDate" name="publicationDate" />
+                                    <label htmlFor="eventDate">Date</label>
+                                    <input type="date" id="eventDate" name="eventDate" />
                                 </div>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="abstract">Abstract *</label>
+                                <label htmlFor="summary">Summary *</label>
                                 <textarea
-                                    id="abstract"
-                                    name="abstract"
+                                    id="summary"
+                                    name="summary"
                                     rows={5}
-                                    placeholder="Brief summary of the research..."
+                                    placeholder="What happened?"
                                     required
                                 ></textarea>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="url">External URL (optional)</label>
-                                <input
-                                    type="url"
-                                    id="url"
-                                    name="url"
-                                    placeholder="https://..."
-                                />
+                                <label htmlFor="image">Image (optional)</label>
+                                <input type="file" id="image" name="image" accept="image/*" />
                             </div>
 
                             <div className={styles.formActions}>
@@ -171,7 +168,7 @@ export default function ResearchClient({ initialResearch, userRole, isLoggedIn }
                                     Cancel
                                 </button>
                                 <button type="submit" className={styles.submitBtn} disabled={loading}>
-                                    {loading ? 'Adding...' : 'Add Research'}
+                                    {loading ? 'Adding...' : 'Add Entry'}
                                 </button>
                             </div>
                         </form>
