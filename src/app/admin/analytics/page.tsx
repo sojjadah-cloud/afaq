@@ -46,16 +46,16 @@ export default async function AnalyticsPage() {
 
     // Get recent activity (last 7 days)
     const recentProjects = await query<Stats[]>(`
-        SELECT COUNT(*) as count FROM projects 
-        WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        SELECT COUNT(*) as count FROM projects
+        WHERE createdAt >= DATETIME('now', '-7 days')
     `)
     const recentBookings = await query<Stats[]>(`
-        SELECT COUNT(*) as count FROM lab_bookings 
-        WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        SELECT COUNT(*) as count FROM lab_bookings
+        WHERE createdAt >= DATETIME('now', '-7 days')
     `)
     const recentEvents = await query<Stats[]>(`
-        SELECT COUNT(*) as count FROM events 
-        WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        SELECT COUNT(*) as count FROM events
+        WHERE createdAt >= DATETIME('now', '-7 days')
     `)
 
     const getStatusColor = (status: string) => {

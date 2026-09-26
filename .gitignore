@@ -40,7 +40,12 @@ next-env.d.ts
 # database
 *.sql
 *.db
+*.db-wal
+*.db-shm
 backup.sql
+
+# the bundled SQLite seed script is app data, not a throwaway dump
+!/data/seed.sql
 
 # uploads (temporary - use Cloudinary in production)
 /public/uploads/*

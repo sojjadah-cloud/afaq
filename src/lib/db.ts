@@ -1,60 +1,56 @@
-import mysql from 'mysql2/promise'
+import Database from 'better-sqlite3'
+import fs from 'fs'
+import path from 'path'
 
-let pool: mysql.Pool | null = null
+let db: Database.Database | null = null
 
-function getPool(): mysql.Pool {
-    if (pool) return pool
+function getDb(): Database.Database {
+    if (db) return db
 
-    const DATABASE_URL = process.env.DATABASE_URL
+    const dataDir = path.join(process.cwd(), 'data')
+    fs.mkdirSync(dataDir, { recursive: true })
 
-    if (!DATABASE_URL) {
-        throw new Error('DATABASE_URL environment variable is not set')
+    const dbPath = process.env.DATABASE_URL || path.join(dataDir, 'afaq.db')
+    const isFreshDb = !fs.existsSync(dbPath)
+
+    db = new Database(dbPath)
+    db.pragma('journal_mode = WAL')
+    db.pragma('foreign_keys = OFF')
+
+    if (isFreshDb) {
+        const seedPath = path.join(dataDir, 'seed.sql')
+        if (fs.existsSync(seedPath)) {
+            const seedSql = fs.readFileSync(seedPath, 'utf-8')
+            db.exec(seedSql)
+            console.log('✅ SQLite database created and seeded from data/seed.sql')
+        } else {
+            console.error('⚠️ data/seed.sql not found — database created empty')
+        }
+    } else {
+        console.log('✅ SQLite database connected')
     }
 
-    // Parse DATABASE_URL to check if it's a production environment (PlanetScale/cloud)
-    const isProduction = DATABASE_URL.includes('psdb.cloud') ||
-        DATABASE_URL.includes('railway') ||
-        DATABASE_URL.includes('neon') ||
-        DATABASE_URL.includes('filess.io') ||
-        process.env.NODE_ENV === 'production'
-
-    // Create connection pool with production-optimized settings
-    pool = mysql.createPool({
-        uri: DATABASE_URL,
-        waitForConnections: true,
-        connectionLimit: isProduction ? 2 : 10, // Reduced to 2 for free tier database limits
-        maxIdle: isProduction ? 1 : 10,
-        idleTimeout: 60000, // 60 seconds
-        queueLimit: 0,
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 0,
-        // SSL configuration for production databases
-        ...(isProduction && {
-            ssl: {
-                rejectUnauthorized: false // Accept self-signed certificates
-            }
-        })
-    })
-
-    pool.getConnection()
-        .then(connection => {
-            console.log('✅ Database connected successfully')
-            connection.release()
-        })
-        .catch(err => {
-            console.error('❌ Database connection failed:', err.message)
-            if (isProduction) {
-                console.error('Check your DATABASE_URL environment variable')
-            }
-        })
-
-    return pool
+    return db
 }
 
-export async function query<T>(sql: string, params?: any[]): Promise<T> {
+// MySQL syntax the original queries still use, translated to SQLite equivalents
+// at the query layer so call sites never had to change.
+function toSqlite(sql: string): string {
+    return sql.replace(/\bNOW\(\)/gi, 'CURRENT_TIMESTAMP')
+}
+
+export async function query<T>(sql: string, params: any[] = []): Promise<T> {
     try {
-        const [rows] = await getPool().execute(sql, params)
-        return rows as T
+        const database = getDb()
+        const translated = toSqlite(sql)
+        const stmt = database.prepare(translated)
+
+        if (stmt.reader) {
+            return stmt.all(...params) as T
+        }
+
+        stmt.run(...params)
+        return [] as T
     } catch (error) {
         console.error('Database query error:', error)
         throw error

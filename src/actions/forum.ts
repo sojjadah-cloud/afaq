@@ -323,7 +323,7 @@ export async function updateMuteSettings(topicId: string, setting: string, value
         await query(
             `INSERT INTO forum_mute_settings (id, userId, postId, ${setting}, createdAt, updatedAt)
              VALUES (?, ?, ?, ?, NOW(), NOW())
-             ON DUPLICATE KEY UPDATE ${setting} = ?, updatedAt = NOW()`,
+             ON CONFLICT(userId, postId) DO UPDATE SET ${setting} = excluded.${setting}, updatedAt = NOW()`,
             [settingId, session.userId, topicId, value, value]
         )
 

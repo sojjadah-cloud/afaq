@@ -13,6 +13,7 @@
     "@prisma/adapter-mariadb": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
     "cloudinary": "^2.8.0",
     "iron-session": "^8.0.4",
     "mariadb": "^3.4.5",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
