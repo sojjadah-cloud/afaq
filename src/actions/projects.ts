@@ -95,7 +95,7 @@ export async function approveMember(projectId: string, userId: string) {
 
     try {
         await query(
-            'UPDATE project_members SET status = "APPROVED" WHERE projectId = ? AND userId = ?',
+            'UPDATE project_members SET status = \'APPROVED\' WHERE projectId = ? AND userId = ?',
             [projectId, userId]
         )
         revalidatePath(`/projects/${projectId}`)
@@ -242,7 +242,7 @@ export async function requestApproval(projectId: string) {
     }
 
     try {
-        await query('UPDATE projects SET status = "PENDING_APPROVAL", updatedAt = NOW() WHERE id = ?', [projectId])
+        await query('UPDATE projects SET status = \'PENDING_APPROVAL\', updatedAt = NOW() WHERE id = ?', [projectId])
 
         // Audit log
         try {
@@ -276,7 +276,7 @@ export async function requestCompletion(projectId: string) {
     }
 
     try {
-        await query('UPDATE projects SET status = "PENDING_COMPLETION", updatedAt = NOW() WHERE id = ?', [projectId])
+        await query('UPDATE projects SET status = \'PENDING_COMPLETION\', updatedAt = NOW() WHERE id = ?', [projectId])
 
         // Audit log
         try {
@@ -311,7 +311,7 @@ export async function transferOwnership(projectId: string, newOwnerId: string) {
 
     // Verify new owner is an approved member
     const member = await query<RowDataPacket[]>(
-        'SELECT * FROM project_members WHERE projectId = ? AND userId = ? AND status = "APPROVED"',
+        'SELECT * FROM project_members WHERE projectId = ? AND userId = ? AND status = \'APPROVED\'',
         [projectId, newOwnerId]
     )
     if (member.length === 0) {
@@ -323,8 +323,8 @@ export async function transferOwnership(projectId: string, newOwnerId: string) {
         await query('UPDATE projects SET createdById = ?, updatedAt = NOW() WHERE id = ?', [newOwnerId, projectId])
 
         // Update member roles
-        await query('UPDATE project_members SET role = "Member" WHERE projectId = ? AND userId = ?', [projectId, session.userId])
-        await query('UPDATE project_members SET role = "Owner" WHERE projectId = ? AND userId = ?', [projectId, newOwnerId])
+        await query('UPDATE project_members SET role = \'Member\' WHERE projectId = ? AND userId = ?', [projectId, session.userId])
+        await query('UPDATE project_members SET role = \'Owner\' WHERE projectId = ? AND userId = ?', [projectId, newOwnerId])
 
         // Audit log
         try {
@@ -357,7 +357,7 @@ export async function adminApproveProject(projectId: string) {
     }
 
     try {
-        await query('UPDATE projects SET status = "DEVELOPMENT", updatedAt = NOW() WHERE id = ?', [projectId])
+        await query('UPDATE projects SET status = \'DEVELOPMENT\', updatedAt = NOW() WHERE id = ?', [projectId])
 
         // Notify project owner
         const proj = await query<RowDataPacket[]>('SELECT createdById, title FROM projects WHERE id = ?', [projectId])
@@ -392,7 +392,7 @@ export async function adminValidateCompletion(projectId: string) {
     }
 
     try {
-        await query('UPDATE projects SET status = "COMPLETED", progress = 100, updatedAt = NOW() WHERE id = ?', [projectId])
+        await query('UPDATE projects SET status = \'COMPLETED\', progress = 100, updatedAt = NOW() WHERE id = ?', [projectId])
 
         // Notify project owner
         const proj = await query<RowDataPacket[]>('SELECT createdById, title FROM projects WHERE id = ?', [projectId])

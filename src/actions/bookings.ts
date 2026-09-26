@@ -13,7 +13,7 @@ export async function approveBooking(bookingId: string) {
 
     try {
         await query(
-            'UPDATE lab_bookings SET status = "APPROVED", updatedAt = NOW() WHERE id = ?',
+            'UPDATE lab_bookings SET status = \'APPROVED\', updatedAt = NOW() WHERE id = ?',
             [bookingId]
         )
         revalidatePath('/admin')
@@ -34,7 +34,7 @@ export async function rejectBooking(bookingId: string) {
 
     try {
         await query(
-            'UPDATE lab_bookings SET status = "REJECTED", updatedAt = NOW() WHERE id = ?',
+            'UPDATE lab_bookings SET status = \'REJECTED\', updatedAt = NOW() WHERE id = ?',
             [bookingId]
         )
         revalidatePath('/admin')
@@ -64,7 +64,7 @@ export async function cancelBooking(bookingId: string) {
 
     try {
         await query(
-            'UPDATE lab_bookings SET status = "CANCELLED", updatedAt = NOW() WHERE id = ?',
+            'UPDATE lab_bookings SET status = \'CANCELLED\', updatedAt = NOW() WHERE id = ?',
             [bookingId]
         )
         revalidatePath('/lab-booking')
@@ -85,7 +85,7 @@ export async function completeBooking(bookingId: string) {
 
     try {
         await query(
-            'UPDATE lab_bookings SET status = "COMPLETED", updatedAt = NOW() WHERE id = ?',
+            'UPDATE lab_bookings SET status = \'COMPLETED\', updatedAt = NOW() WHERE id = ?',
             [bookingId]
         )
         revalidatePath('/admin/bookings')

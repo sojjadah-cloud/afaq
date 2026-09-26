@@ -69,7 +69,7 @@ export async function registerForEvent(eventId: string) {
 
         if (event.capacity) {
             const countResult = await query<RowDataPacket[]>(
-                'SELECT COUNT(*) as count FROM event_registrations WHERE eventId = ? AND status != "CANCELLED"',
+                'SELECT COUNT(*) as count FROM event_registrations WHERE eventId = ? AND status != \'CANCELLED\'',
                 [eventId]
             )
             if (countResult[0].count >= event.capacity) {
@@ -117,7 +117,7 @@ export async function cancelRegistration(eventId: string) {
 
     try {
         await query(
-            'UPDATE event_registrations SET status = "CANCELLED" WHERE eventId = ? AND userId = ?',
+            'UPDATE event_registrations SET status = \'CANCELLED\' WHERE eventId = ? AND userId = ?',
             [eventId, session.userId]
         )
         revalidatePath('/events')
@@ -226,7 +226,7 @@ export async function getUserRegistration(eventId: string) {
 
     try {
         const regs = await query<RowDataPacket[]>(
-            'SELECT * FROM event_registrations WHERE eventId = ? AND userId = ? AND status = "REGISTERED"',
+            'SELECT * FROM event_registrations WHERE eventId = ? AND userId = ? AND status = \'REGISTERED\'',
             [eventId, session.userId]
         )
         return regs[0] || null

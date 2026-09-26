@@ -57,7 +57,7 @@ export default async function StaffDashboard() {
     // Get user stats
     const [userCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM users')
     const [projectCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM projects')
-    const [bookingCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM lab_bookings WHERE status = "PENDING"')
+    const [bookingCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM lab_bookings WHERE status = \'PENDING\'')
 
     return (
         <main className={styles.main}>
