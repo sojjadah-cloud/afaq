@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import styles from './page.module.css'
 import BookingForm from './booking-form'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'

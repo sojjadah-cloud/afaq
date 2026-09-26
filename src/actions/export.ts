@@ -2,7 +2,17 @@
 
 import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
+
+// Quotes every CSV field and neutralizes leading =, +, -, @ (and tab/CR) so a
+// spreadsheet app never interprets a user-supplied value as a formula.
+function csvField(value: unknown): string {
+    let str = value === null || value === undefined ? '' : String(value)
+    if (/^[=+\-@\t\r]/.test(str)) {
+        str = `'${str}`
+    }
+    return `"${str.replace(/"/g, '""')}"`
+}
 
 export async function exportProjectsCSV() {
     const session = await getSession()
@@ -25,12 +35,12 @@ export async function exportProjectsCSV() {
         // Generate CSV
         const headers = ['ID', 'Title', 'Category', 'Status', 'Progress', 'Created By', 'Created At', 'Updated At']
         const rows = projects.map(p => [
-            p.id,
-            `"${(p.title || '').replace(/"/g, '""')}"`,
-            p.category || '',
-            p.status || '',
+            csvField(p.id),
+            csvField(p.title),
+            csvField(p.category),
+            csvField(p.status),
             p.progress || 0,
-            `"${(p.createdBy || '').replace(/"/g, '""')}"`,
+            csvField(p.createdBy),
             p.createdAt ? new Date(p.createdAt).toISOString() : '',
             p.updatedAt ? new Date(p.updatedAt).toISOString() : ''
         ])
@@ -64,13 +74,13 @@ export async function exportBookingsCSV() {
 
         const headers = ['ID', 'Lab', 'Date', 'Time Slot', 'Status', 'Purpose', 'Booked By', 'Created At']
         const rows = bookings.map(b => [
-            b.id,
-            `"${(b.labName || '').replace(/"/g, '""')}"`,
+            csvField(b.id),
+            csvField(b.labName),
             b.bookingDate ? new Date(b.bookingDate).toISOString().split('T')[0] : '',
-            b.timeSlot || '',
-            b.status || '',
-            `"${(b.purpose || '').replace(/"/g, '""')}"`,
-            `"${(b.bookedBy || '').replace(/"/g, '""')}"`,
+            csvField(b.timeSlot),
+            csvField(b.status),
+            csvField(b.purpose),
+            csvField(b.bookedBy),
             b.createdAt ? new Date(b.createdAt).toISOString() : ''
         ])
 
@@ -103,12 +113,12 @@ export async function exportUsersCSV() {
 
         const headers = ['ID', 'Military ID', 'Email', 'Role', 'Full Name', 'Department', 'Created At']
         const rows = users.map(u => [
-            u.id,
-            u.militaryId || '',
-            u.email || '',
-            u.role || '',
-            `"${(u.fullName || '').replace(/"/g, '""')}"`,
-            `"${(u.department || '').replace(/"/g, '""')}"`,
+            csvField(u.id),
+            csvField(u.militaryId),
+            csvField(u.email),
+            csvField(u.role),
+            csvField(u.fullName),
+            csvField(u.department),
             u.createdAt ? new Date(u.createdAt).toISOString() : ''
         ])
 
@@ -134,16 +144,16 @@ export async function exportClubRegistrationsCSV() {
 
         const headers = ['ID', 'Full Name', 'Military ID', 'Email', 'Phone', 'Department', 'Year Level', 'Interests', 'Motivation', 'Status', 'Created At']
         const rows = registrations.map(r => [
-            r.id,
-            `"${(r.fullName || '').replace(/"/g, '""')}"`,
-            r.militaryId || '',
-            r.email || '',
-            r.phone || '',
-            r.department || '',
-            r.yearLevel || '',
-            `"${(r.interests || '').replace(/"/g, '""')}"`,
-            `"${(r.motivation || '').replace(/"/g, '""').substring(0, 200)}"`,
-            r.status || '',
+            csvField(r.id),
+            csvField(r.fullName),
+            csvField(r.militaryId),
+            csvField(r.email),
+            csvField(r.phone),
+            csvField(r.department),
+            csvField(r.yearLevel),
+            csvField(r.interests),
+            csvField((r.motivation || '').substring(0, 200)),
+            csvField(r.status),
             r.createdAt ? new Date(r.createdAt).toISOString() : ''
         ])
 
@@ -169,13 +179,13 @@ export async function exportContactMessagesCSV() {
 
         const headers = ['ID', 'Name', 'Email', 'Phone', 'Subject', 'Message', 'Status', 'Created At']
         const rows = messages.map(m => [
-            m.id,
-            `"${(m.name || '').replace(/"/g, '""')}"`,
-            m.email || '',
-            m.phone || '',
-            m.subject || '',
-            `"${(m.message || '').replace(/"/g, '""').substring(0, 200)}"`,
-            m.status || '',
+            csvField(m.id),
+            csvField(m.name),
+            csvField(m.email),
+            csvField(m.phone),
+            csvField(m.subject),
+            csvField((m.message || '').substring(0, 200)),
+            csvField(m.status),
             m.createdAt ? new Date(m.createdAt).toISOString() : ''
         ])
 
@@ -204,12 +214,12 @@ export async function exportEventsCSV() {
 
         const headers = ['ID', 'Title', 'Category', 'Start Date', 'End Date', 'Location', 'Capacity', 'Registrations', 'Created At']
         const rows = events.map(e => [
-            e.id,
-            `"${(e.title || '').replace(/"/g, '""')}"`,
-            e.category || '',
+            csvField(e.id),
+            csvField(e.title),
+            csvField(e.category),
             e.startDate ? new Date(e.startDate).toISOString() : '',
             e.endDate ? new Date(e.endDate).toISOString() : '',
-            e.location || '',
+            csvField(e.location),
             e.capacity || 'Unlimited',
             e.registrationCount || 0,
             e.createdAt ? new Date(e.createdAt).toISOString() : ''
@@ -246,11 +256,11 @@ export async function exportEventRegistrationsCSV(eventId: string, eventTitle: s
 
         const headers = ['Name', 'Military ID', 'Email', 'Department', 'Status', 'Registered At']
         const rows = registrations.map(r => [
-            `"${(r.userName || '').replace(/"/g, '""')}"`,
-            r.militaryId || '',
-            r.email || '',
-            `"${(r.department || 'N/A').replace(/"/g, '""')}"`,
-            r.status || '',
+            csvField(r.userName),
+            csvField(r.militaryId),
+            csvField(r.email),
+            csvField(r.department || 'N/A'),
+            csvField(r.status),
             r.registeredAt ? new Date(r.registeredAt).toISOString() : ''
         ])
 

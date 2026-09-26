@@ -3,7 +3,7 @@
 import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 // ============== FORUM CATEGORIES ==============
 

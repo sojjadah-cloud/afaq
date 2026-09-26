@@ -1,5 +1,5 @@
 import { query } from '@/lib/db'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { getSession } from '@/lib/auth'
 import EventsClient from './EventsClient'
 

@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import styles from '../admin/admin.module.css'
 
 export const dynamic = 'force-dynamic'

@@ -1,6 +1,6 @@
 import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import CategoryResearchClient from './CategoryResearchClient'
 

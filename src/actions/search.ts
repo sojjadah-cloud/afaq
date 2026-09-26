@@ -1,7 +1,7 @@
 'use server'
 
 import { query } from '@/lib/db'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 interface SearchResult {
     type: 'project' | 'research' | 'event' | 'lab'

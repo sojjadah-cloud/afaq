@@ -1,5 +1,5 @@
 import { query } from '@/lib/db'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'

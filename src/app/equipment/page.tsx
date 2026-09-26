@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import styles from './page.module.css'
 import LabDisplay from './LabDisplay'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 

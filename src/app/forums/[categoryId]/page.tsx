@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { getForumTopics } from '@/actions/forum'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import CategoryClient from './CategoryClient'
 

@@ -3,7 +3,7 @@ import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import styles from './student.module.css'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 
 export const dynamic = 'force-dynamic'

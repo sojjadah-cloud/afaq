@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { query } from '@/lib/db'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { createProject } from '@/actions/projects'
 import { useRouter } from 'next/navigation'
 

@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import bcrypt from 'bcrypt'
 import { redirect } from 'next/navigation'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import { randomBytes } from 'crypto'
 
 interface User extends RowDataPacket {

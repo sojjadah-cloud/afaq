@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import styles from './page.module.css'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'

@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 export default async function AdminLayout({
     children,

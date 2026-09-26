@@ -1,7 +1,7 @@
 import { query } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import styles from '../page.module.css'
 
 export const dynamic = 'force-dynamic'

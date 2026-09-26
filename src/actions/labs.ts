@@ -4,7 +4,7 @@ import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 
 export async function createBooking(formData: FormData) {
     const session = await getSession()

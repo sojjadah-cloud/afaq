@@ -1,6 +1,6 @@
 import { query } from '@/lib/db'
 import styles from './admin.module.css'
-import { RowDataPacket } from 'mysql2'
+import { RowDataPacket } from '@/lib/types'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
 
