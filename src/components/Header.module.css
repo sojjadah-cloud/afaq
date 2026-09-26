@@ -90,6 +90,37 @@
     font-size: 1rem;
 }
 
+.roleQuickLogin {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.roleQuickBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.roleQuickBtn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.roleQuickBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .headerCenter {
     flex: 1;
     display: flex;
@@ -108,5 +139,13 @@
     .headerCenter {
         width: 100%;
         padding: 0;
+    }
+
+    .roleQuickLogin {
+        flex-wrap: wrap;
+    }
+
+    .roleQuickBtn span {
+        display: none;
     }
 }
