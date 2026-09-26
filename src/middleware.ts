@@ -24,21 +24,26 @@ export async function middleware(request: NextRequest) {
         return response
     }
 
-    const session = await getSession()
+    try {
+        const session = await getSession()
 
-    if (!session.isLoggedIn) {
+        if (!session.isLoggedIn) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+
+        // Admin route protection
+        if (request.nextUrl.pathname.startsWith('/admin')) {
+            if (session.role !== 'ADMIN') {
+                return NextResponse.redirect(new URL('/', request.url))
+            }
+        }
+
+        return response
+    } catch (error) {
+        // Never let a broken session (e.g. misconfigured secret) 500 the whole site.
+        console.error('Middleware session error:', error)
         return NextResponse.redirect(new URL('/login', request.url))
     }
-
-    // Admin route protection
-    // Admin route protection
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (session.role !== 'ADMIN') {
-            return NextResponse.redirect(new URL('/', request.url))
-        }
-    }
-
-    return response
 }
 
 export const config = {
