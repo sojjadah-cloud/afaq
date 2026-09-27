@@ -10,15 +10,6 @@ interface CountResult extends RowDataPacket {
     count: number
 }
 
-interface RecentBooking extends RowDataPacket {
-    id: string
-    labName: string
-    militaryId: string
-    bookingDate: Date
-    timeSlot: string
-    status: string
-}
-
 export default async function AdminDashboard() {
     // Core stats
     const userCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM users')
@@ -50,17 +41,50 @@ export default async function AdminDashboard() {
         pendingProjects = projCount[0]?.count || 0
     } catch (e) { /* status enum may not be updated yet */ }
 
-    // Recent bookings
-    const recentBookings = await query<RecentBooking[]>(`
-        SELECT 
-            b.id, l.name as labName, u.militaryId, 
-            b.bookingDate, b.timeSlot, b.status 
-        FROM lab_bookings b
-        JOIN labs l ON b.labId = l.id
-        JOIN users u ON b.userId = u.id
-        ORDER BY b.createdAt DESC
-        LIMIT 5
-    `)
+    const controlItems = [
+        {
+            href: '/admin/bookings',
+            icon: 'fa-calendar-check',
+            title: 'Bookings',
+            desc: 'Review and manage lab booking requests',
+            badge: pendingBookings,
+        },
+        {
+            href: '/admin/projects',
+            icon: 'fa-lightbulb',
+            title: 'Projects',
+            desc: 'Approve, track and manage innovation projects',
+            badge: pendingProjects,
+        },
+        {
+            href: '/admin/requests',
+            icon: 'fa-inbox',
+            title: 'Requests',
+            desc: 'Club registrations and contact messages',
+            badge: pendingRegistrations + newMessages,
+        },
+        {
+            href: '/admin/events',
+            icon: 'fa-calendar-days',
+            title: 'Events',
+            desc: 'Create and manage club events',
+            badge: 0,
+        },
+        {
+            href: '/admin/analytics',
+            icon: 'fa-chart-pie',
+            title: 'Analytics',
+            desc: 'Platform statistics and insights',
+            badge: 0,
+        },
+        {
+            href: '/admin/audit',
+            icon: 'fa-clipboard-list',
+            title: 'Audit Log',
+            desc: 'Track every administrative action',
+            badge: 0,
+        },
+    ]
 
     return (
         <main className={styles.main}>
@@ -70,30 +94,6 @@ export default async function AdminDashboard() {
             </div>
 
             <AdminNav />
-
-            {/* Quick Action Alerts */}
-            {(pendingRegistrations > 0 || newMessages > 0 || pendingBookings > 0 || pendingProjects > 0) && (
-                <div className={styles.alertsBar}>
-                    {pendingProjects > 0 && (
-                        <Link href="/admin/projects" className={styles.alertItem} style={{ background: '#f3e8ff', color: '#7c3aed' }}>
-                            <i className="fa fa-lightbulb"></i>
-                            <span>{pendingProjects} pending project{pendingProjects > 1 ? 's' : ''}</span>
-                        </Link>
-                    )}
-                    {newMessages > 0 && (
-                        <Link href="/admin/requests" className={styles.alertItem} style={{ background: '#dbeafe', color: '#1d4ed8' }}>
-                            <i className="fa fa-envelope"></i>
-                            <span>{newMessages} new message{newMessages > 1 ? 's' : ''}</span>
-                        </Link>
-                    )}
-                    {pendingBookings > 0 && (
-                        <Link href="/admin/bookings" className={styles.alertItem} style={{ background: '#dcfce7', color: '#16a34a' }}>
-                            <i className="fa fa-calendar-check"></i>
-                            <span>{pendingBookings} pending booking{pendingBookings > 1 ? 's' : ''}</span>
-                        </Link>
-                    )}
-                </div>
-            )}
 
             <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.cardAnimate1}`}>
@@ -118,46 +118,18 @@ export default async function AdminDashboard() {
                 </div>
             </div>
 
-            <div className={styles.section}>
-                <h3>Recent Lab Bookings</h3>
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>Lab</th>
-                                <th>User (Mil ID)</th>
-                                <th>Date</th>
-                                <th>Slot</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {recentBookings.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '1rem' }}>No recent bookings found.</td>
-                                </tr>
-                            ) : (
-                                recentBookings.map(booking => (
-                                    <tr key={booking.id}>
-                                        <td>{booking.labName}</td>
-                                        <td>{booking.militaryId}</td>
-                                        <td>{new Date(booking.bookingDate).toLocaleDateString()}</td>
-                                        <td>{booking.timeSlot}</td>
-                                        <td>
-                                            <span className={`${styles.statusBadge} ${styles[booking.status.toLowerCase()]}`}>
-                                                {booking.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <Link href="/admin/bookings" className={styles.actionBtn}>View</Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className={styles.controlGrid}>
+                {controlItems.map(item => (
+                    <Link key={item.href} href={item.href} className={styles.controlCard}>
+                        {item.badge > 0 && (
+                            <span className={styles.controlBadge}>{item.badge}</span>
+                        )}
+                        <div className={styles.controlIcon}><i className={`fa ${item.icon}`}></i></div>
+                        <h3 className={styles.controlTitle}>{item.title}</h3>
+                        <p className={styles.controlDesc}>{item.desc}</p>
+                        <span className={styles.controlArrow}>Open <i className="fa fa-arrow-right"></i></span>
+                    </Link>
+                ))}
             </div>
         </main>
     )
