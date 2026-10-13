@@ -34,13 +34,13 @@
 
 .categoryGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.25rem;
 }
 
 @media (max-width: 900px) {
     .categoryGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -442,3 +442,22 @@
     }
 }
 
+
+@media (max-width: 768px) {
+    .main {
+        padding: 1rem;
+    }
+
+    .header {
+        padding: 1.75rem 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .header h2 {
+        font-size: 1.8rem;
+    }
+
+    .header p {
+        font-size: 0.95rem;
+    }
+}

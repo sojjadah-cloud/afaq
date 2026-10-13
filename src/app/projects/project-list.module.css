@@ -333,3 +333,32 @@
         grid-template-columns: 1fr;
     }
 }
+
+.sectionCard {
+    min-width: 0;
+}
+
+.sectionDesc {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 400px) {
+    .main {
+        padding: 16px 12px 24px;
+    }
+
+    .sectionCard {
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .sectionIcon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+
+    .sectionCount {
+        min-width: 44px;
+    }
+}
