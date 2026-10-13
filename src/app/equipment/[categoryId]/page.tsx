@@ -16,7 +16,7 @@ export default async function EquipmentCategoryPage({ params }: { params: Promis
     const category = categories[0]
     if (!category) notFound()
 
-    const items = await query<RowDataPacket[]>('SELECT * FROM labs WHERE categoryId = ? ORDER BY name', [categoryId])
+    const items = await query<RowDataPacket[]>('SELECT * FROM labs WHERE categoryId = ? AND isBookable = 1 ORDER BY name', [categoryId])
     const resources = await getTechnicianResources()
     const actionLabel = ACTION_LABELS[bookingModeFor(category.key)]
     const isTools = category.key === 'toolBorrowing'

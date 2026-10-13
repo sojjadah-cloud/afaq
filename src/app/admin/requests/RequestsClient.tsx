@@ -7,6 +7,7 @@ import styles from '../admin.module.css'
 import { updateRegistrationStatus } from '@/actions/club'
 import { updateContactStatus } from '@/actions/contact'
 import AdminNav from '@/components/AdminNav'
+import ExportButton from '@/components/ExportButton'
 
 interface Registration {
     id: string
@@ -106,6 +107,11 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
             </div>
 
             <AdminNav />
+
+            <div className={styles.exportRow}>
+                <ExportButton kind="registrations" label="Export registrations" />
+                <ExportButton kind="messages" label="Export messages" />
+            </div>
 
             {/* Tabs */}
             <div className={styles.filterBar}>

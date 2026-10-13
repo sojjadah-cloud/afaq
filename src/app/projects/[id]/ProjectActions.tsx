@@ -4,6 +4,7 @@ import {
     joinProject, editProject, addAttachment, approveMember,
     requestApproval, requestCompletion, transferOwnership
 } from '@/actions/projects'
+import { deleteProject } from '@/actions/admin'
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
@@ -26,7 +27,8 @@ export default function ProjectActions({
     memberStatus,
     pendingMembers,
     projectStatus,
-    approvedMembers = []
+    approvedMembers = [],
+    isAdmin = false
 }: {
     projectId: string
     isOwner: boolean
@@ -37,6 +39,7 @@ export default function ProjectActions({
     initialDescription?: string
     projectStatus: string
     approvedMembers?: ApprovedMember[]
+    isAdmin?: boolean
 }) {
     const [isEditing, setIsEditing] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
@@ -135,6 +138,19 @@ export default function ProjectActions({
         if (e.target.files && e.target.files[0]) {
             setFileName(e.target.files[0].name)
         }
+    }
+
+    async function handleDelete() {
+        if (!confirm('Delete this project permanently? Its members, attachments and files will also be removed. This cannot be undone.')) return
+        setLoading('delete')
+        const result = await deleteProject(projectId)
+        if (result.error) {
+            alert(result.error)
+            setLoading(null)
+            return
+        }
+        router.push('/projects')
+        router.refresh()
     }
 
     // Filter approved members (exclude current owner)
@@ -372,6 +388,16 @@ export default function ProjectActions({
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {isAdmin && (
+                <div className={styles.dangerZone}>
+                    <h4><i className="fa-solid fa-triangle-exclamation"></i> Administrator</h4>
+                    <button type="button" onClick={handleDelete} disabled={loading === 'delete'} className={styles.deleteProjectBtn}>
+                        <i className={loading === 'delete' ? 'fa fa-spinner fa-spin' : 'fa-solid fa-trash'}></i>
+                        {loading === 'delete' ? 'Deleting...' : 'Delete project'}
+                    </button>
                 </div>
             )}
         </div>

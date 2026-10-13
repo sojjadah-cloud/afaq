@@ -31,6 +31,7 @@ export async function getTechnicianResources(): Promise<TechnicianResource[]> {
     const rows = await query<RowDataPacket[]>(
         `SELECT l.id, l.name, c.label as category FROM labs l
          JOIN lab_categories c ON c.id = l.categoryId
+         WHERE l.isBookable = 1
          ORDER BY c.sortOrder, l.name`
     )
     return rows.map(r => ({ id: r.id, name: r.name, category: r.category }))

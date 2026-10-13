@@ -31,6 +31,11 @@ export async function createBooking(formData: FormData) {
     }
 
     try {
+        const lab = await query<RowDataPacket[]>('SELECT isBookable FROM labs WHERE id = ?', [labId])
+        if (!lab[0] || !lab[0].isBookable) {
+            return { error: 'This item is not available for booking' }
+        }
+
         // Check availability
         const existing = await query<RowDataPacket[]>(
             `SELECT id FROM lab_bookings

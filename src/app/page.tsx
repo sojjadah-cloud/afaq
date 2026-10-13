@@ -56,7 +56,7 @@ export default async function HomePage() {
         count('SELECT COUNT(*) as count FROM users'),
         count("SELECT COUNT(*) as count FROM projects WHERE status IN ('START', 'DEVELOPMENT', 'COMPLETED')"),
         count('SELECT COUNT(*) as count FROM research'),
-        count('SELECT COUNT(*) as count FROM labs'),
+        count('SELECT COUNT(*) as count FROM labs WHERE isBookable = 1'),
     ])
 
     const upcomingEvents = await query<RowDataPacket[]>(

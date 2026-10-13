@@ -184,6 +184,9 @@ export default async function StaffDashboard() {
                     <Link href="/admin/events" className={styles.navLink}>
                         <i className="fa fa-calendar"></i> Manage Events
                     </Link>
+                    <Link href="/admin/equipment" className={styles.navLink}>
+                        <i className="fa fa-screwdriver-wrench"></i> Manage Equipment
+                    </Link>
                     <Link href="/research" className={styles.navLink}>
                         <i className="fa fa-scroll"></i> Add Research
                     </Link>

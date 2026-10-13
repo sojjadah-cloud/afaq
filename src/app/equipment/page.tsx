@@ -17,7 +17,7 @@ const STEPS = [
 export default async function EquipmentPage() {
     const categories = await query<RowDataPacket[]>(
         `SELECT c.id, c.key, c.label, c.description, c.icon, c.technician,
-                (SELECT COUNT(*) FROM labs l WHERE l.categoryId = c.id) as resourceCount
+                (SELECT COUNT(*) FROM labs l WHERE l.categoryId = c.id AND l.isBookable = 1) as resourceCount
          FROM lab_categories c
          ORDER BY c.sortOrder, c.createdAt`
     )

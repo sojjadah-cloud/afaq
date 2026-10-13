@@ -12,6 +12,9 @@ const adminNavItems = [
     { href: '/admin/projects', label: 'Projects', icon: 'fa-lightbulb' },
     { href: '/admin/requests', label: 'Requests', icon: 'fa-inbox' },
     { href: '/admin/events', label: 'Events', icon: 'fa-calendar-days' },
+    { href: '/admin/equipment', label: 'Equipment', icon: 'fa-screwdriver-wrench' },
+    { href: '/admin/users', label: 'Users', icon: 'fa-users' },
+    { href: '/admin/departments', label: 'Departments', icon: 'fa-building-columns' },
     { href: '/admin/analytics', label: 'Analytics', icon: 'fa-chart-pie' },
     { href: '/admin/audit', label: 'Audit Log', icon: 'fa-clipboard-list' },
 ]

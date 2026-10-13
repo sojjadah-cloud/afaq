@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import ProjectsApprovalClient from './ProjectsApprovalClient'
 import styles from '../admin.module.css'
 import AdminNav from '@/components/AdminNav'
+import ExportButton from '@/components/ExportButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +25,10 @@ export default async function AdminProjectsPage() {
             </div>
 
             <AdminNav />
+
+            <div className={styles.exportRow}>
+                <ExportButton kind="projects" label="Export all projects" />
+            </div>
 
             <ProjectsApprovalClient projects={pendingProjects as any} />
         </main>

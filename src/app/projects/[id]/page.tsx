@@ -231,6 +231,7 @@ export default async function ProjectDetails({
                                 initialDescription={project.description}
                                 projectStatus={project.status}
                                 approvedMembers={approvedMembers}
+                                isAdmin={session.role === 'ADMIN'}
                             />
                         </div>
                     )}

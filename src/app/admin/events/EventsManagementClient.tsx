@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from '../admin.module.css'
 import { createEvent, updateEvent, deleteEvent, getEventRegistrations } from '@/actions/events'
 import AdminNav from '@/components/AdminNav'
+import ExportButton from '@/components/ExportButton'
 import { EVENT_TYPES, EVENT_TYPE_KEYS, eventTypeOf } from '@/lib/eventTypes'
 
 interface Event {
@@ -125,6 +126,10 @@ export default function EventsManagementClient({ events }: EventsManagementClien
             </div>
 
             <AdminNav />
+
+            <div className={styles.exportRow}>
+                <ExportButton kind="events" label="Export events" />
+            </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div className={styles.filterBar}>

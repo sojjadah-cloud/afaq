@@ -730,3 +730,470 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ---------- management pages: toolbar, forms, dialogs ---------- */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.toolbarActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.searchBox {
+    position: relative;
+    flex: 1 1 320px;
+    max-width: 520px;
+}
+
+.searchBox i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.searchBox input {
+    width: 100%;
+    padding: 0.7rem 1rem 0.7rem 2.5rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font: inherit;
+    background: white;
+}
+
+.searchBox input:focus,
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.inlineSelect:focus,
+.filterSelect:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(147, 128, 41, 0.15);
+}
+
+.primaryBtn,
+.secondaryBtn,
+.dangerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.primaryBtn {
+    background: var(--gold);
+    color: white;
+    border: none;
+}
+
+.primaryBtn:hover:not(:disabled) {
+    background: var(--gold-dark);
+}
+
+.secondaryBtn {
+    background: white;
+    color: #334155;
+    border: 1.5px solid #e2e8f0;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold-dark);
+}
+
+.dangerBtn {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.dangerBtn:hover:not(:disabled) {
+    background: #fee2e2;
+}
+
+.primaryBtn:disabled,
+.secondaryBtn:disabled,
+.dangerBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.filterSelect,
+.inlineSelect {
+    padding: 0.45rem 0.75rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.88rem;
+    background: white;
+    color: #334155;
+}
+
+.inlineSelect {
+    border-radius: 8px;
+}
+
+.youTag {
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: #f7f3e1;
+    color: var(--gold-dark);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+}
+
+.modalBox {
+    width: 100%;
+    max-width: 560px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+}
+
+.modalHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modalHead h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #1e293b;
+}
+
+.modalClose {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.modalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.25rem 1.4rem 1.4rem;
+}
+
+.modalBody .formGrid2 {
+    margin-bottom: 0;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.field > span {
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: #334155;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font: inherit;
+    background: white;
+}
+
+.checkField {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.checkField input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold);
+}
+
+.hint {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.formError {
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 0.88rem;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding-top: 0.4rem;
+}
+
+.credentialBox {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+}
+
+.credentialBox small {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+}
+
+.credentialBox strong {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 1.1rem;
+    color: #1e293b;
+    user-select: all;
+}
+
+@media (max-width: 768px) {
+    .searchBox {
+        max-width: none;
+    }
+
+    .toolbarActions {
+        width: 100%;
+    }
+
+    .toolbarActions > * {
+        flex: 1;
+    }
+}
+
+.blockTitle {
+    font-size: 1.15rem;
+    color: #1e293b;
+    margin: 0.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.blockTitle::before {
+    content: "";
+    width: 5px;
+    height: 20px;
+    border-radius: 3px;
+    background: var(--gold);
+}
+
+.categoryAdminGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.categoryAdminCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+}
+
+.categoryAdminCard p {
+    margin: 0;
+    flex: 1;
+    font-size: 0.86rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.categoryAdminHead {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.categoryAdminHead div {
+    display: flex;
+    flex-direction: column;
+}
+
+.categoryAdminHead small {
+    color: #94a3b8;
+    font-size: 0.78rem;
+}
+
+.categoryAdminIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #f7f3e1;
+    color: var(--gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.categoryAdminTech {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.86rem;
+    color: #334155;
+}
+
+.categoryAdminTech i {
+    color: var(--gold);
+    margin-top: 0.2rem;
+}
+
+.categoryAdminTech small {
+    color: #64748b;
+}
+
+.deptList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.deptList .section {
+    margin-bottom: 0;
+    padding: 1.4rem;
+}
+
+.deptHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.deptName {
+    margin: 0 0 0.3rem;
+    font-size: 1.1rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.codeTag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    background: #1e293b;
+    color: white;
+    letter-spacing: 0.05em;
+}
+
+.deptStats {
+    display: flex;
+    gap: 1rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.deptStats i {
+    color: var(--gold);
+    margin-right: 0.25rem;
+}
+
+.programmeList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.programmeList li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #edf2f7;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.programmeList li div:first-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.programmeList small {
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.exportRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}

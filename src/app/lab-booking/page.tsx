@@ -46,6 +46,9 @@ export default async function LabBookingPage({
     if (!lab) {
         return <NotFoundState title="Not found" text="The requested lab or tool could not be found." />
     }
+    if (!lab.isBookable) {
+        return <NotFoundState title="Not available" text="This item is currently not available for booking." />
+    }
 
     const mode = bookingModeFor(lab.categoryKey)
     const heading = HEADINGS[mode]

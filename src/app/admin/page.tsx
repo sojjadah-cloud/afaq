@@ -76,6 +76,27 @@ export default async function AdminDashboard() {
             badge: 0,
         },
         {
+            href: '/admin/equipment',
+            icon: 'fa-screwdriver-wrench',
+            title: 'Equipment',
+            desc: 'Workshops, labs, tools and technicians',
+            badge: 0,
+        },
+        {
+            href: '/admin/users',
+            icon: 'fa-users',
+            title: 'Users',
+            desc: 'Accounts, roles, access and password resets',
+            badge: 0,
+        },
+        {
+            href: '/admin/departments',
+            icon: 'fa-building-columns',
+            title: 'Departments',
+            desc: 'Departments and their programmes',
+            badge: 0,
+        },
+        {
             href: '/admin/analytics',
             icon: 'fa-chart-pie',
             title: 'Analytics',

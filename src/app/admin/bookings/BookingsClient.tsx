@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import styles from '../admin.module.css'
 import { approveBooking, rejectBooking, cancelBooking, completeBooking } from '@/actions/bookings'
 import AdminNav from '@/components/AdminNav'
+import ExportButton from '@/components/ExportButton'
 import Link from 'next/link'
 
 interface Booking {
@@ -80,6 +81,10 @@ export default function BookingsClient({ initialBookings }: BookingsClientProps)
             </div>
 
             <AdminNav />
+
+            <div className={styles.exportRow}>
+                <ExportButton kind="bookings" label="Export bookings" />
+            </div>
 
             <div className={styles.filterBar}>
                 <button
