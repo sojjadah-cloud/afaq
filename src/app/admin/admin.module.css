@@ -229,6 +229,11 @@
     color: #3182ce;
 }
 
+.development {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
 .actionBtn {
     padding: 0.5rem 1rem;
     background: white;

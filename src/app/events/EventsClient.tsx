@@ -115,7 +115,7 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
                                 </div>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="capacity">Capacity</label>
-                                    <input type="number" id="capacity" name="capacity" placeholder="Leave empty for unlimited" />
+                                    <input type="number" id="capacity" name="capacity" min={1} step={1} placeholder="Leave empty for unlimited" />
                                 </div>
                             </div>
 
@@ -128,6 +128,11 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
                                     <label htmlFor="endDate">End Date & Time</label>
                                     <input type="datetime-local" id="endDate" name="endDate" />
                                 </div>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="registrationDeadline">Registration closes</label>
+                                <input type="datetime-local" id="registrationDeadline" name="registrationDeadline" />
                             </div>
 
                             <div className={styles.formGroup}>

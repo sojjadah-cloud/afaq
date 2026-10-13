@@ -1,13 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../admin.module.css'
-import { createEvent, updateEvent, deleteEvent, getEventRegistrations } from '@/actions/events'
+import { createEvent, updateEvent, deleteEvent, getEventRegistrations, setAttendance } from '@/actions/events'
 import AdminNav from '@/components/AdminNav'
 import ExportButton from '@/components/ExportButton'
 import { EVENT_TYPES, EVENT_TYPE_KEYS, eventTypeOf } from '@/lib/eventTypes'
+import { eventStatus, minute, EVENT_STATUS_LABELS, EventStatus } from '@/lib/eventStatus'
+
+const STATUS_COLORS: Record<EventStatus, string> = {
+    OPEN: '#047857',
+    FULL: '#b45309',
+    CLOSED: '#4b5563',
+    ONGOING: '#1d4ed8',
+    FINISHED: '#64748b',
+}
 
 interface Event {
     id: string
@@ -17,6 +26,7 @@ interface Event {
     eventType: string
     startDate: string
     endDate: string
+    registrationDeadline: string | null
     location: string
     capacity: number
     registrationCount: number
@@ -29,13 +39,15 @@ interface Registration {
     email: string
     status: string
     registeredAt: string
+    attended: number
 }
 
 interface EventsManagementClientProps {
     events: Event[]
+    now: string
 }
 
-export default function EventsManagementClient({ events }: EventsManagementClientProps) {
+export default function EventsManagementClient({ events, now }: EventsManagementClientProps) {
     const router = useRouter()
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all')
     const [loading, setLoading] = useState<string | null>(null)
@@ -44,35 +56,29 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     const [showRegistrations, setShowRegistrations] = useState(false)
     const [registrations, setRegistrations] = useState<Registration[]>([])
     const [viewingEvent, setViewingEvent] = useState<Event | null>(null)
-    const [mounted, setMounted] = useState(false)
+    const [formError, setFormError] = useState('')
 
-    // Fix hydration mismatch by only using Date after mount
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    const now = mounted ? new Date() : new Date(0)
+    // "now" comes from the server in Oman time, so server and client render the same statuses.
+    const statusOf = (e: Event) => eventStatus(e, Number(e.registrationCount) || 0, now)
+    const isPast = (e: Event) => statusOf(e) === 'FINISHED'
     const filteredEvents = events.filter(e => {
-        if (!mounted) return true // Show all on server
-        if (filter === 'upcoming') return new Date(e.startDate) >= now
-        if (filter === 'past') return new Date(e.startDate) < now
+        if (filter === 'upcoming') return !isPast(e)
+        if (filter === 'past') return isPast(e)
         return true
     })
+    const viewingStarted = viewingEvent ? now >= minute(viewingEvent.startDate) : false
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading('form')
+        setFormError('')
         const formData = new FormData(e.currentTarget)
 
-        let result
-        if (editEvent) {
-            result = await updateEvent(editEvent.id, formData)
-        } else {
-            result = await createEvent(formData)
-        }
+        const result = await (editEvent ? updateEvent(editEvent.id, formData) : createEvent(formData))
+            .catch(() => ({ error: 'Something went wrong. Please try again.' }))
 
-        if (result.error) {
-            alert(result.error)
+        if ('error' in result && result.error) {
+            setFormError(result.error)
         } else {
             setShowForm(false)
             setEditEvent(null)
@@ -93,8 +99,22 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     }
 
     const openEditForm = (event: Event) => {
+        setFormError('')
         setEditEvent(event)
         setShowForm(true)
+    }
+
+    const toggleAttendance = async (reg: Registration) => {
+        setLoading(reg.id)
+        const next = !Number(reg.attended)
+        const result = await setAttendance(reg.id, next).catch(() => ({ error: 'Something went wrong. Please try again.' }))
+        setLoading(null)
+        if ('error' in result && result.error) {
+            alert(result.error)
+            return
+        }
+        setRegistrations(list => list.map(r => (r.id === reg.id ? { ...r, attended: next ? 1 : 0 } : r)))
+        router.refresh()
     }
 
     const viewRegistrations = async (event: Event) => {
@@ -107,9 +127,8 @@ export default function EventsManagementClient({ events }: EventsManagementClien
     }
 
     const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric'
-        })
+        const [y, m, d] = String(dateStr).slice(0, 10).split('-').map(Number)
+        return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
     // Stored values are local wall-clock times; keep them as-is (no UTC conversion).
@@ -131,7 +150,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                 <ExportButton kind="events" label="Export events" />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div className={styles.filterBar}>
                     <button
                         className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
@@ -143,19 +162,19 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         className={`${styles.filterBtn} ${filter === 'upcoming' ? styles.active : ''}`}
                         onClick={() => setFilter('upcoming')}
                     >
-                        Upcoming ({events.filter(e => new Date(e.startDate) >= now).length})
+                        Upcoming ({events.filter(e => !isPast(e)).length})
                     </button>
                     <button
                         className={`${styles.filterBtn} ${filter === 'past' ? styles.active : ''}`}
                         onClick={() => setFilter('past')}
                     >
-                        Past ({events.filter(e => new Date(e.startDate) < now).length})
+                        Past ({events.filter(isPast).length})
                     </button>
                 </div>
                 <button
                     className={styles.approveBtn}
                     style={{ padding: '0.75rem 1.5rem' }}
-                    onClick={() => { setEditEvent(null); setShowForm(true) }}
+                    onClick={() => { setFormError(''); setEditEvent(null); setShowForm(true) }}
                 >
                     <i className="fa fa-plus"></i> New Event
                 </button>
@@ -188,7 +207,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                             <strong>{event.title}</strong>
                                             <br />
                                             <small style={{ color: '#64748b' }}>
-                                                {event.description?.substring(0, 50)}...
+                                                {event.description ? (event.description.length > 60 ? `${event.description.slice(0, 60)}...` : event.description) : ''}
                                             </small>
                                         </td>
                                         <td>
@@ -209,10 +228,11 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                         <td>
                                             {formatDate(event.startDate)}
                                             <br />
-                                            {mounted && (
-                                                <small style={{ color: new Date(event.startDate) < now ? '#ef4444' : '#10b981' }}>
-                                                    {new Date(event.startDate) < now ? 'Past' : 'Upcoming'}
-                                                </small>
+                                            <small style={{ color: STATUS_COLORS[statusOf(event)], fontWeight: 600 }}>
+                                                {EVENT_STATUS_LABELS[statusOf(event)]}
+                                            </small>
+                                            {event.registrationDeadline && statusOf(event) === 'OPEN' && (
+                                                <><br /><small style={{ color: '#64748b' }}>Closes {formatDate(event.registrationDeadline)}</small></>
                                             )}
                                         </td>
                                         <td>{event.location || '-'}</td>
@@ -228,7 +248,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                                 {loading === event.id + '_regs' ? '...' : (
                                                     <>
                                                         <strong>{event.registrationCount}</strong>
-                                                        {event.capacity && ` / ${event.capacity}`}
+                                                        {event.capacity ? ` / ${event.capacity}` : ''}
                                                     </>
                                                 )}
                                             </button>
@@ -270,7 +290,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, padding: '2rem'
+                        zIndex: 1000, padding: '1rem'
                     }}
                     onClick={() => { setShowRegistrations(false); setViewingEvent(null) }}
                 >
@@ -282,7 +302,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         onClick={e => e.stopPropagation()}
                     >
                         <div style={{
-                            padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0',
+                            padding: '1.25rem clamp(1rem, 4vw, 2rem)', borderBottom: '1px solid #e2e8f0',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
                         }}>
@@ -293,26 +313,34 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                 </p>
                             </div>
                             <button
+                                aria-label="Close"
                                 onClick={() => { setShowRegistrations(false); setViewingEvent(null) }}
                                 style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}
                             >
                                 <i className="fa fa-times"></i>
                             </button>
                         </div>
-                        <div style={{ padding: '1.5rem 2rem' }}>
+                        <div style={{ padding: '1.25rem clamp(1rem, 4vw, 2rem)' }}>
+                            {!viewingStarted && registrations.length > 0 && (
+                                <p style={{ margin: '0 0 1rem', color: '#64748b', fontSize: '0.9rem' }}>
+                                    Attendance can be recorded once the event starts.
+                                </p>
+                            )}
                             {registrations.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
                                     <i className="fa fa-users" style={{ fontSize: '2rem', marginBottom: '0.5rem', display: 'block' }}></i>
                                     No registrations yet.
                                 </div>
                             ) : (
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '560px' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
                                             <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Name</th>
                                             <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Military ID</th>
                                             <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Status</th>
                                             <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Registered</th>
+                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Attended</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -337,17 +365,33 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '0.75rem', color: '#64748b', fontSize: '0.9rem' }}>
-                                                    {new Date(reg.registeredAt).toLocaleDateString()}
+                                                    {formatDate(reg.registeredAt)}
+                                                </td>
+                                                <td style={{ padding: '0.75rem' }}>
+                                                    {reg.status === 'REGISTERED' ? (
+                                                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: viewingStarted ? 'pointer' : 'not-allowed' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!Number(reg.attended)}
+                                                                disabled={!viewingStarted || loading === reg.id}
+                                                                onChange={() => toggleAttendance(reg)}
+                                                                style={{ width: '18px', height: '18px' }}
+                                                            />
+                                                            <span style={{ fontSize: '0.85rem', color: '#475569' }}>{Number(reg.attended) ? 'Yes' : 'No'}</span>
+                                                        </label>
+                                                    ) : '-'}
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
+                                </div>
                             )}
-                            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ marginTop: '1.5rem', flexWrap: 'wrap', gap: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ color: '#64748b' }}>
                                     <strong>{registrations.filter(r => r.status === 'REGISTERED').length}</strong> active registrations
-                                    {viewingEvent.capacity && ` out of ${viewingEvent.capacity} capacity`}
+                                    {viewingEvent.capacity ? ` out of ${viewingEvent.capacity} capacity` : ''}
+                                    {viewingStarted && <> · <strong>{registrations.filter(r => r.status === 'REGISTERED' && Number(r.attended)).length}</strong> attended</>}
                                 </span>
                                 {registrations.length > 0 && (
                                     <button
@@ -356,7 +400,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                             const { exportEventRegistrationsCSV } = await import('@/actions/export')
                                             const result = await exportEventRegistrationsCSV(viewingEvent.id, viewingEvent.title)
                                             if (result.csv) {
-                                                const blob = new Blob([result.csv], { type: 'text/csv' })
+                                                const blob = new Blob(['\uFEFF' + result.csv], { type: 'text/csv;charset=utf-8' })
                                                 const url = URL.createObjectURL(blob)
                                                 const a = document.createElement('a')
                                                 a.href = url
@@ -399,7 +443,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, padding: '2rem'
+                        zIndex: 1000, padding: '1rem'
                     }}
                     onClick={() => { setShowForm(false); setEditEvent(null) }}
                 >
@@ -411,7 +455,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         onClick={e => e.stopPropagation()}
                     >
                         <div style={{
-                            padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0',
+                            padding: '1.25rem clamp(1rem, 4vw, 2rem)', borderBottom: '1px solid #e2e8f0',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
                         }}>
@@ -419,13 +463,14 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                 {editEvent ? 'Edit Event' : 'Create Event'}
                             </h3>
                             <button
+                                aria-label="Close"
                                 onClick={() => { setShowForm(false); setEditEvent(null) }}
                                 style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}
                             >
                                 <i className="fa fa-times"></i>
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} style={{ padding: '2rem' }}>
+                        <form onSubmit={handleSubmit} style={{ padding: 'clamp(1rem, 4vw, 2rem)' }}>
                             <div style={{ marginBottom: '1.25rem' }}>
                                 <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Title *</label>
                                 <input
@@ -467,7 +512,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                 <div>
                                     <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Capacity</label>
                                     <input
-                                        type="number" name="capacity"
+                                        type="number" name="capacity" min={1} step={1}
                                         defaultValue={editEvent?.capacity || ''}
                                         placeholder="Unlimited"
                                         style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
@@ -493,6 +538,15 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                 </div>
                             </div>
                             <div style={{ marginBottom: '1.25rem' }}>
+                                <label htmlFor="registrationDeadline" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Registration closes</label>
+                                <input
+                                    id="registrationDeadline" type="datetime-local" name="registrationDeadline"
+                                    defaultValue={editEvent?.registrationDeadline ? formatDateTimeLocal(editEvent.registrationDeadline) : ''}
+                                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
+                                />
+                                <small style={{ color: '#64748b' }}>Optional. If empty, registration stays open until the event starts.</small>
+                            </div>
+                            <div style={{ marginBottom: '1.25rem' }}>
                                 <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Location</label>
                                 <input
                                     type="text" name="location"
@@ -509,6 +563,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit' }}
                                 ></textarea>
                             </div>
+                            {formError && <div className={styles.formError} role="alert" style={{ marginBottom: '1rem' }}>{formError}</div>}
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
                                 <button
                                     type="button"

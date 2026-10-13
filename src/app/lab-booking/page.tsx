@@ -59,7 +59,7 @@ export default async function LabBookingPage({
         { icon: 'fa-layer-group', label: 'Category', value: lab.categoryLabel },
         { icon: 'fa-location-dot', label: 'Location', value: lab.location || 'Ask the technician' },
         mode === 'borrow'
-            ? { icon: 'fa-box', label: 'Available', value: `${lab.capacity} ${lab.capacity === 1 ? 'unit' : 'units'}` }
+            ? { icon: 'fa-box', label: 'Units in store', value: `${lab.capacity} ${lab.capacity === 1 ? 'unit' : 'units'}` }
             : { icon: 'fa-users', label: 'Capacity', value: `Up to ${lab.capacity} ${lab.capacity === 1 ? 'person' : 'people'}` },
         { icon: 'fa-screwdriver-wrench', label: 'What it offers', value: lab.shortDesc },
         { icon: 'fa-user-gear', label: 'Technician', value: [lab.technician, lab.technicianContact].filter(Boolean).join(' · ') || 'Club technicians' },

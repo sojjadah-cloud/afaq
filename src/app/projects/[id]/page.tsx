@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import ProjectActions from './ProjectActions'
+import ProjectActivity, { ActivityItem, SupervisorPicker } from './ProjectActivity'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
+import { initials } from '@/lib/utils'
 import { CLUB_SLUG } from '@/lib/sections'
 import { STAGES, StageKey, STATUS_LABELS } from '../stages'
 
@@ -107,6 +109,38 @@ export default async function ProjectDetails({
         )
     }
 
+    const activityRows = await query<RowDataPacket[]>(
+        `SELECT pu.id, pu.type, pu.message, pu.progress, pu.createdAt, u.role as authorRole,
+                COALESCE(sp.fullName, u.militaryId, 'Former member') as authorName
+         FROM project_updates pu
+         LEFT JOIN users u ON u.id = pu.userId
+         LEFT JOIN student_profiles sp ON sp.userId = pu.userId
+         WHERE pu.projectId = ?
+         ORDER BY pu.createdAt DESC`,
+        [id]
+    )
+    const activity: ActivityItem[] = activityRows.map(r => ({
+        id: r.id, type: r.type, message: r.message, progress: r.progress === null ? null : Number(r.progress),
+        createdAt: String(r.createdAt), authorName: r.authorName, authorRole: r.authorRole || '',
+    }))
+
+    const isStaff = session.role === 'ADMIN' || session.role === 'STAFF'
+    const isApprovedMember = isOwner || members.some(m => m.userId === session.userId && m.status === 'APPROVED')
+    const supervisorRows = project.supervisorId
+        ? await query<RowDataPacket[]>(
+            'SELECT COALESCE(sp.fullName, u.militaryId) as name FROM users u LEFT JOIN student_profiles sp ON sp.userId = u.id WHERE u.id = ?',
+            [project.supervisorId]
+        )
+        : []
+    const supervisorName = supervisorRows[0]?.name || ''
+    const staffOptions = isStaff
+        ? await query<RowDataPacket[]>(
+            `SELECT u.id, COALESCE(sp.fullName, u.militaryId) as name FROM users u
+             LEFT JOIN student_profiles sp ON sp.userId = u.id
+             WHERE u.role IN ('STAFF', 'ADMIN') AND u.isActive = 1 ORDER BY name`
+        )
+        : []
+
     // Approved members for ownership transfer
     const approvedMembers = members.filter(m => m.status === 'APPROVED')
 
@@ -192,9 +226,40 @@ export default async function ProjectDetails({
                             </div>
                         </section>
                     )}
+
+                    <ProjectActivity
+                        projectId={id}
+                        items={activity}
+                        canPostUpdate={isApprovedMember}
+                        canPostFeedback={!isApprovedMember && isStaff}
+                        currentProgress={Number(project.progress) || 0}
+                        isCompleted={project.status === 'COMPLETED'}
+                    />
                 </div>
 
                 <aside className={styles.sidebar}>
+                    <div className={styles.card}>
+                        <h3>Supervisor</h3>
+                        {supervisorName ? (
+                            <div className={styles.member}>
+                                <div className={styles.memberAvatar}>{initials(supervisorName)}</div>
+                                <div className={styles.memberInfo}>
+                                    <span className={styles.memberName}>{supervisorName}</span>
+                                    <span className={styles.memberRole}>Supervisor</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className={styles.empty}>No supervisor assigned yet.</p>
+                        )}
+                        {isStaff && (
+                            <SupervisorPicker
+                                projectId={id}
+                                current={project.supervisorId || ''}
+                                staff={staffOptions.map(s => ({ id: String(s.id), name: String(s.name) }))}
+                            />
+                        )}
+                    </div>
+
                     <div className={styles.card}>
                         <h3>Team Members</h3>
                         <div className={styles.memberList}>
@@ -204,7 +269,7 @@ export default async function ProjectDetails({
                                 members.filter(m => m.status === 'APPROVED' || m.role === 'Owner' || m.status === undefined).map(member => (
                                     <div key={member.userId} className={styles.member}>
                                         <div className={styles.memberAvatar}>
-                                            {(member.fullName || member.militaryId).charAt(0)}
+                                            {initials(member.fullName || member.militaryId)}
                                         </div>
                                         <div className={styles.memberInfo}>
                                             <span className={styles.memberName}>

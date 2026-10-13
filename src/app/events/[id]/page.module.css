@@ -314,3 +314,7 @@
         margin-bottom: 1.25rem;
     }
 }
+
+.mainContent {
+    min-width: 0;
+}

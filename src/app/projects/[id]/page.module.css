@@ -782,3 +782,228 @@
 .deleteProjectBtn:hover:not(:disabled) {
     background: #fee2e2;
 }
+
+/* ---------- activity timeline ---------- */
+.activityForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    background: #fafbfc;
+}
+
+.activityLabel {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.activityForm textarea {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font: inherit;
+    resize: vertical;
+    background: white;
+}
+
+.activityForm textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(147, 128, 41, 0.15);
+}
+
+.progressPicker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.progressPicker small {
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.checkLine {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.checkLine input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--gold);
+}
+
+.sliderRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sliderRow input {
+    flex: 1;
+    accent-color: var(--gold);
+}
+
+.sliderRow strong {
+    min-width: 3rem;
+    text-align: right;
+    color: var(--gold-dark);
+}
+
+.formError {
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 0.88rem;
+}
+
+.postBtn {
+    align-self: flex-end;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--gold);
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.postBtn:hover:not(:disabled) {
+    background: var(--gold-dark);
+}
+
+.postBtn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timelineItem {
+    position: relative;
+    display: flex;
+    gap: 0.85rem;
+    padding-bottom: 1rem;
+}
+
+.timelineItem:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 36px;
+    bottom: 0;
+    width: 2px;
+    background: #edf2f7;
+}
+
+.timelineIcon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.timelineUPDATE .timelineIcon {
+    background: #e8efff;
+    color: #2563eb;
+}
+
+.timelineFEEDBACK .timelineIcon {
+    background: #f7f3e1;
+    color: var(--gold-dark);
+}
+
+.timelineBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.timelineHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+.timelineHead strong {
+    color: #1e293b;
+}
+
+.timelineType {
+    color: #64748b;
+}
+
+.timelineHead time {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.timelineBody p {
+    margin: 0.3rem 0 0;
+    color: #334155;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.timelineFEEDBACK .timelineBody p {
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    background: #fdfbf3;
+    border-left: 3px solid var(--gold);
+}
+
+.timelineProgress {
+    display: inline-block;
+    margin-top: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: #e8efff;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.supervisorSelect {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font: inherit;
+    background: white;
+}
+
+.actionBtn.active {
+    background: #fffbef;
+    border-color: var(--gold);
+    color: var(--gold-dark);
+}

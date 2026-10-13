@@ -6,6 +6,9 @@ import { revalidatePath } from 'next/cache'
 import { RowDataPacket } from '@/lib/types'
 import { getProjectSection } from '@/lib/sections'
 import { saveUpload, FORM_EXTENSIONS, ATTACHMENT_EXTENSIONS } from '@/lib/files'
+import { getActiveUser } from '@/lib/session'
+import { createNotification } from '@/lib/notify'
+import { randomBytes } from 'crypto'
 
 export async function createProject(formData: FormData) {
     const session = await getSession()
@@ -57,6 +60,8 @@ export async function createProject(formData: FormData) {
              VALUES (?, ?, ?, ?, 'DOCUMENT', NOW())`,
             [`att_${Date.now()}`, projectId, `Application Form - ${form.name}`, form.url]
         )
+
+        await logProjectEvent(projectId, session.userId, 'Created the project with its application form')
 
         // Auto-add creator as owner/member
         await query(
@@ -217,6 +222,7 @@ export async function requestApproval(projectId: string) {
 
     try {
         await query('UPDATE projects SET status = \'PENDING_APPROVAL\', updatedAt = NOW() WHERE id = ?', [projectId])
+        await logProjectEvent(projectId, session.userId, 'Submitted the project for approval')
 
         // Audit log
         try {
@@ -251,6 +257,7 @@ export async function requestCompletion(projectId: string) {
 
     try {
         await query('UPDATE projects SET status = \'PENDING_COMPLETION\', updatedAt = NOW() WHERE id = ?', [projectId])
+        await logProjectEvent(projectId, session.userId, 'Requested completion review')
 
         // Audit log
         try {
@@ -299,6 +306,7 @@ export async function transferOwnership(projectId: string, newOwnerId: string) {
         // Update member roles
         await query('UPDATE project_members SET role = \'Member\' WHERE projectId = ? AND userId = ?', [projectId, session.userId])
         await query('UPDATE project_members SET role = \'Owner\' WHERE projectId = ? AND userId = ?', [projectId, newOwnerId])
+        await logProjectEvent(projectId, session.userId, 'Transferred project ownership')
 
         // Audit log
         try {
@@ -332,6 +340,7 @@ export async function adminApproveProject(projectId: string) {
 
     try {
         await query('UPDATE projects SET status = \'DEVELOPMENT\', updatedAt = NOW() WHERE id = ?', [projectId])
+        await logProjectEvent(projectId, session.userId, 'Approved the project; development started')
 
         // Notify project owner
         const proj = await query<RowDataPacket[]>('SELECT createdById, title FROM projects WHERE id = ?', [projectId])
@@ -367,6 +376,7 @@ export async function adminValidateCompletion(projectId: string) {
 
     try {
         await query('UPDATE projects SET status = \'COMPLETED\', progress = 100, updatedAt = NOW() WHERE id = ?', [projectId])
+        await logProjectEvent(projectId, session.userId, 'Confirmed completion; project marked as completed')
 
         // Notify project owner
         const proj = await query<RowDataPacket[]>('SELECT createdById, title FROM projects WHERE id = ?', [projectId])
@@ -412,6 +422,7 @@ export async function adminRejectProject(projectId: string, reason?: string) {
 
     try {
         await query('UPDATE projects SET status = ?, updatedAt = NOW() WHERE id = ?', [newStatus, projectId])
+        await logProjectEvent(projectId, session.userId, `Returned the request for revision${reason ? `: ${reason}` : ''}`)
 
         // Notify project owner
         await query(
@@ -451,4 +462,98 @@ export async function getPendingProjects() {
         console.error('Get pending projects error:', error)
         return []
     }
+}
+
+// ============== PROJECT ACTIVITY ==============
+
+async function logProjectEvent(projectId: string, userId: string, message: string) {
+    try {
+        await query(
+            `INSERT INTO project_updates (id, projectId, userId, type, message, createdAt) VALUES (?, ?, ?, 'STATUS', ?, NOW())`,
+            [`upd_${Date.now()}_${randomBytes(3).toString('hex')}`, projectId, userId, message]
+        )
+    } catch { /* activity log is non-critical */ }
+}
+
+// Members post progress updates (optionally with a new progress %); staff post technical feedback.
+export async function addProjectUpdate(projectId: string, formData: FormData) {
+    const session = await getSession()
+    const user = await getActiveUser(session)
+    if (!user) return { error: 'Not authenticated' }
+
+    const message = String(formData.get('message') || '').trim()
+    if (message.length < 3) return { error: 'Write a short update first' }
+    if (message.length > 2000) return { error: 'Keep the update under 2000 characters' }
+
+    const rows = await query<RowDataPacket[]>('SELECT id, title, status, createdById, supervisorId FROM projects WHERE id = ?', [projectId])
+    const project = rows[0]
+    if (!project) return { error: 'Project not found' }
+
+    const isStaff = user.role === 'ADMIN' || user.role === 'STAFF'
+    const membership = await query<RowDataPacket[]>(
+        "SELECT 1 FROM project_members WHERE projectId = ? AND userId = ? AND status = 'APPROVED'",
+        [projectId, user.id]
+    )
+    const isMember = project.createdById === user.id || membership.length > 0
+    if (!isMember && !isStaff) return { error: 'Only project members and staff can post updates' }
+
+    const type = isMember ? 'UPDATE' : 'FEEDBACK'
+    let progress: number | null = null
+    const rawProgress = String(formData.get('progress') ?? '')
+    if (type === 'UPDATE' && rawProgress !== '') {
+        progress = Math.round(Number(rawProgress))
+        if (!Number.isFinite(progress) || progress < 0 || progress > 100) return { error: 'Progress must be between 0 and 100' }
+        if (project.status === 'COMPLETED') return { error: 'Completed projects cannot change progress' }
+        // 100% is reserved for confirmed completion.
+        if (progress === 100) progress = 95
+    }
+
+    await query(
+        'INSERT INTO project_updates (id, projectId, userId, type, message, progress, createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+        [`upd_${Date.now()}_${randomBytes(3).toString('hex')}`, projectId, user.id, type, message, progress]
+    )
+    if (progress !== null) {
+        await query('UPDATE projects SET progress = ?, updatedAt = NOW() WHERE id = ?', [progress, projectId])
+    } else {
+        await query('UPDATE projects SET updatedAt = NOW() WHERE id = ?', [projectId])
+    }
+
+    if (type === 'FEEDBACK') {
+        await createNotification(project.createdById, 'PROJECT_FEEDBACK', 'New feedback on your project', `Feedback was added to "${project.title}".`, `/projects/${projectId}`)
+    } else if (project.supervisorId && project.supervisorId !== user.id) {
+        await createNotification(project.supervisorId, 'PROJECT_UPDATE', 'Project update', `"${project.title}" has a new progress update.`, `/projects/${projectId}`)
+    }
+
+    revalidatePath(`/projects/${projectId}`)
+    return { success: true }
+}
+
+export async function assignSupervisor(projectId: string, supervisorId: string) {
+    const session = await getSession()
+    const user = await getActiveUser(session)
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'STAFF')) return { error: 'Not authorized' }
+
+    const project = await query<RowDataPacket[]>('SELECT title FROM projects WHERE id = ?', [projectId])
+    if (!project[0]) return { error: 'Project not found' }
+
+    let name = ''
+    if (supervisorId) {
+        const sup = await query<RowDataPacket[]>(
+            `SELECT u.id, COALESCE(sp.fullName, u.militaryId) as name FROM users u
+             LEFT JOIN student_profiles sp ON sp.userId = u.id
+             WHERE u.id = ? AND u.role IN ('STAFF', 'ADMIN') AND u.isActive = 1`,
+            [supervisorId]
+        )
+        if (!sup[0]) return { error: 'Choose an active staff member' }
+        name = sup[0].name
+    }
+
+    await query('UPDATE projects SET supervisorId = ?, updatedAt = NOW() WHERE id = ?', [supervisorId || null, projectId])
+    await logProjectEvent(projectId, user.id, supervisorId ? `Assigned ${name} as supervisor` : 'Removed the supervisor')
+    if (supervisorId && supervisorId !== user.id) {
+        await createNotification(supervisorId, 'PROJECT_SUPERVISOR', 'You are supervising a project', `You were assigned to supervise "${project[0].title}".`, `/projects/${projectId}`)
+    }
+    revalidatePath(`/projects/${projectId}`)
+    revalidatePath('/staff')
+    return { success: true }
 }

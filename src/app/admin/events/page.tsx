@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getEvents } from '@/actions/events'
+import { nowInOman } from '@/lib/utils'
 import EventsManagementClient from './EventsManagementClient'
 
 export const dynamic = 'force-dynamic'
@@ -14,5 +15,5 @@ export default async function AdminEventsPage() {
 
     const events = await getEvents() as any[]
 
-    return <EventsManagementClient events={events} />
+    return <EventsManagementClient events={events} now={nowInOman()} />
 }

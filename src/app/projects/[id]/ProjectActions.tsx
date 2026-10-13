@@ -255,8 +255,10 @@ export default function ProjectActions({
 
                             {/* Edit Form */}
                             <div className={`${styles.editSection} ${isEditing ? styles.expanded : ''}`}>
-                                <form action={async (formData) => {
-                                    const result = await editProject(projectId, formData)
+                                <form onSubmit={async (e) => {
+                                    // Not a form action: those reset the form, losing edits when the save fails.
+                                    e.preventDefault()
+                                    const result = await editProject(projectId, new FormData(e.currentTarget))
                                     if (result?.error) {
                                         alert(result.error)
                                     } else {

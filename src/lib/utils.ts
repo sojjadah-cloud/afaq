@@ -59,3 +59,13 @@ export function cn(...classes: (string | undefined | null | false)[]) {
 export function todayInOman(): string {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Muscat' }).format(new Date())
 }
+
+// Current wall-clock time in Oman as 'YYYY-MM-DD HH:MM', comparable with stored event dates.
+export function nowInOman(): string {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Muscat', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(new Date())
+    const get = (type: string) => parts.find(p => p.type === type)?.value || '00'
+    return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`
+}

@@ -1,64 +1,46 @@
-import { getSession } from '@/lib/auth'
-import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import styles from './student.module.css'
+import { getSession } from '@/lib/auth'
+import { query } from '@/lib/db'
 import { RowDataPacket } from '@/lib/types'
-import { initials } from '@/lib/utils'
+import { initials, todayInOman } from '@/lib/utils'
+import CancelBookingButton from '@/components/CancelBookingButton'
+import styles from './student.module.css'
 
 export const dynamic = 'force-dynamic'
+export const metadata = { title: 'My Profile' }
 
 const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', STAFF: 'Staff', STUDENT: 'Student' }
-const STATUS_LABELS: Record<string, string> = {
+const PROJECT_STATUS: Record<string, string> = {
     START: 'Start',
     DEVELOPMENT: 'In Development',
     COMPLETED: 'Completed',
     PENDING_APPROVAL: 'Awaiting Approval',
     PENDING_COMPLETION: 'Awaiting Completion',
 }
-
-interface UserData extends RowDataPacket {
-    id: string
-    name: string
-    militaryId: string
-    email: string
-    role: string
-    yearLevel: string | null
-    department: string | null
-    programme: string | null
+const BOOKING_STATUS: Record<string, string> = {
+    PENDING: 'Pending', APPROVED: 'Approved', REJECTED: 'Rejected', CANCELLED: 'Cancelled', COMPLETED: 'Completed',
+}
+const MEMBERSHIP: Record<string, { label: string; text: string }> = {
+    PENDING: { label: 'Under review', text: 'Your membership application is being reviewed by the club.' },
+    APPROVED: { label: 'Member', text: 'You are a member of the AFAQ Scientific Club.' },
+    REJECTED: { label: 'Not approved', text: 'Your application was not approved. Contact the club for details.' },
 }
 
-interface ProjectData extends RowDataPacket {
-    id: string
-    title: string
-    status: string
-    createdAt: Date
-}
-
-interface BookingData extends RowDataPacket {
-    id: string
-    labName: string
-    bookingDate: Date
-    timeSlot: string
-    status: string
-}
-
-interface EventData extends RowDataPacket {
-    id: string
-    title: string
-    eventDate: Date
-    location: string
+function formatDay(value: string | null) {
+    if (!value) return ''
+    const [y, m, d] = String(value).slice(0, 10).split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export default async function StudentProfile() {
     const session = await getSession()
+    if (!session.isLoggedIn || !session.userId) redirect('/login')
+    const today = todayInOman()
+    const weekAhead = new Date(Date.parse(today) + 7 * 864e5).toISOString().slice(0, 10)
 
-    if (!session.isLoggedIn || !session.userId) {
-        redirect('/login')
-    }
-
-    const users = await query<UserData[]>(
-        `SELECT u.id, u.militaryId, u.email, u.role, sp.fullName as name, sp.yearLevel,
+    const users = await query<RowDataPacket[]>(
+        `SELECT u.id, u.militaryId, u.email, u.role, sp.fullName as name, sp.yearLevel, sp.bio,
                 d.name as department, pr.name as programme
          FROM users u
          LEFT JOIN student_profiles sp ON u.id = sp.userId
@@ -68,49 +50,70 @@ export default async function StudentProfile() {
         [session.userId]
     )
     const user = users[0]
+    if (!user) redirect('/login')
 
-    if (!user) {
-        redirect('/login')
-    }
-
-    const projects = await query<ProjectData[]>(
-        `SELECT p.* FROM projects p
+    const projects = await query<RowDataPacket[]>(
+        `SELECT p.id, p.title, p.status, p.progress, p.createdById FROM projects p
          LEFT JOIN project_members pm ON p.id = pm.projectId AND pm.status = 'APPROVED'
          WHERE p.createdById = ? OR pm.userId = ?
          GROUP BY p.id
          ORDER BY p.updatedAt DESC`,
         [user.id, user.id]
     )
-
-    // Fetch Lab Bookings
-    const bookings = await query<BookingData[]>(
-        `SELECT b.id, l.name as labName, b.bookingDate, b.timeSlot, b.status 
-     FROM lab_bookings b 
-     JOIN labs l ON b.labId = l.id 
-     WHERE b.userId = ? 
-     ORDER BY b.bookingDate DESC`,
+    const joinRequests = await query<RowDataPacket[]>(
+        `SELECT p.id as projectId, p.title, COALESCE(sp.fullName, u.militaryId) as name
+         FROM project_members pm
+         JOIN projects p ON p.id = pm.projectId
+         JOIN users u ON u.id = pm.userId
+         LEFT JOIN student_profiles sp ON sp.userId = pm.userId
+         WHERE pm.status = 'PENDING' AND p.createdById = ?`,
+        [user.id]
+    )
+    const bookings = await query<RowDataPacket[]>(
+        `SELECT b.id, l.name as labName, c.key as categoryKey, b.bookingDate, b.timeSlot, b.status, b.returnDate
+         FROM lab_bookings b
+         JOIN labs l ON b.labId = l.id
+         JOIN lab_categories c ON c.id = l.categoryId
+         WHERE b.userId = ?
+         ORDER BY b.bookingDate DESC`,
+        [user.id]
+    )
+    const events = await query<RowDataPacket[]>(
+        `SELECT e.id, e.title, e.startDate, e.endDate, e.location, er.attended
+         FROM event_registrations er
+         JOIN events e ON er.eventId = e.id
+         WHERE er.userId = ? AND er.status = 'REGISTERED'
+         ORDER BY e.startDate DESC`,
+        [user.id]
+    )
+    const membership = await query<RowDataPacket[]>(
+        'SELECT status, createdAt FROM club_registrations WHERE userId = ? ORDER BY createdAt DESC LIMIT 1',
         [user.id]
     )
 
-    // Fetch Event Registrations
-    const events = await query<EventData[]>(
-        `SELECT e.id, e.title, e.startDate as eventDate, e.location 
-     FROM event_registrations er 
-     JOIN events e ON er.eventId = e.id 
-     WHERE er.userId = ? AND er.status = 'REGISTERED'
-     ORDER BY e.startDate DESC`,
-        [user.id]
-    )
+    const day = (v: unknown) => String(v || '').slice(0, 10)
+    // A borrowed item stays current until staff record its return.
+    const isOut = (b: RowDataPacket) => b.status === 'APPROVED' && !!b.returnDate && day(b.bookingDate) < today
+    const isOverdue = (b: RowDataPacket) => isOut(b) && day(b.returnDate) < today
+    const upcomingBookings = bookings.filter(b => isOut(b) || (['PENDING', 'APPROVED'].includes(b.status) && day(b.bookingDate) >= today))
+    const pastBookings = bookings.filter(b => !upcomingBookings.includes(b))
+    const upcomingEvents = events.filter(e => day(e.endDate || e.startDate) >= today).reverse()
+    const pastEvents = events.filter(e => day(e.endDate || e.startDate) < today)
+    const soonBookings = upcomingBookings.filter(b => day(b.bookingDate) <= weekAhead)
+    const memberStatus = membership[0] ? MEMBERSHIP[membership[0].status] : null
 
-
+    const attention = [
+        ...joinRequests.map(r => ({ icon: 'fa-user-plus', text: `${r.name} wants to join ${r.title}`, href: `/projects/${r.projectId}`, action: 'Review' })),
+        ...upcomingBookings.filter(isOverdue).map(b => ({ icon: 'fa-triangle-exclamation', text: `${b.labName} was due back on ${formatDay(b.returnDate)}. Please return it to the tool store.`, href: '#bookings', action: 'View' })),
+        ...soonBookings.filter(b => !isOut(b)).map(b => ({ icon: 'fa-calendar-check', text: `${b.labName} on ${formatDay(b.bookingDate)}, ${b.timeSlot} (${BOOKING_STATUS[b.status]})`, href: '#bookings', action: 'View' })),
+        ...upcomingEvents.slice(0, 3).map(e => ({ icon: 'fa-calendar-days', text: `${e.title} on ${formatDay(e.startDate)}`, href: `/events/${e.id}`, action: 'Open' })),
+    ]
 
     return (
         <main className={styles.main}>
             <header className={styles.header}>
                 <div className={styles.profileInfo}>
-                    <div className={styles.avatarPlaceholder}>
-                        {initials(user.name || user.email, 'U')}
-                    </div>
+                    <div className={styles.avatarPlaceholder}>{initials(user.name || user.email, 'U')}</div>
                     <div>
                         <h1>{user.name || user.email}</h1>
                         <p className={styles.militaryId}>Military ID: {user.militaryId}</p>
@@ -122,107 +125,137 @@ export default async function StudentProfile() {
                     </div>
                 </div>
                 <div className={styles.actions}>
-                    <Link href="/projects?new=1" className={styles.actionBtn}>New Project</Link>
-                    <Link href="/lab-booking" className={styles.actionBtn}>Book Lab</Link>
+                    <Link href="/projects?new=1" className={styles.actionBtn}><i className="fa-solid fa-plus"></i> New Project</Link>
+                    <Link href="/equipment" className={styles.actionBtn}><i className="fa-solid fa-screwdriver-wrench"></i> Book or Borrow</Link>
+                    <Link href="/student/settings" className={styles.actionBtnSecondary}><i className="fa-solid fa-gear"></i> Settings</Link>
                 </div>
             </header>
 
-            {/* Quick Stats */}
-            <div className={styles.statsRow}>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}><i className="fa fa-lightbulb"></i></div>
-                    <div className={styles.statInfo}>
-                        <div className={styles.statValue}>{projects.length}</div>
-                        <div className={styles.statLabel}>My Projects</div>
-                    </div>
-                </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}><i className="fa fa-flask"></i></div>
-                    <div className={styles.statInfo}>
-                        <div className={styles.statValue}>{bookings.filter(b => b.status === 'PENDING' || b.status === 'APPROVED').length}</div>
-                        <div className={styles.statLabel}>Active Bookings</div>
-                    </div>
-                </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}><i className="fa fa-calendar"></i></div>
-                    <div className={styles.statInfo}>
-                        <div className={styles.statValue}>{events.length}</div>
-                        <div className={styles.statLabel}>Registered Events</div>
-                    </div>
-                </div>
-                <div className={styles.statCard}>
-                    <div className={styles.statIcon}><i className="fa fa-check-circle"></i></div>
-                    <div className={styles.statInfo}>
-                        <div className={styles.statValue}>{projects.filter(p => p.status === 'COMPLETED').length}</div>
-                        <div className={styles.statLabel}>Completed</div>
-                    </div>
-                </div>
+            <div className={styles.topGrid}>
+                <section className={styles.section} aria-labelledby="attention-title">
+                    <h2 id="attention-title"><i className="fa-solid fa-bell"></i> Needs your attention</h2>
+                    {attention.length === 0 ? (
+                        <p className={styles.empty}>Nothing pending right now.</p>
+                    ) : (
+                        <ul className={styles.attentionList}>
+                            {attention.map((a, i) => (
+                                <li key={i}>
+                                    <i className={`fa-solid ${a.icon}`}></i>
+                                    <span>{a.text}</span>
+                                    <Link href={a.href} className={styles.link}>{a.action}</Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+
+                <section className={styles.section} aria-labelledby="membership-title">
+                    <h2 id="membership-title"><i className="fa-solid fa-id-badge"></i> Club membership</h2>
+                    {memberStatus ? (
+                        <div className={styles.membership}>
+                            <span className={`${styles.status} ${styles[`member${membership[0].status}`] || ''}`}>{memberStatus.label}</span>
+                            <p>{memberStatus.text}</p>
+                            <small>Applied {formatDay(membership[0].createdAt)}</small>
+                        </div>
+                    ) : (
+                        <div className={styles.membership}>
+                            <p>You have not applied to join the AFAQ Scientific Club yet.</p>
+                            <Link href="/#join" className={styles.link}>Apply to join</Link>
+                        </div>
+                    )}
+                </section>
             </div>
 
-            <div className={styles.grid}>
-                <div className={styles.column} style={{ width: '100%' }}>
-                    <section className={`${styles.section} animate-slide-up delay-1`}>
-                        <h2><i className="fa-solid fa-lightbulb" style={{ color: 'var(--gold)' }}></i> My Projects</h2>
-                        <div className={styles.list}>
-                            {projects.length === 0 ? (
-                                <p className={styles.empty}>You are not part of any project yet. <Link href="/projects">Browse projects</Link> or start a new one.</p>
-                            ) : (
-                                projects.map(p => (
-                                    <div key={p.id} className={styles.card}>
-                                        <div>
-                                            <h3>{p.title}</h3>
-                                            <span className={`${styles.status} ${styles[p.status.toLowerCase()]}`}>
-                                                {STATUS_LABELS[p.status] || p.status}
-                                            </span>
-                                        </div>
-                                        <Link href={`/projects/${p.id}`} className={styles.link}>View Details</Link>
-                                    </div>
-                                ))
-                            )}
+            <section className={styles.section} aria-labelledby="projects-title">
+                <h2 id="projects-title"><i className="fa-solid fa-lightbulb"></i> My Projects</h2>
+                <div className={styles.list}>
+                    {projects.length === 0 ? (
+                        <p className={styles.empty}>You are not part of any project yet. <Link href="/projects">Browse projects</Link> or start a new one.</p>
+                    ) : projects.map(p => (
+                        <div key={p.id} className={styles.card}>
+                            <div className={styles.cardBody}>
+                                <h3>{p.title}</h3>
+                                <div className={styles.cardMeta}>
+                                    <span className={`${styles.status} ${styles[String(p.status).toLowerCase()] || ''}`}>{PROJECT_STATUS[p.status] || p.status}</span>
+                                    <span>{p.createdById === user.id ? 'Owner' : 'Member'}</span>
+                                </div>
+                                <div className={styles.progress}><div style={{ width: `${Number(p.progress) || 0}%` }}></div></div>
+                            </div>
+                            <Link href={`/projects/${p.id}`} className={styles.link}>Open</Link>
                         </div>
-                    </section>
+                    ))}
+                </div>
+            </section>
 
-                    <section className={`${styles.section} animate-slide-up delay-2`}>
-                        <h2><i className="fa-solid fa-flask" style={{ color: 'var(--gold)' }}></i> Lab Bookings</h2>
-                        <div className={styles.list}>
-                            {bookings.length === 0 ? (
-                                <p className={styles.empty}>No lab bookings yet. <Link href="/lab-booking">Book a lab</Link>.</p>
-                            ) : (
-                                bookings.map(b => (
+            <section className={styles.section} id="bookings" aria-labelledby="bookings-title">
+                <h2 id="bookings-title"><i className="fa-solid fa-calendar-check"></i> Bookings &amp; borrowed items</h2>
+                {bookings.length === 0 ? (
+                    <p className={styles.empty}>No bookings yet. <Link href="/equipment">Browse workshops, labs and tools</Link>.</p>
+                ) : (
+                    <>
+                        <h3 className={styles.subTitle}>Current &amp; upcoming</h3>
+                        {upcomingBookings.length === 0 ? <p className={styles.empty}>No upcoming bookings.</p> : (
+                            <div className={styles.list}>
+                                {upcomingBookings.map(b => (
                                     <div key={b.id} className={styles.card}>
-                                        <div>
+                                        <div className={styles.cardBody}>
                                             <h3>{b.labName}</h3>
-                                            <p>{new Date(b.bookingDate).toLocaleDateString()} - {b.timeSlot}</p>
-                                            <span className={`${styles.status} ${styles[b.status.toLowerCase()]}`}>
-                                                {b.status}
-                                            </span>
+                                            <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · return by ${formatDay(b.returnDate)}` : ''}</p>
+                                            {isOut(b) ? (
+                                                <span className={`${styles.status} ${isOverdue(b) ? styles.rejected : styles.approved}`}>{isOverdue(b) ? 'Overdue' : 'Borrowed'}</span>
+                                            ) : (
+                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{BOOKING_STATUS[b.status] || b.status}</span>
+                                            )}
                                         </div>
+                                        {!isOut(b) && <CancelBookingButton bookingId={b.id} label={b.labName} />}
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </section>
+                                ))}
+                            </div>
+                        )}
+                        {pastBookings.length > 0 && (
+                            <>
+                                <h3 className={styles.subTitle}>History</h3>
+                                <div className={styles.list}>
+                                    {pastBookings.map(b => (
+                                        <div key={b.id} className={`${styles.card} ${styles.cardMuted}`}>
+                                            <div className={styles.cardBody}>
+                                                <h3>{b.labName}</h3>
+                                                <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · return by ${formatDay(b.returnDate)}` : ''}</p>
+                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{b.returnDate && b.status === 'COMPLETED' ? 'Returned' : BOOKING_STATUS[b.status] || b.status}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </>
+                )}
+            </section>
 
-                    <section className={`${styles.section} animate-slide-up delay-3`}>
-                        <h2><i className="fa-solid fa-calendar-check" style={{ color: 'var(--gold)' }}></i> Registered Events</h2>
-                        <div className={styles.list}>
-                            {events.length === 0 ? (
-                                <p className={styles.empty}>No registered events. <Link href="/events">See upcoming events</Link>.</p>
-                            ) : (
-                                events.map(e => (
-                                    <div key={e.id} className={styles.card}>
-                                        <div>
-                                            <h3>{e.title}</h3>
-                                            <p>{new Date(e.eventDate).toLocaleDateString()} @ {e.location}</p>
-                                        </div>
-                                        <Link href={`/events/${e.id}`} className={styles.link}>View Event</Link>
+            <section className={styles.section} aria-labelledby="events-title">
+                <h2 id="events-title"><i className="fa-solid fa-calendar-days"></i> Events</h2>
+                {events.length === 0 ? (
+                    <p className={styles.empty}>No registered events. <Link href="/events">See upcoming events</Link>.</p>
+                ) : (
+                    <div className={styles.list}>
+                        {[...upcomingEvents, ...pastEvents].map(e => {
+                            const past = day(e.endDate || e.startDate) < today
+                            return (
+                                <div key={e.id} className={`${styles.card} ${past ? styles.cardMuted : ''}`}>
+                                    <div className={styles.cardBody}>
+                                        <h3>{e.title}</h3>
+                                        <p>{formatDay(e.startDate)}{e.location ? ` · ${e.location}` : ''}</p>
+                                        <span className={`${styles.status} ${past ? (e.attended ? styles.completed : styles.cancelled) : styles.approved}`}>
+                                            {past ? (e.attended ? 'Attended' : 'Registered') : 'Upcoming'}
+                                        </span>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </section>
-                </div>
-            </div>
+                                    <Link href={`/events/${e.id}`} className={styles.link}>Open</Link>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </section>
         </main>
     )
 }

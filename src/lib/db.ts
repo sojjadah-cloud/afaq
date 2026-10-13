@@ -51,6 +51,21 @@ function ensureSchema(database: Database.Database) {
     addColumn('lab_categories', 'technician', 'varchar(191) DEFAULT NULL')
     addColumn('lab_categories', 'technicianContact', 'varchar(191) DEFAULT NULL')
     addColumn('lab_categories', 'sortOrder', 'int(11) NOT NULL DEFAULT 0')
+    addColumn('projects', 'supervisorId', 'varchar(191) DEFAULT NULL')
+    addColumn('lab_bookings', 'returnDate', 'varchar(10) DEFAULT NULL')
+    addColumn('lab_bookings', 'returnNote', 'text DEFAULT NULL')
+    addColumn('events', 'registrationDeadline', 'datetime(3) DEFAULT NULL')
+    addColumn('event_registrations', 'attended', 'tinyint(1) NOT NULL DEFAULT 0')
+    database.exec(`CREATE TABLE IF NOT EXISTS project_updates (
+        id varchar(191) NOT NULL PRIMARY KEY,
+        projectId varchar(191) NOT NULL,
+        userId varchar(191) NOT NULL,
+        type varchar(20) NOT NULL,
+        message text NOT NULL,
+        progress int(11) DEFAULT NULL,
+        createdAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`)
+    database.exec('CREATE INDEX IF NOT EXISTS project_updates_projectId_idx ON project_updates (projectId)')
     database.exec(`CREATE TABLE IF NOT EXISTS files (
         id varchar(191) NOT NULL PRIMARY KEY,
         name varchar(255) NOT NULL,
@@ -65,7 +80,9 @@ function ensureSchema(database: Database.Database) {
 // MySQL syntax the original queries still use, translated to SQLite equivalents
 // at the query layer so call sites never had to change.
 function toSqlite(sql: string): string {
-    return sql.replace(/\bNOW\(\)/gi, 'CURRENT_TIMESTAMP')
+    // Stored dates are Oman wall-clock time (UTC+4, no daylight saving), like the seed data,
+    // so NOW() must not fall back to SQLite's UTC CURRENT_TIMESTAMP.
+    return sql.replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours')")
 }
 
 // mysql2 accepted booleans and Dates as parameters; better-sqlite3 does not.

@@ -4,6 +4,11 @@ import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { RowDataPacket } from '@/lib/types'
 
+// Dates are stored as local wall-clock text; export them as written instead of shifting through UTC.
+function stamp(value: unknown, length = 16) {
+    return value ? String(value).replace('T', ' ').slice(0, length) : ''
+}
+
 // Quotes every CSV field and neutralizes leading =, +, -, @ (and tab/CR) so a
 // spreadsheet app never interprets a user-supplied value as a formula.
 function csvField(value: unknown): string {
@@ -41,8 +46,8 @@ export async function exportProjectsCSV() {
             csvField(p.status),
             p.progress || 0,
             csvField(p.createdBy),
-            p.createdAt ? new Date(p.createdAt).toISOString() : '',
-            p.updatedAt ? new Date(p.updatedAt).toISOString() : ''
+            stamp(p.createdAt),
+            stamp(p.updatedAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -62,7 +67,7 @@ export async function exportBookingsCSV() {
     try {
         const bookings = await query<RowDataPacket[]>(`
             SELECT 
-                b.id, l.name as labName, b.bookingDate, b.timeSlot, b.status, b.purpose,
+                b.id, l.name as labName, b.bookingDate, b.timeSlot, b.status, b.purpose, b.returnDate, b.returnNote,
                 COALESCE(sp.fullName, u.email) as bookedBy,
                 b.createdAt
             FROM lab_bookings b
@@ -72,16 +77,18 @@ export async function exportBookingsCSV() {
             ORDER BY b.bookingDate DESC
         `)
 
-        const headers = ['ID', 'Lab', 'Date', 'Time Slot', 'Status', 'Purpose', 'Booked By', 'Created At']
+        const headers = ['ID', 'Item', 'Date', 'Time Slot', 'Status', 'Purpose', 'Return Date', 'Return Note', 'Booked By', 'Created At']
         const rows = bookings.map(b => [
             csvField(b.id),
             csvField(b.labName),
-            b.bookingDate ? new Date(b.bookingDate).toISOString().split('T')[0] : '',
+            stamp(b.bookingDate, 10),
             csvField(b.timeSlot),
             csvField(b.status),
             csvField(b.purpose),
+            csvField(b.returnDate || ''),
+            csvField(b.returnNote || ''),
             csvField(b.bookedBy),
-            b.createdAt ? new Date(b.createdAt).toISOString() : ''
+            stamp(b.createdAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -119,7 +126,7 @@ export async function exportUsersCSV() {
             csvField(u.role),
             csvField(u.fullName),
             csvField(u.department),
-            u.createdAt ? new Date(u.createdAt).toISOString() : ''
+            stamp(u.createdAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -154,7 +161,7 @@ export async function exportClubRegistrationsCSV() {
             csvField(r.interests),
             csvField((r.motivation || '').substring(0, 200)),
             csvField(r.status),
-            r.createdAt ? new Date(r.createdAt).toISOString() : ''
+            stamp(r.createdAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -186,7 +193,7 @@ export async function exportContactMessagesCSV() {
             csvField(m.subject),
             csvField((m.message || '').substring(0, 200)),
             csvField(m.status),
-            m.createdAt ? new Date(m.createdAt).toISOString() : ''
+            stamp(m.createdAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -217,12 +224,12 @@ export async function exportEventsCSV() {
             csvField(e.id),
             csvField(e.title),
             csvField(e.category),
-            e.startDate ? new Date(e.startDate).toISOString() : '',
-            e.endDate ? new Date(e.endDate).toISOString() : '',
+            stamp(e.startDate),
+            stamp(e.endDate),
             csvField(e.location),
             e.capacity || 'Unlimited',
             e.registrationCount || 0,
-            e.createdAt ? new Date(e.createdAt).toISOString() : ''
+            stamp(e.createdAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
@@ -242,7 +249,7 @@ export async function exportEventRegistrationsCSV(eventId: string, eventTitle: s
     try {
         const registrations = await query<RowDataPacket[]>(`
             SELECT 
-                er.id, er.status, er.registeredAt,
+                er.id, er.status, er.registeredAt, er.attended,
                 u.militaryId, u.email,
                 COALESCE(sp.fullName, u.email) as userName,
                 d.name as department
@@ -254,14 +261,15 @@ export async function exportEventRegistrationsCSV(eventId: string, eventTitle: s
             ORDER BY er.registeredAt DESC
         `, [eventId])
 
-        const headers = ['Name', 'Military ID', 'Email', 'Department', 'Status', 'Registered At']
+        const headers = ['Name', 'Military ID', 'Email', 'Department', 'Status', 'Attended', 'Registered At']
         const rows = registrations.map(r => [
             csvField(r.userName),
             csvField(r.militaryId),
             csvField(r.email),
             csvField(r.department || 'N/A'),
             csvField(r.status),
-            r.registeredAt ? new Date(r.registeredAt).toISOString() : ''
+            r.status === 'REGISTERED' ? (Number(r.attended) ? 'Yes' : 'No') : '',
+            stamp(r.registeredAt)
         ])
 
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')

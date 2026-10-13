@@ -62,6 +62,12 @@ export default async function StaffDashboard() {
     const [userCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM users')
     const [projectCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM projects')
     const [bookingCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM lab_bookings WHERE status = \'PENDING\'')
+    const supervised = await query<RowDataPacket[]>(
+        `SELECT p.id, p.title, p.status, p.progress, p.updatedAt,
+                (SELECT MAX(createdAt) FROM project_updates pu WHERE pu.projectId = p.id AND pu.type = 'UPDATE') as lastUpdate
+         FROM projects p WHERE p.supervisorId = ? ORDER BY p.updatedAt DESC`,
+        [session.userId]
+    )
 
     return (
         <main className={styles.main}>
@@ -166,6 +172,29 @@ export default async function StaffDashboard() {
                         </div>
                     )}
                 </div>
+            </div>
+
+            <div className={styles.section} style={{ marginTop: '2rem' }}>
+                <h3><i className="fa fa-user-tie" style={{ color: 'var(--gold)' }}></i> Projects I Supervise</h3>
+                {supervised.length === 0 ? (
+                    <p style={{ color: '#64748b', textAlign: 'center', padding: '1.5rem' }}>
+                        You are not supervising any project yet. Assign yourself from a project page.
+                    </p>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: '0.75rem' }}>
+                        {supervised.map((p: any) => (
+                            <Link key={p.id} href={`/projects/${p.id}`} style={{ display: 'block', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: 'white', textDecoration: 'none', color: 'inherit' }}>
+                                <strong style={{ color: '#1e293b' }}>{p.title}</strong>
+                                <div style={{ height: '6px', borderRadius: '3px', background: '#efece0', margin: '0.6rem 0 0.4rem', overflow: 'hidden' }}>
+                                    <div style={{ width: `${Number(p.progress) || 0}%`, height: '100%', background: 'var(--gold)' }}></div>
+                                </div>
+                                <small style={{ color: '#64748b' }}>
+                                    {Number(p.progress) || 0}% · {p.lastUpdate ? `last update ${String(p.lastUpdate).slice(0, 10)}` : 'no progress updates yet'}
+                                </small>
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Quick Links */}

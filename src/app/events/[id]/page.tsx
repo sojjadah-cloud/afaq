@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import EventActions from './EventActions'
+import { nowInOman } from '@/lib/utils'
+import { eventStatus, minute, EVENT_STATUS_LABELS } from '@/lib/eventStatus'
 import { EVENT_TYPES, eventTypeOf } from '@/lib/eventTypes'
 
 export const dynamic = 'force-dynamic'
@@ -34,7 +36,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
     const events = await query<Event[]>(`
         SELECT 
             e.*,
-            (SELECT COUNT(*) FROM event_registrations er WHERE er.eventId = e.id AND er.status != 'CANCELLED') as registrationCount
+            (SELECT COUNT(*) FROM event_registrations er WHERE er.eventId = e.id AND er.status = 'REGISTERED') as registrationCount
         FROM events e
         WHERE e.id = ?
     `, [id])
@@ -57,8 +59,11 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
         }
     }
 
-    const isFull = event.capacity ? event.registrationCount >= event.capacity : false
-    const isPast = new Date(event.endDate || event.startDate) < new Date()
+    const now = nowInOman()
+    // The user's own seat does not count against them when deciding whether the event is full.
+    const ownSeat = registrationStatus === 'REGISTERED' ? 1 : 0
+    const status = eventStatus(event, Number(event.registrationCount) - ownSeat, now)
+    const deadline = event.registrationDeadline ? String(event.registrationDeadline) : ''
     const type = EVENT_TYPES[eventTypeOf(event.eventType)]
     const formatDay = (d: Date | string) =>
         new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
@@ -126,7 +131,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
                         <h3 className={styles.actionTitle}>Registration</h3>
 
                         {!session.isLoggedIn ? (
-                            <Link href="/login" className={styles.registerBtn}>
+                            <Link href={`/login?next=/events/${event.id}`} className={styles.registerBtn}>
                                 Login to Register
                             </Link>
                         ) : (
@@ -134,12 +139,22 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
                                 eventId={event.id}
                                 isRegistered={isRegistered}
                                 registrationStatus={registrationStatus}
-                                isFull={isFull}
-                                isPast={isPast}
+                                status={status}
+                                canCancel={now < minute(event.startDate)}
                             />
                         )}
 
                         <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+                            <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                                <span>Status:</span>
+                                <strong>{EVENT_STATUS_LABELS[status]}</strong>
+                            </p>
+                            {deadline && (status === 'OPEN' || status === 'FULL') && (
+                                <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                                    <span>Registration closes:</span>
+                                    <strong>{formatDay(deadline.slice(0, 10))}, {deadline.slice(11, 16)}</strong>
+                                </p>
+                            )}
                             <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                                 <span>Capacity:</span>
                                 <strong>{event.capacity ? `${event.registrationCount} / ${event.capacity}` : 'Unlimited'}</strong>
