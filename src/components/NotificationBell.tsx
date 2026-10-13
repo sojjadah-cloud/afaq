@@ -78,14 +78,14 @@ export default function NotificationBell() {
     }
 
     const getTypeIcon = (type: string) => {
-        switch (type) {
-            case 'project': return 'fa-lightbulb'
-            case 'booking': return 'fa-calendar-check'
-            case 'forum': return 'fa-comments'
-            case 'event': return 'fa-calendar'
-            case 'research': return 'fa-scroll'
-            default: return 'fa-bell'
-        }
+        const t = (type || '').toLowerCase()
+        if (t === 'announcement') return 'fa-bullhorn'
+        if (t.startsWith('project')) return 'fa-lightbulb'
+        if (t.startsWith('booking')) return 'fa-calendar-check'
+        if (t.startsWith('forum')) return 'fa-comments'
+        if (t.startsWith('event')) return 'fa-calendar'
+        if (t.startsWith('research')) return 'fa-scroll'
+        return 'fa-bell'
     }
 
     const formatTime = (date: string) => {

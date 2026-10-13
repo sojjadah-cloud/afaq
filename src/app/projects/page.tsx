@@ -8,10 +8,11 @@ interface CountResult extends RowDataPacket {
     count: number
 }
 
-export default async function ProjectsPage() {
-    const startResult = await query<CountResult[]>('SELECT COUNT(*) as count FROM projects WHERE status = ?', ['START'])
-    const devResult = await query<CountResult[]>('SELECT COUNT(*) as count FROM projects WHERE status = ?', ['DEVELOPMENT'])
-    const completedResult = await query<CountResult[]>('SELECT COUNT(*) as count FROM projects WHERE status = ?', ['COMPLETED'])
+export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ new?: string }> }) {
+    const { new: openCreate } = await searchParams
+    const startResult = await query<CountResult[]>("SELECT COUNT(*) as count FROM projects WHERE status IN ('START', 'PENDING_APPROVAL')")
+    const devResult = await query<CountResult[]>("SELECT COUNT(*) as count FROM projects WHERE status IN ('DEVELOPMENT', 'PENDING_COMPLETION')")
+    const completedResult = await query<CountResult[]>("SELECT COUNT(*) as count FROM projects WHERE status = 'COMPLETED'")
 
     const projectCounts = {
         start: startResult[0].count,
@@ -19,5 +20,5 @@ export default async function ProjectsPage() {
         completed: completedResult[0].count,
     }
 
-    return <ProjectsClient initialCounts={projectCounts} />
+    return <ProjectsClient initialCounts={projectCounts} openCreate={openCreate === '1'} />
 }

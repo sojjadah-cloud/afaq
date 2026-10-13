@@ -20,9 +20,9 @@ export default async function DevelopmentProjectsPage() {
     const projects = await query<Project[]>(`
     SELECT 
       p.*, 
-      (SELECT COUNT(*) FROM project_members pm WHERE pm.projectId = p.id) as memberCount
+      (SELECT COUNT(*) FROM project_members pm WHERE pm.projectId = p.id AND pm.status = 'APPROVED') as memberCount
     FROM projects p
-    WHERE p.status = 'DEVELOPMENT'
+    WHERE p.status IN ('DEVELOPMENT', 'PENDING_COMPLETION')
     ORDER BY p.createdAt DESC
   `)
 
@@ -52,7 +52,7 @@ export default async function DevelopmentProjectsPage() {
                             <p className={styles.projectDesc}>{stripMarkdown(project.description)}</p>
                             <div className={styles.projectMeta}>
                                 <span>
-                                    <i className="fa fa-users"></i> {project.memberCount + 1} members
+                                    <i className="fa fa-users"></i> {project.memberCount} {project.memberCount === 1 ? 'member' : 'members'}
                                 </span>
                                 <span>
                                     <i className="fa fa-calendar"></i> {new Date(project.createdAt).toLocaleDateString()}

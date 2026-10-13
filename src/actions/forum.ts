@@ -93,7 +93,7 @@ export async function getForumTopics(categoryId: string) {
                 (SELECT COUNT(*) FROM forum_posts WHERE parentId = fp.id) as replyCount,
                 (SELECT MAX(createdAt) FROM forum_posts WHERE parentId = fp.id OR id = fp.id) as lastActivity
             FROM forum_posts fp
-            JOIN users u ON fp.authorId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
+            JOIN users u ON fp.authorId = u.id
             LEFT JOIN student_profiles sp ON u.id = sp.userId
             WHERE fp.categoryId = ? AND fp.parentId IS NULL
             ORDER BY fp.isPinned DESC, lastActivity DESC
@@ -113,7 +113,7 @@ export async function getForumTopic(topicId: string) {
                 COALESCE(sp.fullName, u.email) as authorName,
                 u.militaryId as authorMilitaryId
             FROM forum_posts fp
-            JOIN users u ON fp.authorId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
+            JOIN users u ON fp.authorId = u.id
             LEFT JOIN student_profiles sp ON u.id = sp.userId
             WHERE fp.id = ? AND fp.parentId IS NULL
         `, [topicId])
@@ -128,10 +128,10 @@ export async function getForumTopic(topicId: string) {
                 u.militaryId as authorMilitaryId,
                 COALESCE(rsp.fullName, ru.email) as replyToAuthorName
             FROM forum_posts fp
-            JOIN users u ON fp.authorId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
+            JOIN users u ON fp.authorId = u.id
             LEFT JOIN student_profiles sp ON u.id = sp.userId
             LEFT JOIN forum_posts rp ON fp.replyToId = rp.id
-            LEFT JOIN users ru ON rp.authorId COLLATE utf8mb4_general_ci = ru.id COLLATE utf8mb4_general_ci
+            LEFT JOIN users ru ON rp.authorId = ru.id
             LEFT JOIN student_profiles rsp ON ru.id = rsp.userId
             WHERE fp.parentId = ?
             ORDER BY fp.createdAt ASC

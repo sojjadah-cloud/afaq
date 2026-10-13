@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from '../app/admin/admin.module.css'
+import { useAdminRole } from './AdminRoleContext'
+import { STAFF_ADMIN_PATHS } from '@/lib/roles'
 
 const adminNavItems = [
     { href: '/admin', label: 'Overview', icon: 'fa-chart-simple', exact: true },
@@ -16,6 +18,10 @@ const adminNavItems = [
 
 export default function AdminNav() {
     const pathname = usePathname()
+    const role = useAdminRole()
+    const items = role === 'ADMIN'
+        ? adminNavItems
+        : [{ href: '/staff', label: 'Dashboard', icon: 'fa-chart-simple', exact: true }, ...adminNavItems.filter(i => STAFF_ADMIN_PATHS.includes(i.href))]
 
     const isActive = (item: typeof adminNavItems[0]) => {
         if (item.exact) {
@@ -26,7 +32,7 @@ export default function AdminNav() {
 
     return (
         <div className={styles.adminNav}>
-            {adminNavItems.map(item => (
+            {items.map(item => (
                 <Link
                     key={item.href}
                     href={item.href}

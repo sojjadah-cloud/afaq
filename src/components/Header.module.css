@@ -38,6 +38,29 @@
     background: rgba(255, 255, 255, 0.3);
 }
 
+.userText {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    text-align: right;
+}
+
+.userName {
+    font-weight: 600;
+    font-size: 0.9rem;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.userRole {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
 .avatar {
     width: 32px;
     height: 32px;

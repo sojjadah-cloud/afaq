@@ -58,12 +58,13 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                <div className={styles.roleList} role="list">
+                <div className={styles.roleList}>
                     {ROLES.map(r => (
                         <button
                             key={r.value}
                             type="button"
                             className={styles.roleRow}
+                            aria-label={`Log in as ${r.label}`}
                             onClick={() => handleRoleLogin(r.value)}
                             disabled={loading !== null}
                         >

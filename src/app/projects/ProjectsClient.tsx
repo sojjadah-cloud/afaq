@@ -1,16 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { query } from '@/lib/db'
+import { useState } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { RowDataPacket } from '@/lib/types'
 import { createProject } from '@/actions/projects'
 import { useRouter } from 'next/navigation'
-
-interface CountResult extends RowDataPacket {
-    count: number
-}
 
 interface ProjectsPageProps {
     initialCounts: {
@@ -18,11 +12,12 @@ interface ProjectsPageProps {
         development: number
         completed: number
     }
+    openCreate?: boolean
 }
 
-export default function ProjectsPage({ initialCounts }: ProjectsPageProps) {
+export default function ProjectsPage({ initialCounts, openCreate = false }: ProjectsPageProps) {
     const router = useRouter()
-    const [showModal, setShowModal] = useState(false)
+    const [showModal, setShowModal] = useState(openCreate)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -128,10 +123,12 @@ export default function ProjectsPage({ initialCounts }: ProjectsPageProps) {
                                     <label htmlFor="category">Category *</label>
                                     <select id="category" name="category" required>
                                         <option value="">Select category</option>
-                                        <option value="Technology">Technology</option>
-                                        <option value="Research">Research</option>
-                                        <option value="Design">Design</option>
-                                        <option value="Engineering">Engineering</option>
+                                        <option value="Cybersecurity">Cybersecurity</option>
+                                        <option value="IoT">IoT</option>
+                                        <option value="AI">Artificial Intelligence</option>
+                                        <option value="Robotics">Robotics</option>
+                                        <option value="Sustainability">Sustainability</option>
+                                        <option value="Smart Logistics">Smart Logistics</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>

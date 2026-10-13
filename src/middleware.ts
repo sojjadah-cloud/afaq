@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getSession } from './lib/auth'
+import { STAFF_ADMIN_PATHS } from './lib/roles'
 
 export async function middleware(request: NextRequest) {
     const response = NextResponse.next()
@@ -31,10 +32,11 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        // Admin route protection
-        if (request.nextUrl.pathname.startsWith('/admin')) {
-            if (session.role !== 'ADMIN') {
-                return NextResponse.redirect(new URL('/', request.url))
+        const path = request.nextUrl.pathname
+        if (path.startsWith('/admin') && session.role !== 'ADMIN') {
+            const staffAllowed = session.role === 'STAFF' && STAFF_ADMIN_PATHS.some(p => path === p || path.startsWith(p + '/'))
+            if (!staffAllowed) {
+                return NextResponse.redirect(new URL(session.role === 'STAFF' ? '/staff' : '/', request.url))
             }
         }
 

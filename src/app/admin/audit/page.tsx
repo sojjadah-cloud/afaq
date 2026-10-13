@@ -2,10 +2,15 @@ import { getAuditLogs } from '@/actions/notifications'
 import styles from '../admin.module.css'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AuditLogPage() {
+    const session = await getSession()
+    if (session.role !== 'ADMIN') redirect('/staff')
+
     const logs = await getAuditLogs(100)
 
     const formatDate = (date: string) => {

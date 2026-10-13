@@ -248,8 +248,8 @@ export async function getEventRegistrations(eventId: string) {
                 u.militaryId, u.email,
                 COALESCE(sp.fullName, u.email) as userName
             FROM event_registrations er
-            JOIN users u ON er.userId COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci
-            LEFT JOIN student_profiles sp ON u.id COLLATE utf8mb4_general_ci = sp.userId COLLATE utf8mb4_general_ci
+            JOIN users u ON er.userId = u.id
+            LEFT JOIN student_profiles sp ON u.id = sp.userId
             WHERE er.eventId = ?
             ORDER BY er.registeredAt DESC
         `, [eventId])

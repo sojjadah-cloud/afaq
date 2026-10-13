@@ -43,6 +43,14 @@ export function stripMarkdown(markdown: string): string {
     return text
 }
 
+export function initials(name?: string | null, fallback = 'AN'): string {
+    let text = String(name || '').trim()
+    if (text.includes('@')) text = text.split('@')[0].replace(/[._-]+/g, ' ')
+    const words = text.split(/\s+/).filter(w => w && !w.endsWith('.'))
+    if (!words.length) return fallback
+    return words.map(w => w[0]).slice(0, 2).join('').toUpperCase()
+}
+
 export function cn(...classes: (string | undefined | null | false)[]) {
     return classes.filter(Boolean).join(' ')
 }

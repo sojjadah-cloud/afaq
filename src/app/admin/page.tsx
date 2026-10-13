@@ -3,6 +3,8 @@ import styles from './admin.module.css'
 import { RowDataPacket } from '@/lib/types'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +13,9 @@ interface CountResult extends RowDataPacket {
 }
 
 export default async function AdminDashboard() {
+    const session = await getSession()
+    if (session.role !== 'ADMIN') redirect('/staff')
+
     // Core stats
     const userCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM users')
     const projectCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM projects')

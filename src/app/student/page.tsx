@@ -4,17 +4,28 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import styles from './student.module.css'
 import { RowDataPacket } from '@/lib/types'
-
+import { initials } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
+
+const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', STAFF: 'Staff', STUDENT: 'Student' }
+const STATUS_LABELS: Record<string, string> = {
+    START: 'Start',
+    DEVELOPMENT: 'In Development',
+    COMPLETED: 'Completed',
+    PENDING_APPROVAL: 'Awaiting Approval',
+    PENDING_COMPLETION: 'Awaiting Completion',
+}
 
 interface UserData extends RowDataPacket {
     id: string
     name: string
     militaryId: string
     email: string
-    rank: string
-    unit: string
+    role: string
+    yearLevel: string | null
+    department: string | null
+    programme: string | null
 }
 
 interface ProjectData extends RowDataPacket {
@@ -46,11 +57,13 @@ export default async function StudentProfile() {
         redirect('/login')
     }
 
-    // Fetch User Details - Join with profile to get name
     const users = await query<UserData[]>(
-        `SELECT u.*, sp.fullName as name, sp.yearLevel as rank 
-         FROM users u 
-         LEFT JOIN student_profiles sp ON u.id = sp.userId 
+        `SELECT u.id, u.militaryId, u.email, u.role, sp.fullName as name, sp.yearLevel,
+                d.name as department, pr.name as programme
+         FROM users u
+         LEFT JOIN student_profiles sp ON u.id = sp.userId
+         LEFT JOIN departments d ON sp.departmentId = d.id
+         LEFT JOIN programmes pr ON sp.programmeId = pr.id
          WHERE u.id = ?`,
         [session.userId]
     )
@@ -60,14 +73,12 @@ export default async function StudentProfile() {
         redirect('/login')
     }
 
-    // Fetch Projects (Created by or Member of)
-    // Assuming a simple relationship for now, or just created_by
     const projects = await query<ProjectData[]>(
-        `SELECT p.* FROM projects p 
-     LEFT JOIN project_members pm ON p.id = pm.projectId 
-     WHERE p.createdById = ? OR pm.userId = ? 
-     GROUP BY p.id
-     ORDER BY p.createdAt DESC`,
+        `SELECT p.* FROM projects p
+         LEFT JOIN project_members pm ON p.id = pm.projectId AND pm.status = 'APPROVED'
+         WHERE p.createdById = ? OR pm.userId = ?
+         GROUP BY p.id
+         ORDER BY p.updatedAt DESC`,
         [user.id, user.id]
     )
 
@@ -86,7 +97,7 @@ export default async function StudentProfile() {
         `SELECT e.id, e.title, e.startDate as eventDate, e.location 
      FROM event_registrations er 
      JOIN events e ON er.eventId = e.id 
-     WHERE er.userId = ? 
+     WHERE er.userId = ? AND er.status = 'REGISTERED'
      ORDER BY e.startDate DESC`,
         [user.id]
     )
@@ -98,19 +109,20 @@ export default async function StudentProfile() {
             <header className={styles.header}>
                 <div className={styles.profileInfo}>
                     <div className={styles.avatarPlaceholder}>
-                        {(user.name || user.email || 'U').charAt(0).toUpperCase()}
+                        {initials(user.name || user.email, 'U')}
                     </div>
                     <div>
                         <h1>{user.name || user.email}</h1>
                         <p className={styles.militaryId}>Military ID: {user.militaryId}</p>
                         <div className={styles.badges}>
-                            <span className={styles.badge}>{user.rank || 'Student'}</span>
-                            <span className={styles.badge}>{user.unit || 'General'}</span>
+                            <span className={styles.badge}>{user.yearLevel || ROLE_LABELS[user.role] || 'Member'}</span>
+                            {user.department && <span className={styles.badge}>{user.department}</span>}
+                            {user.programme && <span className={styles.badge}>{user.programme}</span>}
                         </div>
                     </div>
                 </div>
                 <div className={styles.actions}>
-                    <Link href="/projects/create" className={styles.actionBtn}>New Project</Link>
+                    <Link href="/projects?new=1" className={styles.actionBtn}>New Project</Link>
                     <Link href="/lab-booking" className={styles.actionBtn}>Book Lab</Link>
                 </div>
             </header>
@@ -153,14 +165,14 @@ export default async function StudentProfile() {
                         <h2><i className="fa-solid fa-lightbulb" style={{ color: 'var(--gold)' }}></i> My Projects</h2>
                         <div className={styles.list}>
                             {projects.length === 0 ? (
-                                <p className={styles.empty}>No active projects.</p>
+                                <p className={styles.empty}>You are not part of any project yet. <Link href="/projects">Browse projects</Link> or start a new one.</p>
                             ) : (
                                 projects.map(p => (
                                     <div key={p.id} className={styles.card}>
                                         <div>
                                             <h3>{p.title}</h3>
                                             <span className={`${styles.status} ${styles[p.status.toLowerCase()]}`}>
-                                                {p.status}
+                                                {STATUS_LABELS[p.status] || p.status}
                                             </span>
                                         </div>
                                         <Link href={`/projects/${p.id}`} className={styles.link}>View Details</Link>
@@ -174,7 +186,7 @@ export default async function StudentProfile() {
                         <h2><i className="fa-solid fa-flask" style={{ color: 'var(--gold)' }}></i> Lab Bookings</h2>
                         <div className={styles.list}>
                             {bookings.length === 0 ? (
-                                <p className={styles.empty}>No upcoming bookings.</p>
+                                <p className={styles.empty}>No lab bookings yet. <Link href="/lab-booking">Book a lab</Link>.</p>
                             ) : (
                                 bookings.map(b => (
                                     <div key={b.id} className={styles.card}>
@@ -195,7 +207,7 @@ export default async function StudentProfile() {
                         <h2><i className="fa-solid fa-calendar-check" style={{ color: 'var(--gold)' }}></i> Registered Events</h2>
                         <div className={styles.list}>
                             {events.length === 0 ? (
-                                <p className={styles.empty}>No registered events.</p>
+                                <p className={styles.empty}>No registered events. <Link href="/events">See upcoming events</Link>.</p>
                             ) : (
                                 events.map(e => (
                                     <div key={e.id} className={styles.card}>
@@ -203,6 +215,7 @@ export default async function StudentProfile() {
                                             <h3>{e.title}</h3>
                                             <p>{new Date(e.eventDate).toLocaleDateString()} @ {e.location}</p>
                                         </div>
+                                        <Link href={`/events/${e.id}`} className={styles.link}>View Event</Link>
                                     </div>
                                 ))
                             )}

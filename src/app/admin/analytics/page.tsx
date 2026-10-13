@@ -3,6 +3,8 @@ import { RowDataPacket } from '@/lib/types'
 import styles from '../admin.module.css'
 import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +18,9 @@ interface MonthlyData extends RowDataPacket {
 }
 
 export default async function AnalyticsPage() {
+    const session = await getSession()
+    if (session.role !== 'ADMIN') redirect('/staff')
+
     // Get various statistics
     const [userStats] = await query<Stats[]>('SELECT COUNT(*) as count FROM users')
     const [projectStats] = await query<Stats[]>('SELECT COUNT(*) as count FROM projects')

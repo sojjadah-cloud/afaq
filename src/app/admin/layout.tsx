@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import { RowDataPacket } from '@/lib/types'
+import { AdminRoleProvider } from '@/components/AdminRoleContext'
 
 export default async function AdminLayout({
     children,
@@ -14,18 +15,20 @@ export default async function AdminLayout({
         redirect('/login')
     }
 
-    // Double-check role against database for immediate security
-    // This ensures even if the cookie is valid, if the DB role changed, access is denied.
+    // Re-check the role in the database so a stale cookie can't keep access after a role change.
+    // Per-section limits for STAFF are enforced in middleware and on the admin-only pages.
     const users = await query<RowDataPacket[]>('SELECT role FROM users WHERE id = ?', [session.userId])
-    const user = users[0]
+    const role = users[0]?.role
 
-    if (!user || (user.role !== 'ADMIN')) {
+    if (role !== 'ADMIN' && role !== 'STAFF') {
         redirect('/')
     }
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
-            {children}
-        </div>
+        <AdminRoleProvider role={role}>
+            <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+                {children}
+            </div>
+        </AdminRoleProvider>
     )
 }

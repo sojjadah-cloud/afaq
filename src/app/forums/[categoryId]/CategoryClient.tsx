@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../page.module.css'
+import { initials } from '@/lib/utils'
 import { createForumTopic } from '@/actions/forum'
 
 interface Topic {
@@ -97,7 +98,7 @@ export default function CategoryClient({ category, topics, isLoggedIn }: Categor
                             className={styles.topicCard}
                         >
                             <div className={styles.topicAvatar}>
-                                {topic.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
+                                {initials(topic.authorName)}
                             </div>
                             <div className={styles.topicContent}>
                                 <div className={styles.topicTitle}>

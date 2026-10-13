@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from './topic.module.css'
+import { initials } from '@/lib/utils'
 import { createForumReply, deleteForumPost, getMuteSettings, updateMuteSettings } from '@/actions/forum'
 
 interface Reply {
@@ -195,7 +196,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                     style={{ left: cardPosition.x, top: cardPosition.y }}
                 >
                     <div className={styles.userCardAvatar}>
-                        {userCard.militaryId?.slice(-2).toUpperCase() || 'AN'}
+                        {initials(userCard.name)}
                     </div>
                     <div className={styles.userCardInfo}>
                         <div className={styles.userCardName}>{userCard.name}</div>
@@ -225,7 +226,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                         onClick={(e) => showUserCard(e, topic.authorId, topic.authorName, topic.authorMilitaryId)}
                     >
                         <div className={styles.authorAvatar}>
-                            {topic.authorMilitaryId?.slice(-2).toUpperCase() || 'OP'}
+                            {initials(topic.authorName, 'OP')}
                         </div>
                         <div>
                             <span className={styles.authorName}>{topic.authorName}</span>
@@ -360,7 +361,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                                             onClick={(e) => showUserCard(e, reply.authorId, reply.authorName, reply.authorMilitaryId)}
                                         >
                                             <div className={styles.replyAvatar}>
-                                                {reply.authorMilitaryId?.slice(-2).toUpperCase() || 'AN'}
+                                                {initials(reply.authorName)}
                                             </div>
                                             <div>
                                                 <span className={styles.replyAuthorName}>

@@ -1,225 +1,248 @@
-'use client'
-
-import { useState, useRef } from 'react'
 import Link from 'next/link'
 import styles from './page.module.css'
-import { submitClubRegistration } from '@/actions/club'
+import { query } from '@/lib/db'
+import { RowDataPacket } from '@/lib/types'
+import JoinClub from './JoinClub'
 
-export default function HomePage() {
-    const [showForm, setShowForm] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useState({ type: '', text: '' })
-    const formRef = useRef<HTMLFormElement>(null)
+export const dynamic = 'force-dynamic'
 
-    const heroSlides = [
-        {
-            title: "Induction Week 2025/2026",
-            text: "A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact."
-        },
-        {
-            title: "AFAQ Innovation Tracks",
-            text: "Cybersecurity, IoT, AI, Sustainability and Smart Logistics – structured tracks that convert ideas into deployable solutions."
-        },
-        {
-            title: "From Prototype to Impact",
-            text: "AFAQ supports teams with mentoring, equipment access and exhibition opportunities so that promising ideas go beyond the lab."
-        }
-    ]
+const TRACKS = [
+    { key: 'Cybersecurity', label: 'Cybersecurity', icon: 'fa-shield-halved' },
+    { key: 'IoT', label: 'Internet of Things', icon: 'fa-wifi' },
+    { key: 'AI', label: 'Artificial Intelligence', icon: 'fa-brain' },
+    { key: 'Robotics', label: 'Robotics', icon: 'fa-robot' },
+    { key: 'Sustainability', label: 'Sustainability', icon: 'fa-leaf' },
+    { key: 'Smart Logistics', label: 'Smart Logistics', icon: 'fa-truck-fast' },
+]
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setLoading(true)
-        setMessage({ type: '', text: '' })
+const PORTAL_LINKS = [
+    { href: '/projects', icon: 'fa-lightbulb', title: 'Innovation Projects', desc: 'From first idea to finished prototype' },
+    { href: '/research', icon: 'fa-flask', title: 'Research Hub', desc: 'Publications, theses and ongoing work' },
+    { href: '/equipment', icon: 'fa-gears', title: 'Labs & Equipment', desc: 'Browse and book club facilities' },
+    { href: '/events', icon: 'fa-calendar-days', title: 'Events', desc: 'Workshops, competitions and seminars' },
+    { href: '/forums', icon: 'fa-comments', title: 'Forums', desc: 'Ask, share and collaborate' },
+    { href: '/news', icon: 'fa-newspaper', title: 'News & Achievements', desc: 'Club milestones and announcements' },
+]
 
-        const formData = new FormData(e.currentTarget)
-        const result = await submitClubRegistration(formData)
+const STATUS_LABELS: Record<string, string> = {
+    START: 'Start',
+    DEVELOPMENT: 'In Development',
+    COMPLETED: 'Completed',
+}
 
-        if (result.error) {
-            setMessage({ type: 'error', text: result.error })
-        } else {
-            setMessage({ type: 'success', text: result.message || 'Registration submitted!' })
-            formRef.current?.reset()
-            setShowForm(false)
-        }
-        setLoading(false)
+async function count(sql: string): Promise<number> {
+    try {
+        const rows = await query<RowDataPacket[]>(sql)
+        return Number(rows[0]?.count) || 0
+    } catch {
+        return 0
     }
+}
+
+function excerpt(text: string, max = 120) {
+    const plain = String(text || '').split('\n')[0].replace(/[*_#`>\[\]]/g, '').trim()
+    if (plain.length <= max) return plain
+    return plain.slice(0, plain.lastIndexOf(' ', max)) + '…'
+}
+
+function formatDate(value: string | null, opts: Intl.DateTimeFormatOptions) {
+    if (!value) return ''
+    const d = new Date(String(value).replace(' ', 'T'))
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', opts)
+}
+
+export default async function HomePage() {
+    const [members, projects, research, labs] = await Promise.all([
+        count('SELECT COUNT(*) as count FROM users'),
+        count("SELECT COUNT(*) as count FROM projects WHERE status IN ('START', 'DEVELOPMENT', 'COMPLETED')"),
+        count('SELECT COUNT(*) as count FROM research'),
+        count('SELECT COUNT(*) as count FROM labs'),
+    ])
+
+    const upcomingEvents = await query<RowDataPacket[]>(
+        `SELECT id, title, category, startDate, location FROM events
+         WHERE startDate >= DATETIME('now')
+         ORDER BY startDate ASC LIMIT 3`
+    )
+
+    const latestNews = await query<RowDataPacket[]>(
+        `SELECT id, title, summary, type, eventDate FROM club_news
+         ORDER BY eventDate DESC, createdAt DESC LIMIT 3`
+    )
+
+    const featuredProjects = await query<RowDataPacket[]>(
+        `SELECT id, title, description, category, status, progress FROM projects
+         WHERE status IN ('DEVELOPMENT', 'COMPLETED')
+         ORDER BY updatedAt DESC LIMIT 3`
+    )
+
+    const trackRows = await query<RowDataPacket[]>(
+        `SELECT category, COUNT(*) as count FROM projects
+         WHERE status IN ('START', 'DEVELOPMENT', 'COMPLETED')
+         GROUP BY category`
+    )
+    const trackCounts = Object.fromEntries(trackRows.map(r => [r.category, Number(r.count)]))
+
+    const departmentRows = await query<RowDataPacket[]>('SELECT name FROM departments ORDER BY name')
+    const departments = departmentRows.map(d => String(d.name).replace(/ Department$/, ''))
+
+    const stats = [
+        { label: 'Members', value: members, icon: 'fa-users' },
+        { label: 'Projects', value: projects, icon: 'fa-lightbulb' },
+        { label: 'Research Outputs', value: research, icon: 'fa-book-open' },
+        { label: 'Labs & Equipment', value: labs, icon: 'fa-microscope' },
+    ]
 
     return (
         <main className={styles.page}>
             <section className={styles.hero}>
                 <div className={styles.heroContent}>
+                    <span className={styles.heroEyebrow}>Military Technological College · Scientific Club</span>
                     <h1>AFAQ Innovation Portal</h1>
                     <p className={styles.visionStatement}>
-                        "A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact."
+                        &ldquo;A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact.&rdquo;
                     </p>
+                    <div className={styles.heroActions}>
+                        <Link href="/projects" className={styles.heroPrimary}>
+                            <i className="fa-solid fa-rocket"></i> Explore Projects
+                        </Link>
+                        <Link href="/lab-booking" className={styles.heroSecondary}>
+                            <i className="fa-solid fa-calendar-plus"></i> Book a Lab
+                        </Link>
+                    </div>
                 </div>
             </section>
 
-            <section className={styles.features}>
-                {heroSlides.slice(1).map((slide, index) => (
-                    <div key={index} className={`${styles.featureCard} ${styles[`animateDelay${index + 1}`]}`}>
-                        <h3>{slide.title}</h3>
-                        <p>{slide.text}</p>
+            <section className={styles.statsStrip}>
+                {stats.map(s => (
+                    <div key={s.label} className={styles.statTile}>
+                        <i className={`fa-solid ${s.icon}`}></i>
+                        <div>
+                            <div className={styles.statNumber}>{s.value}</div>
+                            <div className={styles.statText}>{s.label}</div>
+                        </div>
                     </div>
                 ))}
             </section>
 
-            <section className={`${styles.iconGrid} ${styles.animateDelay3}`}>
-                <Link href="/projects" className={styles.iconCard}>
-                    <div className={styles.iconCircle}>
-                        <i className="fa-solid fa-lightbulb"></i>
-                    </div>
-                    <div className={styles.iconTitle}>Innovation Projects</div>
-                </Link>
-
-                <Link href="/research" className={styles.iconCard}>
-                    <div className={styles.iconCircle}>
-                        <i className="fa-solid fa-flask"></i>
-                    </div>
-                    <div className={styles.iconTitle}>Research Hub</div>
-                </Link>
-
-                <Link href="/equipment" className={styles.iconCard}>
-                    <div className={styles.iconCircle}>
-                        <i className="fa-solid fa-gears"></i>
-                    </div>
-                    <div className={styles.iconTitle}>Lab Equipment</div>
-                </Link>
-
-                <Link href="/events" className={styles.iconCard}>
-                    <div className={styles.iconCircle}>
-                        <i className="fa-solid fa-calendar-days"></i>
-                    </div>
-                    <div className={styles.iconTitle}>Innovation Events</div>
-                </Link>
-            </section>
-
-            {/* Join CTA */}
-            <section id="join" className={styles.registerSection}>
-                <div className={styles.registerCta}>
-                    <div className={styles.registerCtaIcon}>
-                        <i className="fa fa-user-plus"></i>
-                    </div>
-                    <div className={styles.registerCtaText}>
-                        <h2>Join the Scientific Club</h2>
-                        <p>Be part of our innovation community and contribute to groundbreaking projects and research.</p>
-                    </div>
-                    <button className={styles.registerCtaBtn} onClick={() => setShowForm(true)}>
-                        <i className="fa fa-paper-plane"></i> Register Now
-                    </button>
+            <section className={styles.block}>
+                <div className={styles.blockHeader}>
+                    <h2>Explore the Portal</h2>
+                </div>
+                <div className={styles.portalGrid}>
+                    {PORTAL_LINKS.map(link => (
+                        <Link key={link.href} href={link.href} className={styles.portalCard}>
+                            <div className={styles.portalIcon}><i className={`fa-solid ${link.icon}`}></i></div>
+                            <div>
+                                <div className={styles.portalTitle}>{link.title}</div>
+                                <div className={styles.portalDesc}>{link.desc}</div>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
             </section>
 
-            {/* Success/Error Toast */}
-            {message.text && (
-                <div className={`${styles.toast} ${styles[message.type]}`}>
-                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-                    {message.text}
+            <section className={`${styles.block} ${styles.twoCol}`}>
+                <div className={styles.panel}>
+                    <div className={styles.blockHeader}>
+                        <h2>Upcoming Events</h2>
+                        <Link href="/events" className={styles.seeAll}>All events <i className="fa-solid fa-arrow-right"></i></Link>
+                    </div>
+                    {upcomingEvents.length === 0 ? (
+                        <p className={styles.emptyText}>No upcoming events scheduled.</p>
+                    ) : (
+                        <ul className={styles.eventList}>
+                            {upcomingEvents.map(e => (
+                                <li key={e.id}>
+                                    <Link href={`/events/${e.id}`} className={styles.eventItem}>
+                                        <div className={styles.dateBadge}>
+                                            <span>{formatDate(e.startDate, { day: '2-digit' })}</span>
+                                            <small>{formatDate(e.startDate, { month: 'short' })}</small>
+                                        </div>
+                                        <div className={styles.eventInfo}>
+                                            <div className={styles.eventTitle}>{e.title}</div>
+                                            <div className={styles.eventMeta}>
+                                                <span className={styles.tag}>{e.category}</span>
+                                                {e.location && <span><i className="fa-solid fa-location-dot"></i> {e.location}</span>}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
-            )}
 
-            {/* Registration Modal */}
-            {showForm && (
-                <div className={styles.modalOverlay} onClick={() => setShowForm(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h3>Join the Scientific Club</h3>
-                            <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
-                                <i className="fa fa-times"></i>
-                            </button>
+                <div className={styles.panel}>
+                    <div className={styles.blockHeader}>
+                        <h2>News &amp; Achievements</h2>
+                        <Link href="/news" className={styles.seeAll}>All news <i className="fa-solid fa-arrow-right"></i></Link>
+                    </div>
+                    {latestNews.length === 0 ? (
+                        <p className={styles.emptyText}>No news yet.</p>
+                    ) : (
+                        <ul className={styles.newsList}>
+                            {latestNews.map(n => (
+                                <li key={n.id}>
+                                    <Link href={`/news/${n.type === 'ACHIEVEMENT' ? 'achievement' : 'news'}`} className={styles.newsItem}>
+                                        <span className={`${styles.newsIcon} ${n.type === 'ACHIEVEMENT' ? styles.newsIconGold : ''}`}>
+                                            <i className={`fa-solid ${n.type === 'ACHIEVEMENT' ? 'fa-trophy' : 'fa-newspaper'}`}></i>
+                                        </span>
+                                        <div>
+                                            <div className={styles.newsTitle}>{n.title}</div>
+                                            <div className={styles.newsDate}>{formatDate(n.eventDate, { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                                        </div>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </section>
+
+            <section className={styles.block}>
+                <div className={styles.blockHeader}>
+                    <h2>Featured Projects</h2>
+                    <Link href="/projects" className={styles.seeAll}>All projects <i className="fa-solid fa-arrow-right"></i></Link>
+                </div>
+                <div className={styles.projectGrid}>
+                    {featuredProjects.map(p => (
+                        <Link key={p.id} href={`/projects/${p.id}`} className={styles.projectCard}>
+                            <div className={styles.projectTop}>
+                                <span className={styles.tag}>{p.category}</span>
+                                <span className={`${styles.statusPill} ${p.status === 'COMPLETED' ? styles.statusDone : ''}`}>
+                                    {STATUS_LABELS[p.status] || p.status}
+                                </span>
+                            </div>
+                            <h3>{p.title}</h3>
+                            <p>{excerpt(p.description)}</p>
+                            <div className={styles.progressRow}>
+                                <div className={styles.progressBar}>
+                                    <div style={{ width: `${Number(p.progress) || 0}%` }}></div>
+                                </div>
+                                <span>{Number(p.progress) || 0}%</span>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </section>
+
+            <section className={styles.block}>
+                <div className={styles.blockHeader}>
+                    <h2>Innovation Tracks</h2>
+                </div>
+                <div className={styles.trackGrid}>
+                    {TRACKS.map(t => (
+                        <div key={t.key} className={styles.trackCard}>
+                            <i className={`fa-solid ${t.icon}`}></i>
+                            <div className={styles.trackLabel}>{t.label}</div>
+                            <div className={styles.trackCount}>{trackCounts[t.key] || 0} projects</div>
                         </div>
-
-                        <form ref={formRef} onSubmit={handleSubmit} className={styles.form}>
-                            <ul className={styles.modalBenefits}>
-                                <li><i className="fa fa-check"></i> Access to innovation labs and equipment</li>
-                                <li><i className="fa fa-check"></i> Collaborate on cutting-edge projects</li>
-                                <li><i className="fa fa-check"></i> Networking with industry experts</li>
-                                <li><i className="fa fa-check"></i> Exclusive workshops and training</li>
-                            </ul>
-
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="fullName">Full Name *</label>
-                                    <input type="text" id="fullName" name="fullName" required />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="militaryId">Military ID *</label>
-                                    <input type="text" id="militaryId" name="militaryId" required />
-                                </div>
-                            </div>
-
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="email">Email *</label>
-                                    <input type="email" id="email" name="email" required />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="phone">Phone</label>
-                                    <input type="tel" id="phone" name="phone" />
-                                </div>
-                            </div>
-
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="department">Department *</label>
-                                    <select id="department" name="department" required>
-                                        <option value="">Select department</option>
-                                        <option value="Aeronautical Engineering">Aeronautical Engineering</option>
-                                        <option value="Systems Engineering">Systems Engineering</option>
-                                        <option value="Marin Engineering">Marin Engineering</option>
-                                        <option value="Civil Engineering">Civil Engineering</option>
-                                        <option value="Foundation Department">Foundation Department</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="yearLevel">Year Level</label>
-                                    <select id="yearLevel" name="yearLevel">
-                                        <option value="">Select year</option>
-                                        <option value="Year 1">Year 1</option>
-                                        <option value="Year 2">Year 2</option>
-                                        <option value="Year 3">Year 3</option>
-                                        <option value="Year 4">Year 4</option>
-                                        <option value="Year 5">Year 5</option>
-                                        <option value="Year 6">Year 6</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="interests">Areas of Interest</label>
-                                <input
-                                    type="text"
-                                    id="interests"
-                                    name="interests"
-                                    placeholder="e.g., AI, Robotics, IoT, Research"
-                                />
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="motivation">Why do you want to join?</label>
-                                <textarea
-                                    id="motivation"
-                                    name="motivation"
-                                    rows={3}
-                                    placeholder="Tell us about your motivation..."
-                                ></textarea>
-                            </div>
-
-                            <div className={styles.formActions}>
-                                <button type="button" onClick={() => setShowForm(false)} disabled={loading}>Cancel</button>
-                                <button type="submit" className={styles.submitBtn} disabled={loading}>
-                                    {loading ? (
-                                        <><i className="fa fa-spinner fa-spin"></i> Submitting...</>
-                                    ) : (
-                                        <><i className="fa fa-paper-plane"></i> Submit Registration</>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    ))}
                 </div>
-            )}
+            </section>
+
+            <JoinClub departments={departments} />
         </main>
     )
 }

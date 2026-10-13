@@ -42,6 +42,7 @@ export default async function StaffDashboard() {
     const pendingJoinRequests = await query<RowDataPacket[]>(`
         SELECT 
             pm.id,
+            p.id as projectId,
             'join_request' as type,
             p.title,
             COALESCE(sp.fullName, u.email) as userName,
@@ -91,7 +92,7 @@ export default async function StaffDashboard() {
             </div>
 
             {/* Pending Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))', gap: '2rem' }}>
                 {/* Pending Bookings */}
                 <div className={styles.section}>
                     <h3><i className="fa fa-calendar-check" style={{ color: 'var(--gold)' }}></i> Pending Lab Bookings</h3>
@@ -154,7 +155,7 @@ export default async function StaffDashboard() {
                                             wants to join {item.title}
                                         </div>
                                     </div>
-                                    <Link href={`/projects`} style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
+                                    <Link href={`/projects/${item.projectId}`} style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
                                         Review →
                                     </Link>
                                 </div>
@@ -171,11 +172,17 @@ export default async function StaffDashboard() {
                     <Link href="/admin/bookings" className={styles.navLink}>
                         <i className="fa fa-calendar-check"></i> Manage Bookings
                     </Link>
+                    <Link href="/admin/projects" className={styles.navLink}>
+                        <i className="fa fa-lightbulb"></i> Project Approvals
+                    </Link>
+                    <Link href="/admin/requests" className={styles.navLink}>
+                        <i className="fa fa-inbox"></i> Requests &amp; Messages
+                    </Link>
+                    <Link href="/admin/events" className={styles.navLink}>
+                        <i className="fa fa-calendar"></i> Manage Events
+                    </Link>
                     <Link href="/research" className={styles.navLink}>
                         <i className="fa fa-scroll"></i> Add Research
-                    </Link>
-                    <Link href="/events" className={styles.navLink}>
-                        <i className="fa fa-calendar"></i> Manage Events
                     </Link>
                     <Link href="/forums" className={styles.navLink}>
                         <i className="fa fa-comments"></i> View Forums
