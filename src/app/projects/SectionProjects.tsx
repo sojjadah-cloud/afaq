@@ -34,7 +34,7 @@ export default async function SectionProjects({ stage, sectionSlug }: { stage: S
                 </Link>
                 <div className={styles.breadcrumb}>{config.title}</div>
                 <h2>{section.name}</h2>
-                <p lang="ar" dir="rtl" className={styles.headerAr}>{section.nameAr}</p>
+                <p>{section.description}</p>
                 <span className={styles.headerCount} style={{ color: config.color, background: config.bg }}>
                     {projects.length} {projects.length === 1 ? 'project' : 'projects'}
                 </span>

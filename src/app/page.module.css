@@ -115,7 +115,7 @@
 /* Stats strip */
 .statsStrip {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.5rem;
     max-width: 1200px;
     margin: -6rem auto 4rem;
@@ -128,6 +128,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    min-width: 0;
     background: white;
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -172,9 +173,10 @@
 
 .blockHeader {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.5rem 1rem;
     margin-bottom: 1.5rem;
 }
 
@@ -228,7 +230,7 @@
 /* Portal links */
 .portalGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.25rem;
 }
 
@@ -277,7 +279,7 @@
 /* Two-column panels */
 .twoCol {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
 }
 
@@ -384,7 +386,7 @@
 /* Featured projects */
 .projectGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
 }
 
@@ -466,7 +468,7 @@
 /* Innovation tracks */
 .trackGrid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 1rem;
 }
 
@@ -499,15 +501,15 @@
 @media (max-width: 1024px) {
     .portalGrid,
     .projectGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .trackGrid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .statsStrip {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -525,11 +527,11 @@
     .twoCol,
     .portalGrid,
     .projectGrid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .trackGrid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -681,7 +683,7 @@
     border: 1px solid #f0e5bd;
     border-radius: 12px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.6rem;
 }
 
@@ -910,4 +912,48 @@
 .submitBtn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+@media (max-width: 480px) {
+    .statTile {
+        padding: 0.9rem;
+        gap: 0.65rem;
+    }
+
+    .statTile > i {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .statNumber {
+        font-size: 1.35rem;
+    }
+
+    .statText {
+        font-size: 0.66rem;
+        letter-spacing: 0.02em;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .visionStatement {
+        font-size: 1.05rem;
+    }
+}
+
+.panel {
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .panel {
+        padding: 1.1rem;
+    }
+
+    .eventItem,
+    .newsItem {
+        padding: 0.6rem 0.25rem;
+    }
 }

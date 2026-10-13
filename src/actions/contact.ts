@@ -2,6 +2,12 @@
 
 import { query } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { getSession } from '@/lib/auth'
+
+async function isStaff() {
+    const session = await getSession()
+    return session.isLoggedIn && (session.role === 'STAFF' || session.role === 'ADMIN')
+}
 
 export async function submitContactMessage(formData: FormData) {
     const name = formData.get('name') as string
@@ -33,6 +39,7 @@ export async function submitContactMessage(formData: FormData) {
 }
 
 export async function getContactMessages() {
+    if (!(await isStaff())) return []
     try {
         const messages = await query<any[]>(`
             SELECT * FROM contact_messages
@@ -46,6 +53,8 @@ export async function getContactMessages() {
 }
 
 export async function updateContactStatus(messageId: string, status: 'READ' | 'REPLIED' | 'CLOSED') {
+    if (!(await isStaff())) return { error: 'Not authorized' }
+    if (!['READ', 'REPLIED', 'CLOSED'].includes(status)) return { error: 'Invalid status' }
     try {
         await query(
             'UPDATE contact_messages SET status = ?, updatedAt = NOW() WHERE id = ?',

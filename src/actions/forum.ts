@@ -1,6 +1,7 @@
 'use server'
 
 import { query } from '@/lib/db'
+import { createNotification } from '@/lib/notify'
 import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { RowDataPacket } from '@/lib/types'
@@ -324,7 +325,7 @@ export async function updateMuteSettings(topicId: string, setting: string, value
             `INSERT INTO forum_mute_settings (id, userId, postId, ${setting}, createdAt, updatedAt)
              VALUES (?, ?, ?, ?, NOW(), NOW())
              ON CONFLICT(userId, postId) DO UPDATE SET ${setting} = excluded.${setting}, updatedAt = NOW()`,
-            [settingId, session.userId, topicId, value, value]
+            [settingId, session.userId, topicId, value]
         )
 
         return { success: true }
@@ -345,24 +346,5 @@ async function isNotificationMuted(userId: string, topicId: string, settingField
         return settings[0]?.muted === 1 || settings[0]?.muted === true
     } catch (error) {
         return false // If error, don't mute (fail open)
-    }
-}
-
-async function createNotification(
-    userId: string,
-    type: string,
-    title: string,
-    message: string,
-    link: string
-) {
-    try {
-        const notifId = `notif_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-        await query(
-            `INSERT INTO notifications (id, userId, type, title, message, link, createdAt)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-            [notifId, userId, type, title, message, link]
-        )
-    } catch (error) {
-        console.error('Failed to create notification:', error)
     }
 }

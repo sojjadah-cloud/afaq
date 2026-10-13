@@ -271,3 +271,229 @@
         transform: translateY(0);
     }
 }
+/* Categories overview */
+.headerAction {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.categoryCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.75rem 1.25rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.categoryCard:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold-soft);
+    box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+.categoryCard:hover .iconWrapper {
+    background: var(--gold);
+    color: white;
+}
+
+.categoryCard h3 {
+    font-size: 1.2rem;
+    color: #2d3748;
+    margin: 0 0 0.5rem;
+}
+
+.categoryCard p {
+    color: #718096;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin: 0 0 1rem;
+    flex: 1;
+}
+
+.categoryFooter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.categoryFooter .labCount {
+    margin-top: 0;
+}
+
+.technician {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.technician i {
+    color: var(--gold);
+    margin-right: 0.25rem;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1.25rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+}
+
+.step strong {
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.step p {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.stepIcon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #f7f3e1;
+    color: var(--gold-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Category page */
+.techCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1.75rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+.techInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.techInfo div {
+    display: flex;
+    flex-direction: column;
+}
+
+.techInfo small {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.techInfo strong {
+    color: #1e293b;
+}
+
+.techInfo span {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.techAvatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #1e293b;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.labMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    color: #64748b;
+}
+
+.labMeta i {
+    color: var(--gold);
+    width: 16px;
+}
+
+.labActionText {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--gold-dark);
+}
+
+.labInfo .labTag {
+    align-self: flex-start;
+}
+
+@media (max-width: 1100px) {
+    .categoryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        padding: 1rem;
+    }
+
+    .header {
+        padding: 1.75rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .header h2 {
+        font-size: 1.8rem;
+    }
+
+    .steps {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .categoryGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .techCard {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

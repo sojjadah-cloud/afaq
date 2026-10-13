@@ -188,3 +188,25 @@ textarea:focus-visible,
   margin: 0 auto;
   padding: 0 2rem;
 }
+/* Keep media and rich content inside the viewport on small screens */
+img,
+video {
+  max-width: 100%;
+}
+
+.markdown-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* margin:auto on a flex item disables stretching, so give main an explicit width */
+main {
+  width: 100%;
+  min-width: 0;
+}

@@ -254,3 +254,18 @@
         grid-template-columns: 1fr;
     }
 }
+.techAction {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #edf2f7;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.techAction p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}

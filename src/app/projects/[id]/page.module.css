@@ -94,7 +94,7 @@
 
 .grid {
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: minmax(0, 1fr) 350px;
     gap: 3rem;
 }
 
@@ -710,4 +710,39 @@
     margin: 0.6rem 0 0;
     font-size: 0.8rem;
     color: #718096;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .main {
+        padding: 1rem;
+    }
+
+    .header {
+        padding: 1.5rem 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .titleSection h1 {
+        font-size: 1.6rem;
+    }
+
+    .content {
+        padding: 1.25rem;
+    }
+
+    .card {
+        padding: 1.25rem;
+    }
+
+    .meta {
+        gap: 0.5rem 1rem;
+        flex-wrap: wrap;
+    }
 }

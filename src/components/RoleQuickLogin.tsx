@@ -6,9 +6,9 @@ import { loginAsRole } from '@/actions/auth'
 import styles from './Header.module.css'
 
 const ROLES = [
-    { value: 'ADMIN', label: 'Admin', labelAr: 'أدمن', icon: 'fa-user-shield' },
-    { value: 'STUDENT', label: 'Student', labelAr: 'طالب', icon: 'fa-user-graduate' },
-    { value: 'STAFF', label: 'Staff', labelAr: 'موظف', icon: 'fa-user-tie' },
+    { value: 'ADMIN', label: 'Admin', icon: 'fa-user-shield' },
+    { value: 'STUDENT', label: 'Student', icon: 'fa-user-graduate' },
+    { value: 'STAFF', label: 'Staff', icon: 'fa-user-tie' },
 ]
 
 export default function RoleQuickLogin() {
@@ -36,7 +36,7 @@ export default function RoleQuickLogin() {
                     className={styles.roleQuickBtn}
                     onClick={() => handleRoleLogin(r.value)}
                     disabled={loading !== null}
-                    title={r.labelAr}
+                    title={`Log in as ${r.label}`}
                 >
                     <i className={loading === r.value ? 'fa fa-spinner fa-spin' : `fa ${r.icon}`}></i>
                     <span>{r.label}</span>

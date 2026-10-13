@@ -153,7 +153,7 @@
 
 .list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
     gap: 1.5rem;
 }
 
@@ -267,7 +267,7 @@
 /* Quick Stats Row */
 .statsRow {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -319,7 +319,7 @@
 
 @media (max-width: 768px) {
     .statsRow {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .statCard {
@@ -334,5 +334,25 @@
 
     .statValue {
         font-size: 1.4rem;
+    }
+}
+.statCard {
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .header {
+        padding: 1.5rem 1.25rem;
+    }
+}
+
+.grid,
+.column {
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .section {
+        padding: 1.25rem;
     }
 }

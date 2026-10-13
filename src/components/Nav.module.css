@@ -46,6 +46,28 @@
 
 @media (max-width: 650px) {
     .nav {
-        padding: 6px 18px 10px;
+        padding: 6px 8px 8px;
+    }
+
+    /* Compact 4 x 2 icon grid instead of four rows of pills */
+    .nav ul {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+    }
+
+    .nav a {
+        flex-direction: column;
+        gap: 3px;
+        width: 100%;
+        padding: 6px 2px;
+        border-radius: 10px;
+        font-size: 11.5px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .nav a i {
+        font-size: 15px;
     }
 }

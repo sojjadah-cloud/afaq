@@ -2,43 +2,22 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import styles from './page.module.css'
 import { createEvent } from '@/actions/events'
-
-interface Event {
-    id: string
-    title: string
-    description: string
-    category: string
-    startDate: Date
-    endDate: Date
-    location: string
-    registrationCount: number
-}
+import EventCalendar, { CalendarEventItem } from './EventCalendar'
+import { EVENT_TYPES, EVENT_TYPE_KEYS } from '@/lib/eventTypes'
 
 interface EventsClientProps {
-    events: Event[]
+    events: CalendarEventItem[]
     canCreate: boolean
+    today: string
 }
 
-export default function EventsClient({ events, canCreate }: EventsClientProps) {
+export default function EventsClient({ events, canCreate, today }: EventsClientProps) {
     const router = useRouter()
     const [showForm, setShowForm] = useState(false)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
-
-    // Get current time once for consistent comparison
-    const now = new Date()
-
-    // Filter and sort events
-    const upcomingEvents = events
-        .filter(e => new Date(e.startDate).getTime() >= now.getTime())
-        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-
-    const pastEvents = events
-        .filter(e => new Date(e.startDate).getTime() < now.getTime())
-        .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -62,8 +41,8 @@ export default function EventsClient({ events, canCreate }: EventsClientProps) {
         <main className={styles.main}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h2>Innovation Events</h2>
-                    <p>Workshops, competitions, exhibitions, and innovation-focused gatherings.</p>
+                    <h2>Events Calendar</h2>
+                    <p>Club activities, student activities, events at Omani universities and colleges, and conferences.</p>
                 </div>
                 {canCreate && (
                     <button className={styles.createBtn} onClick={() => setShowForm(true)}>
@@ -80,71 +59,7 @@ export default function EventsClient({ events, canCreate }: EventsClientProps) {
                 </div>
             )}
 
-            {upcomingEvents.length > 0 && (
-                <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}>Upcoming Events</h3>
-                    <div className={styles.eventsGrid}>
-                        {upcomingEvents.map((event, index) => (
-                            <Link href={`/events/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className={`${styles.eventCard} ${styles[`animateDelay${index + 1}`] || ''}`}>
-                                    <div className={styles.eventDate}>
-                                        <div className={styles.eventMonth}>
-                                            {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short' })}
-                                        </div>
-                                        <div className={styles.eventDay}>
-                                            {new Date(event.startDate).getDate()}
-                                        </div>
-                                    </div>
-                                    <div className={styles.eventContent}>
-                                        <span className={styles.eventCategory}>{event.category}</span>
-                                        <h4 className={styles.eventTitle}>{event.title}</h4>
-                                        <p className={styles.eventDesc}>{event.description}</p>
-                                        <div className={styles.eventMeta}>
-                                            {event.location && (
-                                                <span>
-                                                    <i className="fa fa-map-marker"></i> {event.location}
-                                                </span>
-                                            )}
-                                            <span>
-                                                <i className="fa fa-users"></i> {event.registrationCount} registered
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {pastEvents.length > 0 && (
-                <section className={styles.section}>
-                    <h3 className={styles.sectionTitle}>Past Events</h3>
-                    <div className={styles.eventsGrid}>
-                        {pastEvents.slice(0, 6).map((event) => (
-                            <Link href={`/events/${event.id}`} key={event.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className={`${styles.eventCard} ${styles.pastEvent}`}>
-                                    <div className={styles.eventDate}>
-                                        <div className={styles.eventMonth}>
-                                            {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short' })}
-                                        </div>
-                                        <div className={styles.eventDay}>
-                                            {new Date(event.startDate).getDate()}
-                                        </div>
-                                    </div>
-                                    <div className={styles.eventContent}>
-                                        <span className={styles.eventCategory}>{event.category}</span>
-                                        <h4 className={styles.eventTitle}>{event.title}</h4>
-                                        <p className={styles.eventDesc}>{event.description?.substring(0, 100)}...</p>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {events.length === 0 && (
+            {events.length === 0 ? (
                 <div className={styles.emptyState}>
                     <i className="fa fa-calendar-xmark" style={{ fontSize: '3rem', color: '#cbd5e1', marginBottom: '1rem' }}></i>
                     <p>No events scheduled at the moment.</p>
@@ -154,6 +69,8 @@ export default function EventsClient({ events, canCreate }: EventsClientProps) {
                         </button>
                     )}
                 </div>
+            ) : (
+                <EventCalendar events={events} today={today} />
             )}
 
             {/* Create Event Modal */}
@@ -173,14 +90,24 @@ export default function EventsClient({ events, canCreate }: EventsClientProps) {
                                 <input type="text" id="title" name="title" required placeholder="Enter event title" />
                             </div>
 
+                            <div className={styles.formGroup}>
+                                <label htmlFor="eventType">Event Type *</label>
+                                <select id="eventType" name="eventType" required defaultValue="CLUB">
+                                    {EVENT_TYPE_KEYS.map(t => (
+                                        <option key={t} value={t}>{EVENT_TYPES[t].label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="category">Category</label>
+                                    <label htmlFor="category">Format</label>
                                     <select id="category" name="category">
                                         <option value="Workshop">Workshop</option>
                                         <option value="Competition">Competition</option>
                                         <option value="Exhibition">Exhibition</option>
                                         <option value="Seminar">Seminar</option>
+                                        <option value="Conference">Conference</option>
                                         <option value="Training">Training</option>
                                         <option value="Networking">Networking</option>
                                         <option value="General">General</option>

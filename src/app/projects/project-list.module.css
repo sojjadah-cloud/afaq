@@ -46,7 +46,7 @@
 
 .projectsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
     gap: 20px;
 }
 
@@ -161,9 +161,6 @@
     margin-bottom: 4px;
 }
 
-.headerAr {
-    font-size: 1.05rem;
-}
 
 .sectionHeading {
     font-size: 1.1rem;
@@ -185,7 +182,7 @@
 
 .sectionGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
     gap: 16px;
 }
 
@@ -241,11 +238,11 @@
     font-size: 16px;
 }
 
-.sectionNameAr {
-    font-size: 14px;
+.sectionDesc {
+    font-size: 13px;
     color: var(--muted);
-    text-align: left;
     margin-top: 2px;
+    line-height: 1.4;
 }
 
 .sectionCount {

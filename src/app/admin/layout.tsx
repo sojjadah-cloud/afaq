@@ -3,6 +3,7 @@ import { query } from '@/lib/db'
 import { redirect } from 'next/navigation'
 import { RowDataPacket } from '@/lib/types'
 import { AdminRoleProvider } from '@/components/AdminRoleContext'
+import TableLabels from '@/components/TableLabels'
 
 export default async function AdminLayout({
     children,
@@ -26,9 +27,10 @@ export default async function AdminLayout({
 
     return (
         <AdminRoleProvider role={role}>
-            <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+            <div id="admin-root" style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column', minWidth: 0 }}>
                 {children}
             </div>
+            <TableLabels rootId="admin-root" />
         </AdminRoleProvider>
     )
 }

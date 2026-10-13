@@ -113,7 +113,7 @@ export default async function AnalyticsPage() {
             </div>
 
             {/* Charts Section */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem', marginBottom: '2rem' }}>
                 {/* Project Status */}
                 <div className={styles.section}>
                     <h3>Projects by Status</h3>

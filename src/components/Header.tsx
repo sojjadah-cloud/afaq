@@ -33,25 +33,29 @@ export default async function Header() {
 
     return (
         <header className={styles.header}>
-            <h1>AFAQ Innovation Portal – Military Technological College</h1>
+            <h1>
+                <Link href="/" className={styles.brand}>
+                    AFAQ Innovation Portal<span className={styles.titleSuffix}> – Military Technological College</span>
+                </Link>
+            </h1>
             <div className={styles.headerCenter}>
                 <SearchBar />
             </div>
             <div className={styles.headerActions}>
                 {session.isLoggedIn && <NotificationBell />}
                 {session.role === 'ADMIN' && (
-                    <Link href="/admin" className={styles.adminLink}>
-                        <i className="fa-solid fa-shield-halved"></i> Admin Panel
+                    <Link href="/admin" className={styles.adminLink} aria-label="Admin Panel">
+                        <i className="fa-solid fa-shield-halved"></i> <span className={styles.linkText}>Admin Panel</span>
                     </Link>
                 )}
                 {session.role === 'STAFF' && (
-                    <Link href="/staff" className={styles.adminLink}>
-                        <i className="fa-solid fa-clipboard-check"></i> Staff Panel
+                    <Link href="/staff" className={styles.adminLink} aria-label="Staff Panel">
+                        <i className="fa-solid fa-clipboard-check"></i> <span className={styles.linkText}>Staff Panel</span>
                     </Link>
                 )}
                 {session.isLoggedIn ? (
                     <>
-                        <Link href="/student" className={styles.userBox} title="My profile">
+                        <Link href="/student" className={styles.userBox} title="My profile" aria-label={`My profile: ${displayName}`}>
                             <span className={styles.userText}>
                                 <span className={styles.userName}>{displayName}</span>
                                 <span className={styles.userRole}>{roleLabel}</span>

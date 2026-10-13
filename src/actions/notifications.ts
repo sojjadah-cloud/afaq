@@ -73,21 +73,6 @@ export async function markAllAsRead() {
     }
 }
 
-export async function createNotification(userId: string, type: string, title: string, message?: string, link?: string) {
-    try {
-        const notifId = `notif_${Date.now()}`
-        await query(
-            `INSERT INTO notifications (id, userId, type, title, message, link, createdAt)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-            [notifId, userId, type, title, message || null, link || null]
-        )
-        return { success: true }
-    } catch (error) {
-        console.error('Create notification error:', error)
-        return { error: 'Failed to create notification' }
-    }
-}
-
 // ============== AUDIT LOGGING ==============
 
 export async function logAction(

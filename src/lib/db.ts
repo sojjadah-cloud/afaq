@@ -36,10 +36,19 @@ function getDb(): Database.Database {
 
 // Brings databases created from an older seed.sql up to the current schema.
 function ensureSchema(database: Database.Database) {
-    const projectCols = database.prepare('PRAGMA table_info(projects)').all() as { name: string }[]
-    if (!projectCols.some(c => c.name === 'departmentId')) {
-        database.exec('ALTER TABLE projects ADD COLUMN departmentId varchar(191) DEFAULT NULL')
+    const addColumn = (table: string, column: string, definition: string) => {
+        const cols = database.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]
+        if (!cols.some(c => c.name === column)) {
+            database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+        }
     }
+    addColumn('projects', 'departmentId', 'varchar(191) DEFAULT NULL')
+    addColumn('events', 'eventType', "varchar(191) NOT NULL DEFAULT 'CLUB'")
+    addColumn('club_news', 'location', 'varchar(191) DEFAULT NULL')
+    addColumn('labs', 'location', 'varchar(191) DEFAULT NULL')
+    addColumn('lab_categories', 'technician', 'varchar(191) DEFAULT NULL')
+    addColumn('lab_categories', 'technicianContact', 'varchar(191) DEFAULT NULL')
+    addColumn('lab_categories', 'sortOrder', 'int(11) NOT NULL DEFAULT 0')
     database.exec(`CREATE TABLE IF NOT EXISTS files (
         id varchar(191) NOT NULL PRIMARY KEY,
         name varchar(255) NOT NULL,
@@ -57,17 +66,31 @@ function toSqlite(sql: string): string {
     return sql.replace(/\bNOW\(\)/gi, 'CURRENT_TIMESTAMP')
 }
 
+// mysql2 accepted booleans and Dates as parameters; better-sqlite3 does not.
+// Dates are stored as local 'YYYY-MM-DD HH:MM:SS.mmm', matching the seed data.
+function toSqliteParam(value: any) {
+    if (typeof value === 'boolean') return value ? 1 : 0
+    if (value instanceof Date) {
+        const pad = (n: number, w = 2) => String(n).padStart(w, '0')
+        return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ` +
+            `${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}.${pad(value.getMilliseconds(), 3)}`
+    }
+    if (value === undefined) return null
+    return value
+}
+
 export async function query<T>(sql: string, params: any[] = []): Promise<T> {
     try {
         const database = getDb()
         const translated = toSqlite(sql)
         const stmt = database.prepare(translated)
+        const bound = params.map(toSqliteParam)
 
         if (stmt.reader) {
-            return stmt.all(...params) as T
+            return stmt.all(...bound) as T
         }
 
-        stmt.run(...params)
+        stmt.run(...bound)
         return [] as T
     } catch (error) {
         console.error('Database query error:', error)

@@ -391,7 +391,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             {'fullName' in selectedItem ? (
                                 // Registration details
                                 <>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div className={styles.formGrid2}>
                                         <div>
                                             <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Name</label>
                                             <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.fullName}</p>
@@ -451,7 +451,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             ) : (
                                 // Message details
                                 <>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                    <div className={styles.formGrid2}>
                                         <div>
                                             <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>From</label>
                                             <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.name}</p>

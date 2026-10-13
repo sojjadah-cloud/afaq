@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import EventActions from './EventActions'
+import { EVENT_TYPES, eventTypeOf } from '@/lib/eventTypes'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,7 +58,11 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
     }
 
     const isFull = event.capacity ? event.registrationCount >= event.capacity : false
-    const isPast = new Date(event.startDate) < new Date()
+    const isPast = new Date(event.endDate || event.startDate) < new Date()
+    const type = EVENT_TYPES[eventTypeOf(event.eventType)]
+    const formatDay = (d: Date | string) =>
+        new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    const multiDay = event.endDate && String(event.endDate).slice(0, 10) !== String(event.startDate).slice(0, 10)
 
     return (
         <main className={styles.main}>
@@ -68,7 +73,12 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
             <div className={styles.eventContainer}>
                 <div className={styles.mainContent}>
                     <div className={styles.eventHeader}>
-                        <span className={styles.eventCategory}>{event.category}</span>
+                        <div className={styles.badgeRow}>
+                            <span className={styles.typeBadge} style={{ color: type.color, background: type.bg }}>
+                                <i className={`fa-solid ${type.icon}`}></i> {type.label}
+                            </span>
+                            <span className={styles.eventCategory}>{event.category}</span>
+                        </div>
                         <h1 className={styles.eventTitle}>{event.title}</h1>
 
                         <div className={styles.detailsGrid}>
@@ -78,7 +88,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
                                 </div>
                                 <div className={styles.detailText}>
                                     <h4>Date</h4>
-                                    <p>{new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                                    <p>{formatDay(event.startDate)}{multiDay ? ` – ${formatDay(event.endDate)}` : ''}</p>
                                 </div>
                             </div>
 

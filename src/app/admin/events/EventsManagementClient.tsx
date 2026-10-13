@@ -6,12 +6,14 @@ import Link from 'next/link'
 import styles from '../admin.module.css'
 import { createEvent, updateEvent, deleteEvent, getEventRegistrations } from '@/actions/events'
 import AdminNav from '@/components/AdminNav'
+import { EVENT_TYPES, EVENT_TYPE_KEYS, eventTypeOf } from '@/lib/eventTypes'
 
 interface Event {
     id: string
     title: string
     description: string
     category: string
+    eventType: string
     startDate: string
     endDate: string
     location: string
@@ -109,10 +111,10 @@ export default function EventsManagementClient({ events }: EventsManagementClien
         })
     }
 
+    // Stored values are local wall-clock times; keep them as-is (no UTC conversion).
     const formatDateTimeLocal = (dateStr: string) => {
         if (!dateStr) return ''
-        const d = new Date(dateStr)
-        return d.toISOString().slice(0, 16)
+        return String(dateStr).replace(' ', 'T').slice(0, 16)
     }
 
     return (
@@ -160,7 +162,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                         <thead>
                             <tr>
                                 <th>Event</th>
-                                <th>Category</th>
+                                <th>Type</th>
                                 <th>Date</th>
                                 <th>Location</th>
                                 <th>Registrations</th>
@@ -190,11 +192,14 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                                 borderRadius: '20px',
                                                 fontSize: '0.8rem',
                                                 fontWeight: 600,
-                                                background: '#eff6ff',
-                                                color: '#1d4ed8'
+                                                whiteSpace: 'nowrap',
+                                                background: EVENT_TYPES[eventTypeOf(event.eventType)].bg,
+                                                color: EVENT_TYPES[eventTypeOf(event.eventType)].color
                                             }}>
-                                                {event.category}
+                                                {EVENT_TYPES[eventTypeOf(event.eventType)].label}
                                             </span>
+                                            <br />
+                                            <small style={{ color: '#64748b' }}>{event.category}</small>
                                         </td>
                                         <td>
                                             {formatDate(event.startDate)}
@@ -424,9 +429,21 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                 />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                            <div style={{ marginBottom: '1.25rem' }}>
+                                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Event Type *</label>
+                                <select
+                                    name="eventType" required
+                                    defaultValue={eventTypeOf(editEvent?.eventType)}
+                                    style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
+                                >
+                                    {EVENT_TYPE_KEYS.map(t => (
+                                        <option key={t} value={t}>{EVENT_TYPES[t].label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.formGrid2}>
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Category</label>
+                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Format</label>
                                     <select
                                         name="category"
                                         defaultValue={editEvent?.category || 'General'}
@@ -436,6 +453,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                         <option value="Competition">Competition</option>
                                         <option value="Exhibition">Exhibition</option>
                                         <option value="Seminar">Seminar</option>
+                                        <option value="Conference">Conference</option>
                                         <option value="Training">Training</option>
                                         <option value="Networking">Networking</option>
                                         <option value="General">General</option>
@@ -451,7 +469,7 @@ export default function EventsManagementClient({ events }: EventsManagementClien
                                     />
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                            <div className={styles.formGrid2}>
                                 <div>
                                     <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Start Date *</label>
                                     <input

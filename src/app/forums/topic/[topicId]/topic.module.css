@@ -1,8 +1,8 @@
 /* Topic Detail - Centered Post Card Layout */
 
 .main {
-    max-width: 100%;
-    margin: 0 30%;
+    max-width: 960px;
+    margin: 0 auto;
     padding: 2rem;
     min-height: calc(100vh - 200px);
 }
@@ -509,7 +509,6 @@
 @media (max-width: 640px) {
     .main {
         padding: 1rem;
-        margin: 0 5%;
     }
 
     .postCard {
@@ -636,4 +635,9 @@
 .authorInfo:hover,
 .replyAuthorInfo:hover {
     opacity: 0.8;
+}
+@media (max-width: 640px) {
+    .main {
+        padding: 1rem;
+    }
 }

@@ -1,20 +1,9 @@
-import { query } from '@/lib/db'
-import { getSession } from '@/lib/auth'
-import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
-import TypeNewsClient from './TypeNewsClient'
+import { getSession } from '@/lib/auth'
+import NewsClient from '../NewsClient'
+import { loadNews } from '../loadNews'
 
 export const dynamic = 'force-dynamic'
-
-interface NewsItem extends RowDataPacket {
-    id: string
-    title: string
-    summary: string
-    imageUrl: string | null
-    type: 'NEWS' | 'ACHIEVEMENT'
-    eventDate: string | null
-    createdAt: string
-}
 
 const TYPE_MAP: Record<string, 'NEWS' | 'ACHIEVEMENT'> = {
     news: 'NEWS',
@@ -24,22 +13,16 @@ const TYPE_MAP: Record<string, 'NEWS' | 'ACHIEVEMENT'> = {
 export default async function NewsTypePage({ params }: { params: Promise<{ type: string }> }) {
     const { type } = await params
     const dbType = TYPE_MAP[type]
-
-    if (!dbType) {
-        notFound()
-    }
+    if (!dbType) notFound()
 
     const session = await getSession()
-
-    const items = await query<NewsItem[]>(
-        'SELECT * FROM club_news WHERE type = ? ORDER BY eventDate DESC, createdAt DESC',
-        [dbType]
-    )
+    const { items, counts } = await loadNews(dbType)
 
     return (
-        <TypeNewsClient
-            type={dbType}
+        <NewsClient
             items={items}
+            counts={counts}
+            active={dbType}
             userRole={session.role}
             isLoggedIn={session.isLoggedIn || false}
         />

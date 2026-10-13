@@ -4,6 +4,7 @@ import { query } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 import { RowDataPacket } from '@/lib/types'
+import { eventTypeOf } from '@/lib/eventTypes'
 
 export async function createEvent(formData: FormData) {
     const session = await getSession()
@@ -15,6 +16,7 @@ export async function createEvent(formData: FormData) {
     const title = formData.get('title') as string
     const description = formData.get('description') as string
     const category = formData.get('category') as string
+    const eventType = eventTypeOf(formData.get('eventType'))
     const location = formData.get('location') as string
     const capacity = formData.get('capacity') as string
     const startDate = formData.get('startDate') as string
@@ -25,13 +27,14 @@ export async function createEvent(formData: FormData) {
     try {
         const eventId = `evt_${Date.now()}`
         await query(
-            `INSERT INTO events (id, title, description, category, startDate, endDate, location, capacity, createdById, createdAt, updatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            `INSERT INTO events (id, title, description, category, eventType, startDate, endDate, location, capacity, createdById, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
             [
                 eventId,
                 title,
                 description || '',
                 category || 'General',
+                eventType,
                 new Date(startDate),
                 endDate ? new Date(endDate) : null,
                 location || 'TBD',
@@ -84,7 +87,15 @@ export async function registerForEvent(eventId: string) {
         )
 
         if (existing.length > 0) {
-            return { error: 'Already registered' }
+            if (existing[0].status !== 'CANCELLED') {
+                return { error: 'Already registered' }
+            }
+            await query(
+                "UPDATE event_registrations SET status = 'REGISTERED', registeredAt = NOW() WHERE id = ?",
+                [existing[0].id]
+            )
+            revalidatePath('/events')
+            return { success: true }
         }
 
         const regId = `evr_${Date.now()}`
@@ -137,6 +148,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     const title = formData.get('title') as string
     const description = formData.get('description') as string
     const category = formData.get('category') as string
+    const eventType = eventTypeOf(formData.get('eventType'))
     const location = formData.get('location') as string
     const capacity = formData.get('capacity') as string
     const startDate = formData.get('startDate') as string
@@ -147,7 +159,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     try {
         await query(
             `UPDATE events SET 
-                title = ?, description = ?, category = ?, 
+                title = ?, description = ?, category = ?, eventType = ?,
                 startDate = ?, endDate = ?, location = ?, 
                 capacity = ?, updatedAt = NOW()
              WHERE id = ?`,
@@ -155,6 +167,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
                 title,
                 description || '',
                 category || 'General',
+                eventType,
                 new Date(startDate),
                 endDate ? new Date(endDate) : null,
                 location || 'TBD',

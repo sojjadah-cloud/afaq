@@ -45,7 +45,7 @@ export default async function StageSections({ stage }: { stage: StageKey }) {
                             </div>
                             <div className={styles.sectionText}>
                                 <div className={styles.sectionName}>{section.name}</div>
-                                <div className={styles.sectionNameAr} lang="ar" dir="rtl">{section.nameAr}</div>
+                                <div className={styles.sectionDesc}>{section.description}</div>
                             </div>
                             <div className={styles.sectionCount}>
                                 <strong>{count}</strong>

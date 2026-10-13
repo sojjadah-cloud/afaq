@@ -54,3 +54,8 @@ export function initials(name?: string | null, fallback = 'AN'): string {
 export function cn(...classes: (string | undefined | null | false)[]) {
     return classes.filter(Boolean).join(' ')
 }
+
+// Today's date (YYYY-MM-DD) in Oman, independent of the server's time zone.
+export function todayInOman(): string {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Muscat' }).format(new Date())
+}

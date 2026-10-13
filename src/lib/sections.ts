@@ -7,13 +7,13 @@ import { RowDataPacket } from './types'
 
 export const CLUB_SLUG = 'club'
 
-const SECTION_META: Record<string, { nameAr: string; icon: string }> = {
-    FD: { nameAr: 'قسم الدراسات التأسيسية', icon: 'fa-book-open-reader' },
-    SE: { nameAr: 'قسم هندسة النظم', icon: 'fa-microchip' },
-    AE: { nameAr: 'قسم هندسة الطيران', icon: 'fa-plane' },
-    ME: { nameAr: 'قسم الهندسة البحرية', icon: 'fa-ship' },
-    CE: { nameAr: 'قسم الهندسة المدنية', icon: 'fa-helmet-safety' },
-    GE: { nameAr: 'قسم هندسة الجيوماتكس', icon: 'fa-map-location-dot' },
+const SECTION_ICONS: Record<string, string> = {
+    FD: 'fa-book-open-reader',
+    SE: 'fa-microchip',
+    AE: 'fa-plane',
+    ME: 'fa-ship',
+    CE: 'fa-helmet-safety',
+    GE: 'fa-map-location-dot',
 }
 const SECTION_ORDER = ['FD', 'SE', 'AE', 'ME', 'CE', 'GE']
 
@@ -21,25 +21,31 @@ export interface ProjectSection {
     slug: string
     departmentId: string | null
     name: string
-    nameAr: string
+    description: string
     icon: string
 }
 
 export async function getProjectSections(): Promise<ProjectSection[]> {
-    const departments = await query<RowDataPacket[]>('SELECT id, name, code FROM departments')
+    const departments = await query<RowDataPacket[]>('SELECT id, name, code, description FROM departments')
     const sections: ProjectSection[] = departments
         .map(d => ({
             slug: String(d.code).toLowerCase(),
             departmentId: d.id as string,
             name: String(d.name).replace(/ Department$/, ''),
-            nameAr: SECTION_META[d.code]?.nameAr || '',
-            icon: SECTION_META[d.code]?.icon || 'fa-building-columns',
+            description: String(d.description || ''),
+            icon: SECTION_ICONS[d.code] || 'fa-building-columns',
             order: SECTION_ORDER.indexOf(d.code) === -1 ? 99 : SECTION_ORDER.indexOf(d.code),
         }))
         .sort((a, b) => a.order - b.order)
         .map(({ order, ...s }) => s)
 
-    sections.push({ slug: CLUB_SLUG, departmentId: null, name: 'Scientific Club', nameAr: 'قسم النادي العلمي', icon: 'fa-flask-vial' })
+    sections.push({
+        slug: CLUB_SLUG,
+        departmentId: null,
+        name: 'Scientific Club',
+        description: 'Club-wide projects run by the AFAQ Scientific Club',
+        icon: 'fa-flask-vial',
+    })
     return sections
 }
 

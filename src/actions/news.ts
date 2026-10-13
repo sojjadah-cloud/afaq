@@ -16,6 +16,7 @@ export async function createNews(formData: FormData) {
     const type = formData.get('type') as string
     const eventDate = formData.get('eventDate') as string
     const imageUrl = formData.get('imageUrl') as string
+    const location = (formData.get('location') as string || '').trim()
 
     if (!title || !summary || !type) {
         return { error: 'Title, summary, and type are required' }
@@ -25,9 +26,9 @@ export async function createNews(formData: FormData) {
         const newsId = `news_${Date.now()}`
 
         await query(
-            `INSERT INTO club_news (id, title, summary, imageUrl, type, eventDate, createdById, createdAt, updatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-            [newsId, title, summary, imageUrl || null, type, eventDate || null, session.userId]
+            `INSERT INTO club_news (id, title, summary, imageUrl, type, eventDate, location, createdById, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [newsId, title, summary, imageUrl || null, type === 'ACHIEVEMENT' ? 'ACHIEVEMENT' : 'NEWS', eventDate || null, location || null, session.userId]
         )
 
         revalidatePath('/news')

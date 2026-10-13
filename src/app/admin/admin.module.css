@@ -523,3 +523,210 @@
     padding: 0 0.4rem;
 }
 
+
+/* Two-column form rows that stack on small screens */
+.formGrid2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Section tabs scroll sideways instead of overflowing */
+.adminNav {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.navLink {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.tableContainer {
+    max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .main {
+        padding: 1.5rem;
+    }
+
+    .header {
+        margin-bottom: 2rem;
+    }
+
+    .header h2 {
+        font-size: 2rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .controlGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .section {
+        padding: 1.5rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.9rem 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        padding: 1rem;
+    }
+
+    .header {
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .header h2 {
+        font-size: 1.6rem;
+    }
+
+    .header p {
+        font-size: 0.95rem;
+    }
+
+    .adminNav {
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .navLink {
+        padding: 0.55rem 0.9rem;
+        font-size: 0.88rem;
+        border-radius: 10px;
+    }
+
+    .statCard {
+        padding: 1.1rem 0.75rem;
+        border-radius: 16px;
+    }
+
+    .statIcon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .statValue {
+        font-size: 1.8rem;
+    }
+
+    .statLabel {
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+    }
+
+    .controlCard {
+        padding: 1.25rem;
+    }
+
+    .section {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+
+    .section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .filterBar {
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .filterBtn {
+        padding: 0.45rem 0.9rem;
+        font-size: 0.82rem;
+    }
+
+    .formGrid2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Tables become labelled cards (labels come from components/TableLabels) */
+    .tableContainer {
+        overflow: visible;
+        box-shadow: none;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+        width: 100%;
+    }
+
+    .table tr {
+        background: white;
+        border: 1px solid #edf2f7;
+        border-radius: 12px;
+        padding: 0.4rem 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .table tr:hover td {
+        background: transparent;
+    }
+
+    .table td {
+        padding: 0.6rem 0;
+        border-bottom: 1px dashed #edf2f7;
+        text-align: left;
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
+    }
+
+    .table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.2rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #94a3b8;
+    }
+
+    .table tr td:last-child {
+        border-bottom: none;
+    }
+
+    .table td[colspan] {
+        display: block;
+        text-align: center;
+    }
+
+    .table td[colspan]::before {
+        content: none;
+    }
+
+}
+
+@media (max-width: 420px) {
+    .controlGrid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

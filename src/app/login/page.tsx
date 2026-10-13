@@ -8,9 +8,9 @@ import styles from './page.module.css'
 
 // TEMPORARY: choose a role instead of entering credentials
 const ROLES = [
-    { value: 'STUDENT', label: 'Student', labelAr: 'طالب', desc: 'Browse projects, book equipment and join events', icon: 'fa-user-graduate' },
-    { value: 'STAFF', label: 'Staff', labelAr: 'موظف', desc: 'Manage labs, review submissions and mentor teams', icon: 'fa-user-tie' },
-    { value: 'ADMIN', label: 'Admin', labelAr: 'أدمن', desc: 'Full control over the innovation portal', icon: 'fa-user-shield' },
+    { value: 'STUDENT', label: 'Student', desc: 'Browse projects, book equipment and join events', icon: 'fa-user-graduate' },
+    { value: 'STAFF', label: 'Staff', desc: 'Manage labs, review submissions and mentor teams', icon: 'fa-user-tie' },
+    { value: 'ADMIN', label: 'Admin', desc: 'Full control over the innovation portal', icon: 'fa-user-shield' },
 ]
 
 export default function LoginPage() {
