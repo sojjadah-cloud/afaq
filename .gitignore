@@ -53,3 +53,4 @@ backup.sql
 
 .vercel
 .env*.local
+.session-secret

@@ -5,7 +5,6 @@ import { initials } from '@/lib/utils'
 import Link from 'next/link'
 import styles from './Header.module.css'
 import LogoutButton from './LogoutButton'
-import RoleQuickLogin from './RoleQuickLogin'
 import SearchBar from './SearchBar'
 import NotificationBell from './NotificationBell'
 
@@ -65,7 +64,7 @@ export default async function Header() {
                         <LogoutButton />
                     </>
                 ) : (
-                    <RoleQuickLogin />
+                    <Link href="/login" className={styles.adminLink}><i className="fa-solid fa-right-to-bracket"></i> <span className={styles.linkText}>Log In</span></Link>
                 )}
             </div>
         </header>

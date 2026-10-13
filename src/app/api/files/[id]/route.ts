@@ -1,12 +1,13 @@
 import { getSession } from '@/lib/auth'
+import { getActiveUser } from '@/lib/session'
 import { query } from '@/lib/db'
 import { RowDataPacket } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-    const session = await getSession()
-    if (!session.isLoggedIn) {
+    const user = await getActiveUser(await getSession())
+    if (!user) {
         return new Response('Unauthorized', { status: 401 })
     }
 

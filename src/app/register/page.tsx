@@ -241,9 +241,9 @@ export default function RegisterPage() {
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     name="password"
-                                    placeholder="Create a password (min 6 chars)"
+                                    placeholder="At least 8 characters, letters and numbers"
                                     required
-                                    minLength={6}
+                                    minLength={8}
                                     autoComplete="new-password"
                                 />
                                 <button
@@ -266,7 +266,7 @@ export default function RegisterPage() {
                                 name="confirmPassword"
                                 placeholder="Confirm your password"
                                 required
-                                minLength={6}
+                                minLength={8}
                                 autoComplete="new-password"
                             />
                         </div>

@@ -42,6 +42,8 @@ function ensureSchema(database: Database.Database) {
             database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
         }
     }
+    addColumn('users', 'isActive', 'tinyint(1) NOT NULL DEFAULT 1')
+    addColumn('users', 'sessionVersion', 'int(11) NOT NULL DEFAULT 0')
     addColumn('projects', 'departmentId', 'varchar(191) DEFAULT NULL')
     addColumn('events', 'eventType', "varchar(191) NOT NULL DEFAULT 'CLUB'")
     addColumn('club_news', 'location', 'varchar(191) DEFAULT NULL')
