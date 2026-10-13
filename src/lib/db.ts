@@ -30,7 +30,25 @@ function getDb(): Database.Database {
         console.log('✅ SQLite database connected')
     }
 
+    ensureSchema(db)
     return db
+}
+
+// Brings databases created from an older seed.sql up to the current schema.
+function ensureSchema(database: Database.Database) {
+    const projectCols = database.prepare('PRAGMA table_info(projects)').all() as { name: string }[]
+    if (!projectCols.some(c => c.name === 'departmentId')) {
+        database.exec('ALTER TABLE projects ADD COLUMN departmentId varchar(191) DEFAULT NULL')
+    }
+    database.exec(`CREATE TABLE IF NOT EXISTS files (
+        id varchar(191) NOT NULL PRIMARY KEY,
+        name varchar(255) NOT NULL,
+        mimeType varchar(191) NOT NULL,
+        size int(11) NOT NULL,
+        data blob NOT NULL,
+        uploadedById varchar(191) DEFAULT NULL,
+        createdAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`)
 }
 
 // MySQL syntax the original queries still use, translated to SQLite equivalents

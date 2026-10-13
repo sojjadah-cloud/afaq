@@ -371,3 +371,137 @@
     font-size: 2rem;
   }
 }
+/* Project submission steps */
+.step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.stepNumber {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--gold);
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepBody {
+  flex: 1;
+  padding-top: 4px;
+}
+
+.stepBody h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1e293b;
+}
+
+.stepBody p {
+  margin: 0.4rem 0 0.9rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  background: #eef4ff;
+  color: #1d4ed8;
+  border: 1px solid #c7d7fe;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.downloadBtn:hover {
+  background: #dfe9ff;
+  transform: translateY(-1px);
+}
+
+.dropZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 150px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 2px dashed #d6cfae;
+  border-radius: 16px;
+  background: #fcfbf5;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.dropZone > i {
+  font-size: 1.8rem;
+  color: var(--gold);
+  margin-bottom: 0.25rem;
+}
+
+.dropZone:hover,
+.dropZoneActive {
+  border-color: var(--gold);
+  background: #f9f5e3;
+}
+
+.dropZoneFilled {
+  border-style: solid;
+  border-color: #86c9a0;
+  background: #f1faf4;
+}
+
+.dropZoneFilled > i {
+  color: #2e9e5b;
+}
+
+.dropTitle {
+  font-weight: 600;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+.dropHint {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .projectForm {
+    padding: 1.5rem;
+  }
+
+  .modalHeader {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .modalHeader h3 {
+    font-size: 1.3rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

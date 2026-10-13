@@ -116,8 +116,11 @@ export default function ProjectActions({
                 formData.set('file', compressed)
             }
 
-            formData.append('projectId', projectId)
-            await addAttachment(projectId, formData)
+            const result = await addAttachment(projectId, formData)
+            if (result?.error) {
+                alert(result.error)
+                return
+            }
             setFileName('')
             router.refresh()
         } catch (error) {
@@ -286,6 +289,7 @@ export default function ProjectActions({
                                             type="file"
                                             name="file"
                                             id="file-upload"
+                                            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.png,.jpg,.jpeg,.gif,.webp"
                                             onChange={handleFileChange}
                                             className={styles.fileInput}
                                         />
@@ -302,6 +306,7 @@ export default function ProjectActions({
                                         {isUploading ? 'Uploading...' : 'Upload'}
                                     </button>
                                 </form>
+                                <p className={styles.uploadHint}>PDF, Word, PowerPoint, Excel, ZIP or images, up to 25 MB.</p>
                             </div>
 
                             {/* Transfer Ownership */}

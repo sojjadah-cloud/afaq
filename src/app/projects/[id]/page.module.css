@@ -675,8 +675,12 @@
 
 .fileLink i {
     font-size: 1.5rem;
-    color: #e53e3e;
-    /* PDF/File default color */
+    color: var(--gold-dark);
+}
+
+.fileLink i:last-child {
+    font-size: 0.95rem;
+    color: #94a3b8;
 }
 
 .fileLink:hover {
@@ -701,4 +705,9 @@
     font-style: italic;
     font-size: 0.95rem;
     padding: 0.5rem 0;
+}
+.uploadHint {
+    margin: 0.6rem 0 0;
+    font-size: 0.8rem;
+    color: #718096;
 }

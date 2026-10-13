@@ -6,8 +6,20 @@ import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import ProjectActions from './ProjectActions'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
+import { CLUB_SLUG } from '@/lib/sections'
+import { STAGES, StageKey, STATUS_LABELS } from '../stages'
 
 export const dynamic = 'force-dynamic'
+
+function fileIcon(name: string) {
+    const ext = (String(name).split('.').pop() || '').toLowerCase()
+    if (ext === 'pdf') return 'fa-file-pdf'
+    if (ext === 'doc' || ext === 'docx') return 'fa-file-word'
+    if (ext === 'ppt' || ext === 'pptx') return 'fa-file-powerpoint'
+    if (ext === 'xls' || ext === 'xlsx') return 'fa-file-excel'
+    if (ext === 'zip') return 'fa-file-zipper'
+    return 'fa-file'
+}
 
 interface Project extends RowDataPacket {
     id: string
@@ -40,10 +52,11 @@ export default async function ProjectDetails({
 
     // Fetch Project Details with Creator Name
     const projects = await query<Project[]>(
-        `SELECT p.*, u.militaryId, sp.fullName as creatorName 
-       FROM projects p 
+        `SELECT p.*, u.militaryId, sp.fullName as creatorName, d.name as departmentName, d.code as departmentCode
+       FROM projects p
        LEFT JOIN users u ON p.createdById = u.id
        LEFT JOIN student_profiles sp ON u.id = sp.userId
+       LEFT JOIN departments d ON d.id = p.departmentId
        WHERE p.id = ?`,
         [id]
     )
@@ -97,20 +110,27 @@ export default async function ProjectDetails({
     // Approved members for ownership transfer
     const approvedMembers = members.filter(m => m.status === 'APPROVED')
 
+    const sectionName = project.departmentName ? String(project.departmentName).replace(/ Department$/, '') : 'Scientific Club'
+    const sectionSlug = project.departmentCode ? String(project.departmentCode).toLowerCase() : CLUB_SLUG
+    const stage = (Object.keys(STAGES) as StageKey[]).find(k => (STAGES[k].statuses as readonly string[]).includes(project.status))
+    const backHref = stage ? `/projects/${stage}/${sectionSlug}` : '/projects'
+
     return (
         <main className={styles.main}>
-            {/* ... Existing Header ... */}
             <div className={styles.header}>
-                <Link href="/projects" className={styles.backLink}>
-                    <i className="fa-solid fa-arrow-left"></i> Back to Projects
+                <Link href={backHref} className={styles.backLink}>
+                    <i className="fa-solid fa-arrow-left"></i> Back to {stage ? sectionName : 'Projects'}
                 </Link>
                 <div className={styles.titleSection}>
                     <h1>{project.title}</h1>
                     <span className={`${styles.status} ${styles[project.status.toLowerCase()]}`}>
-                        {project.status}
+                        {STATUS_LABELS[project.status] || project.status}
                     </span>
                 </div>
                 <div className={styles.meta}>
+                    <span className={styles.metaItem}>
+                        <i className="fa-solid fa-building-columns"></i> {sectionName}
+                    </span>
                     <span className={styles.metaItem}>
                         <i className="fa-solid fa-tag"></i> {project.category}
                     </span>
@@ -161,9 +181,10 @@ export default async function ProjectDetails({
                                                 <span className={styles.imageCaption}>{att.name}</span>
                                             </div>
                                         ) : (
-                                            <a href={att.url} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
-                                                <i className="fa-solid fa-file-pdf"></i>
-                                                {att.name}
+                                            <a href={att.url} download={att.name} className={styles.fileLink}>
+                                                <i className={`fa-solid ${fileIcon(att.name)}`}></i>
+                                                <span>{att.name}</span>
+                                                <i className="fa-solid fa-download" style={{ marginLeft: 'auto' }}></i>
                                             </a>
                                         )}
                                     </div>
