@@ -18,8 +18,11 @@ interface PendingItem extends RowDataPacket {
 export default async function StaffDashboard() {
     const session = await getSession()
 
-    if (!session.isLoggedIn || (session.role !== 'STAFF' && session.role !== 'ADMIN')) {
+    if (!session.isLoggedIn) {
         redirect('/login')
+    }
+    if (session.role !== 'STAFF' && session.role !== 'ADMIN') {
+        redirect('/')
     }
 
     // Get pending bookings
