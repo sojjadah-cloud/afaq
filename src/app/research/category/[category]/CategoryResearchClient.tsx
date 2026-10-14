@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '../../page.module.css'
 import { deleteResearch } from '@/actions/research'
+import { useT, useFormatDay } from '@/i18n/client'
 
 interface Research {
     id: string
@@ -32,16 +33,18 @@ interface CategoryResearchClientProps {
 
 export default function CategoryResearchClient({ category, items, userRole, isLoggedIn }: CategoryResearchClientProps) {
     const router = useRouter()
+    const t = useT()
+    const formatDay = useFormatDay()
     const canDelete = isLoggedIn && userRole === 'ADMIN'
 
     const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!confirm('Are you sure you want to delete this research entry?')) return
+        if (!confirm(t('Are you sure you want to delete this research entry?'))) return
 
         const result = await deleteResearch(id)
         if (result.error) {
-            alert(result.error)
+            alert(t(result.error))
         } else {
             router.refresh()
         }
@@ -50,21 +53,21 @@ export default function CategoryResearchClient({ category, items, userRole, isLo
     return (
         <main className={styles.main}>
             <Link href="/research" className={styles.categoryBackLink}>
-                <i className="fa fa-arrow-left"></i> Back to Research
+                <i className="fa fa-arrow-left" aria-hidden="true"></i> {t('Back to Research')}
             </Link>
 
             <div className={styles.header}>
                 <h2>
-                    <i className={`fa-solid ${CATEGORY_META[category]?.icon || 'fa-folder'}`}></i> {category}
+                    <i className={`fa-solid ${CATEGORY_META[category]?.icon || 'fa-folder'}`} aria-hidden="true"></i> {t(category)}
                 </h2>
-                <p>{CATEGORY_META[category]?.desc || 'Research entries in this category'}</p>
+                <p>{t(CATEGORY_META[category]?.desc || 'Research entries in this category')}</p>
             </div>
 
             <div className={styles.grid}>
                 {items.length === 0 ? (
                     <div className={styles.emptyState}>
-                        <i className="fa fa-scroll"></i>
-                        <p>No research entries found in this category.</p>
+                        <i className="fa fa-scroll" aria-hidden="true"></i>
+                        <p>{t('No research entries found in this category.')}</p>
                     </div>
                 ) : (
                     items.map((research, index) => (
@@ -76,7 +79,7 @@ export default function CategoryResearchClient({ category, items, userRole, isLo
                             <div className={styles.cardContent}>
                                 <h3>{research.title}</h3>
                                 <p className={styles.authors}>
-                                    <i className="fa fa-users"></i> {research.authors}
+                                    <i className="fa fa-users" aria-hidden="true"></i> {research.authors}
                                 </p>
                                 <p className={styles.abstract}>
                                     {research.abstract.length > 200
@@ -86,19 +89,21 @@ export default function CategoryResearchClient({ category, items, userRole, isLo
                                 <div className={styles.cardFooter}>
                                     {research.publicationDate && (
                                         <span className={styles.date}>
-                                            <i className="fa fa-calendar"></i>
-                                            {new Date(research.publicationDate).toLocaleDateString()}
+                                            <i className="fa fa-calendar" aria-hidden="true"></i>
+                                            {formatDay(research.publicationDate)}
                                         </span>
                                     )}
                                     <span className={styles.link}>
-                                        <i className="fa fa-arrow-right"></i> Read more
+                                        <i className="fa fa-arrow-right" aria-hidden="true"></i> {t('Read more')}
                                     </span>
                                     {canDelete && (
                                         <button
+                                            type="button"
                                             className={styles.deleteBtn}
                                             onClick={(e) => handleDelete(e, research.id)}
+                                            aria-label={t('Delete {name}', { name: research.title })}
                                         >
-                                            <i className="fa fa-trash"></i>
+                                            <i className="fa fa-trash" aria-hidden="true"></i>
                                         </button>
                                     )}
                                 </div>

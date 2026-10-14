@@ -5,8 +5,10 @@ import Link from 'next/link'
 import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
-export const metadata = { title: 'Admin Control Panel' }
+export const generateMetadata = () => pageTitle('Admin Control Panel')
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +19,7 @@ interface CountResult extends RowDataPacket {
 export default async function AdminDashboard() {
     const session = await getSession()
     if (session.role !== 'ADMIN') redirect('/staff')
+    const { t } = await getT()
 
     // Core stats
     const userCount = await query<CountResult[]>('SELECT COUNT(*) as count FROM users')
@@ -117,32 +120,32 @@ export default async function AdminDashboard() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Admin Control Panel</h2>
-                <p>System Overview & Management</p>
+                <h2>{t('Admin Control Panel')}</h2>
+                <p>{t('System overview and management')}</p>
             </div>
 
             <AdminNav />
 
             <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.cardAnimate1}`}>
-                    <div className={styles.statIcon}><i className="fa fa-users"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-users"></i></div>
                     <div className={styles.statValue}>{userCount[0].count}</div>
-                    <div className={styles.statLabel}>Total Users</div>
+                    <div className={styles.statLabel}>{t('Total Users')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate2}`}>
-                    <div className={styles.statIcon}><i className="fa fa-lightbulb"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-lightbulb"></i></div>
                     <div className={styles.statValue}>{projectCount[0].count}</div>
-                    <div className={styles.statLabel}>Active Projects</div>
+                    <div className={styles.statLabel}>{t('Total Projects')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate3}`}>
-                    <div className={styles.statIcon}><i className="fa fa-calendar-check"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-calendar-check"></i></div>
                     <div className={styles.statValue}>{bookingCount[0].count}</div>
-                    <div className={styles.statLabel}>Total Bookings</div>
+                    <div className={styles.statLabel}>{t('Total Bookings')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate4}`}>
-                    <div className={styles.statIcon}><i className="fa fa-calendar-days"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-calendar-days"></i></div>
                     <div className={styles.statValue}>{eventCount[0].count}</div>
-                    <div className={styles.statLabel}>Events</div>
+                    <div className={styles.statLabel}>{t('Events')}</div>
                 </div>
             </div>
 
@@ -150,12 +153,12 @@ export default async function AdminDashboard() {
                 {controlItems.map(item => (
                     <Link key={item.href} href={item.href} className={styles.controlCard}>
                         {item.badge > 0 && (
-                            <span className={styles.controlBadge}>{item.badge}</span>
+                            <span className={styles.controlBadge} aria-label={t('{n} waiting', { n: item.badge })}>{item.badge}</span>
                         )}
-                        <div className={styles.controlIcon}><i className={`fa ${item.icon}`}></i></div>
-                        <h3 className={styles.controlTitle}>{item.title}</h3>
-                        <p className={styles.controlDesc}>{item.desc}</p>
-                        <span className={styles.controlArrow}>Open <i className="fa fa-arrow-right"></i></span>
+                        <div className={styles.controlIcon} aria-hidden="true"><i className={`fa ${item.icon}`}></i></div>
+                        <h3 className={styles.controlTitle}>{t(item.title)}</h3>
+                        <p className={styles.controlDesc}>{t(item.desc)}</p>
+                        <span className={styles.controlArrow}>{t('Open')} <i className="fa fa-arrow-right" aria-hidden="true"></i></span>
                     </Link>
                 ))}
             </div>

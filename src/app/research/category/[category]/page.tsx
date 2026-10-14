@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth'
 import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import CategoryResearchClient from './CategoryResearchClient'
+import { getT } from '@/i18n/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +24,8 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
     const { category } = await params
     let name = category
     try { name = decodeURIComponent(category) } catch { /* keep raw */ }
-    return { title: `Research: ${name.slice(0, 60)}` }
+    const { t } = await getT()
+    return { title: t('Research: {name}', { name: t(name.slice(0, 60)) }) }
 }
 
 export default async function ResearchCategoryPage({ params }: { params: Promise<{ category: string }> }) {

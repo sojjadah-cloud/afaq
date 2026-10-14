@@ -2,6 +2,7 @@ import { query } from './db'
 import { RowDataPacket } from './types'
 import type { TechnicianResource } from '@/components/TechnicianRequest'
 import type { BookingMode } from '@/app/lab-booking/booking-form'
+import type { TFunction } from '@/i18n/core'
 
 const UNITS: Record<string, [string, string]> = {
     clubWorkshops: ['space', 'spaces'],
@@ -10,9 +11,9 @@ const UNITS: Record<string, [string, string]> = {
     toolBorrowing: ['item', 'items'],
 }
 
-export function unitFor(categoryKey: string, count: number) {
+export function unitFor(categoryKey: string, count: number, t: TFunction = text => text) {
     const [one, many] = UNITS[categoryKey] || ['resource', 'resources']
-    return `${count} ${count === 1 ? one : many}`
+    return count === 1 ? t(`1 ${one}`) : t(`{n} ${many}`, { n: count })
 }
 
 export function bookingModeFor(categoryKey: string): BookingMode {

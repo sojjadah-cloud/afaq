@@ -4,8 +4,11 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { RowDataPacket } from '@/lib/types'
 import styles from '../admin/admin.module.css'
+import { getT } from '@/i18n/server'
+import { formatDay } from '@/i18n/core'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Staff Dashboard' }
+export const generateMetadata = () => pageTitle('Staff Dashboard')
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +29,7 @@ export default async function StaffDashboard() {
     if (session.role !== 'STAFF' && session.role !== 'ADMIN') {
         redirect('/')
     }
+    const { t, lang } = await getT()
 
     // Get pending bookings
     const pendingBookings = await query<RowDataPacket[]>(`
@@ -74,31 +78,31 @@ export default async function StaffDashboard() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Staff Dashboard</h2>
-                <p>Pending Approvals & Management</p>
+                <h2>{t('Staff Dashboard')}</h2>
+                <p>{t('Pending approvals and management')}</p>
             </div>
 
             {/* Stats */}
             <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.cardAnimate1}`}>
-                    <div className={styles.statIcon}><i className="fa fa-users"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-users"></i></div>
                     <div className={styles.statValue}>{userCount?.count || 0}</div>
-                    <div className={styles.statLabel}>Total Users</div>
+                    <div className={styles.statLabel}>{t('Total Users')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate2}`}>
-                    <div className={styles.statIcon}><i className="fa fa-lightbulb"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-lightbulb"></i></div>
                     <div className={styles.statValue}>{projectCount?.count || 0}</div>
-                    <div className={styles.statLabel}>Projects</div>
+                    <div className={styles.statLabel}>{t('Projects')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate3}`}>
-                    <div className={styles.statIcon}><i className="fa fa-clock"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-clock"></i></div>
                     <div className={styles.statValue}>{bookingCount?.count || 0}</div>
-                    <div className={styles.statLabel}>Pending Bookings</div>
+                    <div className={styles.statLabel}>{t('Pending Bookings')}</div>
                 </div>
                 <div className={`${styles.statCard} ${styles.cardAnimate4}`}>
-                    <div className={styles.statIcon}><i className="fa fa-user-plus"></i></div>
+                    <div className={styles.statIcon} aria-hidden="true"><i className="fa fa-user-plus"></i></div>
                     <div className={styles.statValue}>{pendingJoinRequests.length}</div>
-                    <div className={styles.statLabel}>Join Requests</div>
+                    <div className={styles.statLabel}>{t('Join Requests')}</div>
                 </div>
             </div>
 
@@ -106,10 +110,10 @@ export default async function StaffDashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(400px, 100%), 1fr))', gap: '2rem' }}>
                 {/* Pending Bookings */}
                 <div className={styles.section}>
-                    <h3><i className="fa fa-calendar-check" style={{ color: 'var(--gold)' }}></i> Pending Lab Bookings</h3>
+                    <h3><i className="fa fa-calendar-check" style={{ color: 'var(--gold)' }} aria-hidden="true"></i> {t('Pending Bookings')}</h3>
                     {pendingBookings.length === 0 ? (
                         <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>
-                            No pending bookings
+                            {t('No pending bookings')}
                         </p>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -125,17 +129,17 @@ export default async function StaffDashboard() {
                                     <div>
                                         <strong style={{ color: '#1e293b' }}>{item.title}</strong>
                                         <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            by {item.userName}
+                                            {t('by {name}', { name: item.userName })}
                                         </div>
                                     </div>
                                     <Link href="/admin/bookings" style={{ color: 'var(--gold-dark)', fontWeight: 600, textDecoration: 'none' }}>
-                                        Review →
+                                        {t('Review')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                     </Link>
                                 </div>
                             ))}
                             {pendingBookings.length > 5 && (
                                 <Link href="/admin/bookings" style={{ color: 'var(--gold-dark)', fontWeight: 600, textDecoration: 'none', textAlign: 'center' }}>
-                                    View all {pendingBookings.length} pending bookings →
+                                    {t('View all {n} pending bookings', { n: pendingBookings.length })} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                 </Link>
                             )}
                         </div>
@@ -144,10 +148,10 @@ export default async function StaffDashboard() {
 
                 {/* Pending Join Requests */}
                 <div className={styles.section}>
-                    <h3><i className="fa fa-user-plus" style={{ color: 'var(--gold)' }}></i> Project Join Requests</h3>
+                    <h3><i className="fa fa-user-plus" style={{ color: 'var(--gold)' }} aria-hidden="true"></i> {t('Project Join Requests')}</h3>
                     {pendingJoinRequests.length === 0 ? (
                         <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>
-                            No pending requests
+                            {t('No pending requests')}
                         </p>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -163,11 +167,11 @@ export default async function StaffDashboard() {
                                     <div>
                                         <strong style={{ color: '#1e293b' }}>{item.userName}</strong>
                                         <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                            wants to join {item.title}
+                                            {t('wants to join {project}', { project: item.title })}
                                         </div>
                                     </div>
-                                    <Link href={`/projects/${item.projectId}`} style={{ color: '#3b82f6', fontWeight: 600, textDecoration: 'none' }}>
-                                        Review →
+                                    <Link href={`/projects/${item.projectId}`} style={{ color: '#1d4ed8', fontWeight: 600, textDecoration: 'none' }}>
+                                        {t('Review')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
                                     </Link>
                                 </div>
                             ))}
@@ -177,10 +181,10 @@ export default async function StaffDashboard() {
             </div>
 
             <div className={styles.section} style={{ marginTop: '2rem' }}>
-                <h3><i className="fa fa-user-tie" style={{ color: 'var(--gold)' }}></i> Projects I Supervise</h3>
+                <h3><i className="fa fa-user-tie" style={{ color: 'var(--gold)' }} aria-hidden="true"></i> {t('Projects I Supervise')}</h3>
                 {supervised.length === 0 ? (
                     <p style={{ color: '#64748b', textAlign: 'center', padding: '1.5rem' }}>
-                        You are not supervising any project yet. Assign yourself from a project page.
+                        {t('You are not supervising any project yet. Assign yourself from a project page.')}
                     </p>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: '0.75rem' }}>
@@ -191,7 +195,7 @@ export default async function StaffDashboard() {
                                     <div style={{ width: `${Number(p.progress) || 0}%`, height: '100%', background: 'var(--gold)' }}></div>
                                 </div>
                                 <small style={{ color: '#64748b' }}>
-                                    {Number(p.progress) || 0}% · {p.lastUpdate ? `last update ${String(p.lastUpdate).slice(0, 10)}` : 'no progress updates yet'}
+                                    {Number(p.progress) || 0}% · {p.lastUpdate ? t('last update {date}', { date: formatDay(lang, p.lastUpdate) }) : t('no progress updates yet')}
                                 </small>
                             </Link>
                         ))}
@@ -201,28 +205,28 @@ export default async function StaffDashboard() {
 
             {/* Quick Links */}
             <div className={styles.section} style={{ marginTop: '2rem' }}>
-                <h3>Quick Actions</h3>
+                <h3>{t('Quick Actions')}</h3>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     <Link href="/admin/bookings" className={styles.navLink}>
-                        <i className="fa fa-calendar-check"></i> Manage Bookings
+                        <i className="fa fa-calendar-check" aria-hidden="true"></i> {t('Manage Bookings')}
                     </Link>
                     <Link href="/admin/projects" className={styles.navLink}>
-                        <i className="fa fa-lightbulb"></i> Project Approvals
+                        <i className="fa fa-lightbulb" aria-hidden="true"></i> {t('Project Approvals')}
                     </Link>
                     <Link href="/admin/requests" className={styles.navLink}>
-                        <i className="fa fa-inbox"></i> Requests &amp; Messages
+                        <i className="fa fa-inbox" aria-hidden="true"></i> {t('Requests & Messages')}
                     </Link>
                     <Link href="/admin/events" className={styles.navLink}>
-                        <i className="fa fa-calendar"></i> Manage Events
+                        <i className="fa fa-calendar" aria-hidden="true"></i> {t('Manage Events')}
                     </Link>
                     <Link href="/admin/equipment" className={styles.navLink}>
-                        <i className="fa fa-screwdriver-wrench"></i> Manage Equipment
+                        <i className="fa fa-screwdriver-wrench" aria-hidden="true"></i> {t('Manage Equipment')}
                     </Link>
                     <Link href="/research" className={styles.navLink}>
-                        <i className="fa fa-scroll"></i> Add Research
+                        <i className="fa fa-scroll" aria-hidden="true"></i> {t('Add Research')}
                     </Link>
                     <Link href="/forums" className={styles.navLink}>
-                        <i className="fa fa-comments"></i> View Forums
+                        <i className="fa fa-comments" aria-hidden="true"></i> {t('View Forums')}
                     </Link>
                 </div>
             </div>

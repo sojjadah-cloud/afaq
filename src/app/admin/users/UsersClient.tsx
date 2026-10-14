@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import styles from '../admin.module.css'
 import ExportButton from '@/components/ExportButton'
 import { createUserAccount, resetUserPassword, setUserActive, updateUserRole } from '@/actions/admin'
+import { useT } from '@/i18n/client'
 
 export interface AdminUserRow {
     id: string
@@ -26,6 +27,7 @@ export default function UsersClient({ users, currentUserId, departments, program
     programmes: { id: string; name: string; departmentId: string }[]
 }) {
     const router = useRouter()
+    const t = useT()
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState('ALL')
     const [statusFilter, setStatusFilter] = useState('ALL')
@@ -57,10 +59,10 @@ export default function UsersClient({ users, currentUserId, departments, program
         setBusy(key)
         try {
             const result = await action()
-            if (result.error) alert(result.error)
+            if (result.error) alert(t(result.error))
             else router.refresh()
         } catch {
-            alert('Something went wrong. Please try again.')
+            alert(t('Something went wrong. Please try again.'))
         } finally {
             setBusy(null)
         }
@@ -68,7 +70,7 @@ export default function UsersClient({ users, currentUserId, departments, program
 
     const changeRole = (u: AdminUserRow, role: string) => {
         if (role === u.role) return
-        if (!confirm(`Change ${u.fullName || u.militaryId} to ${ROLE_LABELS[role]}? They will be signed out.`)) {
+        if (!confirm(t('Change {name} to {role}? They will be signed out.', { name: u.fullName || u.militaryId, role: t(ROLE_LABELS[role]) }))) {
             router.refresh()
             return
         }
@@ -76,20 +78,20 @@ export default function UsersClient({ users, currentUserId, departments, program
     }
 
     const toggleActive = (u: AdminUserRow) => {
-        const verb = u.isActive ? 'Deactivate' : 'Activate'
-        if (!confirm(`${verb} ${u.fullName || u.militaryId}?`)) return
+        const name = u.fullName || u.militaryId
+        if (!confirm(u.isActive ? t('Deactivate {name}?', { name }) : t('Activate {name}?', { name }))) return
         run(u.id, () => setUserActive(u.id, !u.isActive))
     }
 
     const resetPassword = async (u: AdminUserRow) => {
-        if (!confirm(`Reset the password for ${u.fullName || u.militaryId}? Their current password will stop working.`)) return
+        if (!confirm(t('Reset the password for {name}? Their current password will stop working.', { name: u.fullName || u.militaryId }))) return
         setBusy(u.id)
         const result = await resetUserPassword(u.id).catch(() => ({ error: 'Something went wrong. Please try again.' } as { error: string; password?: string; militaryId?: string }))
         setBusy(null)
-        if (result.error) alert(result.error)
+        if (result.error) alert(t(result.error))
         else if (result.password) {
             setCopied(false)
-            setCredential({ title: `New password for ${u.fullName || u.militaryId}`, militaryId: result.militaryId, password: result.password })
+            setCredential({ title: t('New password for {name}', { name: u.fullName || u.militaryId }), militaryId: result.militaryId, password: result.password })
         }
     }
 
@@ -100,12 +102,12 @@ export default function UsersClient({ users, currentUserId, departments, program
         const result = await createUserAccount(new FormData(e.currentTarget)).catch(() => ({ error: 'Something went wrong. Please try again.' } as { error: string; password?: string; militaryId?: string }))
         setBusy(null)
         if (result.error) {
-            setCreateError(result.error)
+            setCreateError(t(result.error))
             return
         }
         setShowCreate(false)
         setCopied(false)
-        setCredential({ title: 'Account created', militaryId: result.militaryId!, password: result.password! })
+        setCredential({ title: t('Account created'), militaryId: result.militaryId!, password: result.password! })
         router.refresh()
     }
 
@@ -119,19 +121,19 @@ export default function UsersClient({ users, currentUserId, departments, program
         <>
             <div className={styles.toolbar}>
                 <div className={styles.searchBox}>
-                    <i className="fa-solid fa-magnifying-glass"></i>
+                    <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <input
                         type="search"
-                        placeholder="Search by name, military ID, email or department"
+                        placeholder={t('Search by name, military ID, email or department')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        aria-label="Search users"
+                        aria-label={t('Search users')}
                     />
                 </div>
                 <div className={styles.toolbarActions}>
-                    <ExportButton kind="users" />
+                    <ExportButton kind="users" label="Export users" />
                     <button type="button" className={styles.primaryBtn} onClick={() => { setCreateError(''); setNewDept(''); setNewRole('STAFF'); setShowCreate(true) }}>
-                        <i className="fa-solid fa-user-plus"></i> Add User
+                        <i className="fa-solid fa-user-plus" aria-hidden="true"></i> {t('Add User')}
                     </button>
                 </div>
             </div>
@@ -139,13 +141,13 @@ export default function UsersClient({ users, currentUserId, departments, program
             <div className={styles.filterBar}>
                 {(['ALL', 'STUDENT', 'STAFF', 'ADMIN'] as const).map(r => (
                     <button key={r} type="button" className={`${styles.filterBtn} ${roleFilter === r ? styles.active : ''}`} onClick={() => setRoleFilter(r)}>
-                        {r === 'ALL' ? 'All' : ROLE_LABELS[r]} ({counts[r]})
+                        {r === 'ALL' ? t('All') : t(ROLE_LABELS[r])} ({counts[r]})
                     </button>
                 ))}
-                <select className={styles.filterSelect} value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status">
-                    <option value="ALL">Any status</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Deactivated</option>
+                <select className={styles.filterSelect} value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label={t('Filter by status')}>
+                    <option value="ALL">{t('Any status')}</option>
+                    <option value="ACTIVE">{t('Active')}</option>
+                    <option value="INACTIVE">{t('Deactivated')}</option>
                 </select>
             </div>
 
@@ -154,50 +156,50 @@ export default function UsersClient({ users, currentUserId, departments, program
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>User</th>
-                                <th>Military ID</th>
-                                <th>Department</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('User')}</th>
+                                <th>{t('Military ID')}</th>
+                                <th>{t('Department')}</th>
+                                <th>{t('Role')}</th>
+                                <th>{t('Status')}</th>
+                                <th>{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {visible.length === 0 ? (
-                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>No users match your filters.</td></tr>
+                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>{t('No users match your filters.')}</td></tr>
                             ) : visible.map(u => {
                                 const self = u.id === currentUserId
                                 return (
                                     <tr key={u.id} style={{ opacity: u.isActive ? 1 : 0.6 }}>
                                         <td>
-                                            <strong>{u.fullName || '—'}</strong>{self && <span className={styles.youTag}>You</span>}
+                                            <strong>{u.fullName || '—'}</strong>{self && <span className={styles.youTag}>{t('You')}</span>}
                                             <br />
                                             <small style={{ color: '#64748b' }}>{u.email}</small>
                                         </td>
-                                        <td style={{ fontFamily: 'monospace' }}>{u.militaryId}</td>
-                                        <td>{u.department || '—'}</td>
+                                        <td style={{ fontFamily: 'monospace' }} dir="ltr">{u.militaryId}</td>
+                                        <td>{u.department ? t(u.department) : '—'}</td>
                                         <td>
                                             <select
                                                 className={styles.inlineSelect}
                                                 value={u.role}
                                                 disabled={self || busy === u.id}
                                                 onChange={e => changeRole(u, e.target.value)}
-                                                aria-label={`Role for ${u.fullName || u.militaryId}`}
+                                                aria-label={t('Role for {name}', { name: u.fullName || u.militaryId })}
                                             >
-                                                <option value="STUDENT">Student</option>
-                                                <option value="STAFF">Staff</option>
-                                                <option value="ADMIN">Administrator</option>
+                                                <option value="STUDENT">{t('Student')}</option>
+                                                <option value="STAFF">{t('Staff')}</option>
+                                                <option value="ADMIN">{t('Administrator')}</option>
                                             </select>
                                         </td>
                                         <td>
                                             <span className={`${styles.statusBadge} ${u.isActive ? styles.approved : styles.rejected}`}>
-                                                {u.isActive ? 'Active' : 'Deactivated'}
+                                                {u.isActive ? t('Active') : t('Deactivated')}
                                             </span>
                                         </td>
                                         <td>
                                             <div className={styles.actionBtns}>
                                                 <button type="button" className={styles.cancelBtn} disabled={busy === u.id} onClick={() => resetPassword(u)}>
-                                                    <i className="fa-solid fa-key"></i> Reset password
+                                                    <i className="fa-solid fa-key" aria-hidden="true"></i> {t('Reset password')}
                                                 </button>
                                                 {!self && (
                                                     <button
@@ -206,7 +208,7 @@ export default function UsersClient({ users, currentUserId, departments, program
                                                         disabled={busy === u.id}
                                                         onClick={() => toggleActive(u)}
                                                     >
-                                                        <i className={`fa-solid ${u.isActive ? 'fa-user-slash' : 'fa-user-check'}`}></i> {u.isActive ? 'Deactivate' : 'Activate'}
+                                                        <i className={`fa-solid ${u.isActive ? 'fa-user-slash' : 'fa-user-check'}`} aria-hidden="true"></i> {u.isActive ? t('Deactivate') : t('Activate')}
                                                     </button>
                                                 )}
                                             </div>
@@ -223,45 +225,45 @@ export default function UsersClient({ users, currentUserId, departments, program
                 <div className={styles.modalOverlay} onClick={() => setShowCreate(false)}>
                     <div className={styles.modalBox} role="dialog" aria-modal="true" aria-labelledby="create-user-title" onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHead}>
-                            <h3 id="create-user-title">Add User</h3>
-                            <button type="button" className={styles.modalClose} onClick={() => setShowCreate(false)} aria-label="Close"><i className="fa fa-times"></i></button>
+                            <h3 id="create-user-title">{t('Add User')}</h3>
+                            <button type="button" className={styles.modalClose} onClick={() => setShowCreate(false)} aria-label={t('Close')}><i className="fa fa-times" aria-hidden="true"></i></button>
                         </div>
                         <form onSubmit={handleCreate} className={styles.modalBody}>
-                            <label className={styles.field}><span>Full name *</span><input name="fullName" required /></label>
+                            <label className={styles.field}><span>{t('Full Name')} *</span><input name="fullName" required /></label>
                             <div className={styles.formGrid2}>
-                                <label className={styles.field}><span>Military ID *</span><input name="militaryId" required /></label>
+                                <label className={styles.field}><span>{t('Military ID')} *</span><input name="militaryId" required dir="ltr" /></label>
                                 <label className={styles.field}>
-                                    <span>Role *</span>
+                                    <span>{t('Role')} *</span>
                                     <select name="role" value={newRole} onChange={e => setNewRole(e.target.value)} required>
-                                        <option value="STUDENT">Student</option>
-                                        <option value="STAFF">Staff</option>
-                                        <option value="ADMIN">Administrator</option>
+                                        <option value="STUDENT">{t('Student')}</option>
+                                        <option value="STAFF">{t('Staff')}</option>
+                                        <option value="ADMIN">{t('Administrator')}</option>
                                     </select>
                                 </label>
                             </div>
-                            <label className={styles.field}><span>Email *</span><input name="email" type="email" required /></label>
+                            <label className={styles.field}><span>{t('Email')} *</span><input name="email" type="email" required /></label>
                             <div className={styles.formGrid2}>
                                 <label className={styles.field}>
-                                    <span>Department *</span>
+                                    <span>{t('Department')} *</span>
                                     <select name="departmentId" value={newDept} onChange={e => setNewDept(e.target.value)} required>
-                                        <option value="">Select...</option>
-                                        {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                        <option value="">{t('Select...')}</option>
+                                        {departments.map(d => <option key={d.id} value={d.id}>{t(d.name)}</option>)}
                                     </select>
                                 </label>
                                 <label className={styles.field}>
-                                    <span>Programme{newRole === 'STUDENT' ? ' *' : ''}</span>
+                                    <span>{t('Programme')}{newRole === 'STUDENT' ? ' *' : ''}</span>
                                     <select name="programmeId" defaultValue="" required={newRole === 'STUDENT'} disabled={!newDept} key={newDept}>
-                                        <option value="">{newRole === 'STUDENT' ? 'Select...' : 'None'}</option>
-                                        {programmes.filter(p => p.departmentId === newDept).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                        <option value="">{newRole === 'STUDENT' ? t('Select...') : t('None')}</option>
+                                        {programmes.filter(p => p.departmentId === newDept).map(p => <option key={p.id} value={p.id}>{t(p.name)}</option>)}
                                     </select>
                                 </label>
                             </div>
-                            <p className={styles.hint}>A temporary password is generated and shown once. Share it with the user and ask them to change it after signing in.</p>
-                            {createError && <div className={styles.formError}>{createError}</div>}
+                            <p className={styles.hint}>{t('A temporary password is generated and shown once. Share it with the user and ask them to change it after signing in.')}</p>
+                            {createError && <div className={styles.formError} role="alert">{createError}</div>}
                             <div className={styles.modalActions}>
-                                <button type="button" className={styles.secondaryBtn} onClick={() => setShowCreate(false)}>Cancel</button>
+                                <button type="button" className={styles.secondaryBtn} onClick={() => setShowCreate(false)}>{t('Cancel')}</button>
                                 <button type="submit" className={styles.primaryBtn} disabled={busy === 'create'}>
-                                    {busy === 'create' ? 'Creating...' : 'Create Account'}
+                                    {busy === 'create' ? t('Creating...') : t('Create Account')}
                                 </button>
                             </div>
                         </form>
@@ -276,16 +278,16 @@ export default function UsersClient({ users, currentUserId, departments, program
                             <h3 id="credential-title">{credential.title}</h3>
                         </div>
                         <div className={styles.modalBody}>
-                            <p className={styles.hint}>This password is shown only once. Copy it now and share it privately.</p>
+                            <p className={styles.hint}>{t('This password is shown only once. Copy it now and share it privately.')}</p>
                             <div className={styles.credentialBox}>
-                                <div><small>Military ID</small><strong>{credential.militaryId}</strong></div>
-                                <div><small>Temporary password</small><strong>{credential.password}</strong></div>
+                                <div><small>{t('Military ID')}</small><strong dir="ltr">{credential.militaryId}</strong></div>
+                                <div><small>{t('Temporary password')}</small><strong dir="ltr">{credential.password}</strong></div>
                             </div>
                             <div className={styles.modalActions}>
                                 <button type="button" className={styles.secondaryBtn} onClick={copyCredential}>
-                                    <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`}></i> {copied ? 'Copied' : 'Copy'}
+                                    <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} aria-hidden="true"></i> {copied ? t('Copied') : t('Copy')}
                                 </button>
-                                <button type="button" className={styles.primaryBtn} onClick={() => setCredential(null)}>Done</button>
+                                <button type="button" className={styles.primaryBtn} onClick={() => setCredential(null)}>{t('Done')}</button>
                             </div>
                         </div>
                     </div>

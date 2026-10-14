@@ -1,6 +1,7 @@
 import AboutClient from './AboutClient'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'About' }
+export const generateMetadata = () => pageTitle('About')
 
 export default function AboutPage() {
     // Management hierarchy data

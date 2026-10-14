@@ -9,6 +9,8 @@ import AdminNav from '@/components/AdminNav'
 import ExportButton from '@/components/ExportButton'
 import { EVENT_TYPES, EVENT_TYPE_KEYS, eventTypeOf } from '@/lib/eventTypes'
 import { eventStatus, minute, EVENT_STATUS_LABELS, EventStatus } from '@/lib/eventStatus'
+import { useT, useLang } from '@/i18n/client'
+import { formatDay } from '@/i18n/core'
 
 const STATUS_COLORS: Record<EventStatus, string> = {
     OPEN: '#047857',
@@ -49,6 +51,8 @@ interface EventsManagementClientProps {
 
 export default function EventsManagementClient({ events, now }: EventsManagementClientProps) {
     const router = useRouter()
+    const t = useT()
+    const lang = useLang()
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all')
     const [loading, setLoading] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
@@ -78,7 +82,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
             .catch(() => ({ error: 'Something went wrong. Please try again.' }))
 
         if ('error' in result && result.error) {
-            setFormError(result.error)
+            setFormError(t(result.error))
         } else {
             setShowForm(false)
             setEditEvent(null)
@@ -88,11 +92,11 @@ export default function EventsManagementClient({ events, now }: EventsManagement
     }
 
     const handleDelete = async (eventId: string, eventTitle: string) => {
-        if (!confirm(`Delete event "${eventTitle}"? This will also remove all registrations.`)) return
+        if (!confirm(t('Delete event "{name}"? This will also remove all registrations.', { name: eventTitle }))) return
         setLoading(eventId)
         const result = await deleteEvent(eventId)
         if (result.error) {
-            alert(result.error)
+            alert(t(result.error))
         }
         setLoading(null)
         router.refresh()
@@ -110,7 +114,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
         const result = await setAttendance(reg.id, next).catch(() => ({ error: 'Something went wrong. Please try again.' }))
         setLoading(null)
         if ('error' in result && result.error) {
-            alert(result.error)
+            alert(t(result.error))
             return
         }
         setRegistrations(list => list.map(r => (r.id === reg.id ? { ...r, attended: next ? 1 : 0 } : r)))
@@ -126,10 +130,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
         setLoading(null)
     }
 
-    const formatDate = (dateStr: string) => {
-        const [y, m, d] = String(dateStr).slice(0, 10).split('-').map(Number)
-        return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    }
+    const formatDate = (dateStr: string) => formatDay(lang, dateStr)
 
     // Stored values are local wall-clock times; keep them as-is (no UTC conversion).
     const formatDateTimeLocal = (dateStr: string) => {
@@ -140,8 +141,8 @@ export default function EventsManagementClient({ events, now }: EventsManagement
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Events Management</h2>
-                <p>Create, edit, and manage all events</p>
+                <h2>{t('Events Management')}</h2>
+                <p>{t('Create, edit and manage all events')}</p>
             </div>
 
             <AdminNav />
@@ -156,19 +157,19 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                         className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
                         onClick={() => setFilter('all')}
                     >
-                        All ({events.length})
+                        {t('All')} ({events.length})
                     </button>
                     <button
                         className={`${styles.filterBtn} ${filter === 'upcoming' ? styles.active : ''}`}
                         onClick={() => setFilter('upcoming')}
                     >
-                        Upcoming ({events.filter(e => !isPast(e)).length})
+                        {t('Upcoming')} ({events.filter(e => !isPast(e)).length})
                     </button>
                     <button
                         className={`${styles.filterBtn} ${filter === 'past' ? styles.active : ''}`}
                         onClick={() => setFilter('past')}
                     >
-                        Past ({events.filter(isPast).length})
+                        {t('Past')} ({events.filter(isPast).length})
                     </button>
                 </div>
                 <button
@@ -176,7 +177,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                     style={{ padding: '0.75rem 1.5rem' }}
                     onClick={() => { setFormError(''); setEditEvent(null); setShowForm(true) }}
                 >
-                    <i className="fa fa-plus"></i> New Event
+                    <i className="fa fa-plus" aria-hidden="true"></i> {t('New Event')}
                 </button>
             </div>
 
@@ -185,19 +186,19 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Event</th>
-                                <th>Type</th>
-                                <th>Date</th>
-                                <th>Location</th>
-                                <th>Registrations</th>
-                                <th>Actions</th>
+                                <th>{t('Event')}</th>
+                                <th>{t('Type')}</th>
+                                <th>{t('Date')}</th>
+                                <th>{t('Location')}</th>
+                                <th>{t('Registrations')}</th>
+                                <th>{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredEvents.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                        No events found.
+                                        {t('No events found.')}
                                     </td>
                                 </tr>
                             ) : (
@@ -220,22 +221,22 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                                 background: EVENT_TYPES[eventTypeOf(event.eventType)].bg,
                                                 color: EVENT_TYPES[eventTypeOf(event.eventType)].color
                                             }}>
-                                                {EVENT_TYPES[eventTypeOf(event.eventType)].label}
+                                                {t(EVENT_TYPES[eventTypeOf(event.eventType)].label)}
                                             </span>
                                             <br />
-                                            <small style={{ color: '#64748b' }}>{event.category}</small>
+                                            <small style={{ color: '#64748b' }}>{t(event.category)}</small>
                                         </td>
                                         <td>
                                             {formatDate(event.startDate)}
                                             <br />
                                             <small style={{ color: STATUS_COLORS[statusOf(event)], fontWeight: 600 }}>
-                                                {EVENT_STATUS_LABELS[statusOf(event)]}
+                                                {t(EVENT_STATUS_LABELS[statusOf(event)])}
                                             </small>
                                             {event.registrationDeadline && statusOf(event) === 'OPEN' && (
-                                                <><br /><small style={{ color: '#64748b' }}>Closes {formatDate(event.registrationDeadline)}</small></>
+                                                <><br /><small style={{ color: '#64748b' }}>{t('Closes {date}', { date: formatDate(event.registrationDeadline) })}</small></>
                                             )}
                                         </td>
-                                        <td>{event.location || '-'}</td>
+                                        <td>{event.location && event.location !== 'TBD' ? event.location : '-'}</td>
                                         <td>
                                             <button
                                                 onClick={() => viewRegistrations(event)}
@@ -244,6 +245,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                                     color: '#1d4ed8', fontWeight: 600, textDecoration: 'underline'
                                                 }}
                                                 disabled={loading === event.id + '_regs'}
+                                                aria-label={t('View registrations for {name}', { name: event.title })}
                                             >
                                                 {loading === event.id + '_regs' ? '...' : (
                                                     <>
@@ -255,23 +257,25 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                         </td>
                                         <td>
                                             <div className={styles.actionBtns}>
-                                                <Link href={`/events/${event.id}`} className={styles.viewBtn} title="View">
-                                                    <i className="fa fa-eye"></i>
+                                                <Link href={`/events/${event.id}`} className={styles.viewBtn} title={t('View')} aria-label={t('View {name}', { name: event.title })}>
+                                                    <i className="fa fa-eye" aria-hidden="true"></i>
                                                 </Link>
                                                 <button
                                                     className={styles.completeBtn}
                                                     onClick={() => openEditForm(event)}
-                                                    title="Edit"
+                                                    title={t('Edit')}
+                                                    aria-label={t('Edit {name}', { name: event.title })}
                                                 >
-                                                    <i className="fa fa-edit"></i>
+                                                    <i className="fa fa-edit" aria-hidden="true"></i>
                                                 </button>
                                                 <button
                                                     className={styles.rejectBtn}
                                                     onClick={() => handleDelete(event.id, event.title)}
                                                     disabled={loading === event.id}
-                                                    title="Delete"
+                                                    title={t('Delete')}
+                                                    aria-label={t('Delete {name}', { name: event.title })}
                                                 >
-                                                    <i className="fa fa-trash"></i>
+                                                    <i className="fa fa-trash" aria-hidden="true"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -307,13 +311,13 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                             background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
                         }}>
                             <div>
-                                <h3 style={{ margin: 0, color: '#1e293b' }}>Registered Users</h3>
+                                <h3 style={{ margin: 0, color: '#1e293b' }}>{t('Registered Users')}</h3>
                                 <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.9rem' }}>
                                     {viewingEvent.title}
                                 </p>
                             </div>
                             <button
-                                aria-label="Close"
+                                aria-label={t('Close')}
                                 onClick={() => { setShowRegistrations(false); setViewingEvent(null) }}
                                 style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}
                             >
@@ -323,24 +327,24 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                         <div style={{ padding: '1.25rem clamp(1rem, 4vw, 2rem)' }}>
                             {!viewingStarted && registrations.length > 0 && (
                                 <p style={{ margin: '0 0 1rem', color: '#64748b', fontSize: '0.9rem' }}>
-                                    Attendance can be recorded once the event starts.
+                                    {t('Attendance can be recorded once the event starts.')}
                                 </p>
                             )}
                             {registrations.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                    <i className="fa fa-users" style={{ fontSize: '2rem', marginBottom: '0.5rem', display: 'block' }}></i>
-                                    No registrations yet.
+                                    <i className="fa fa-users" style={{ fontSize: '2rem', marginBottom: '0.5rem', display: 'block' }} aria-hidden="true"></i>
+                                    {t('No registrations yet.')}
                                 </div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '560px' }}>
                                     <thead>
                                         <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Name</th>
-                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Military ID</th>
-                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Status</th>
-                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Registered</th>
-                                            <th style={{ textAlign: 'left', padding: '0.75rem', color: '#475569' }}>Attended</th>
+                                            <th style={{ textAlign: 'start', padding: '0.75rem', color: '#475569' }}>{t('Name')}</th>
+                                            <th style={{ textAlign: 'start', padding: '0.75rem', color: '#475569' }}>{t('Military ID')}</th>
+                                            <th style={{ textAlign: 'start', padding: '0.75rem', color: '#475569' }}>{t('Status')}</th>
+                                            <th style={{ textAlign: 'start', padding: '0.75rem', color: '#475569' }}>{t('Registered')}</th>
+                                            <th style={{ textAlign: 'start', padding: '0.75rem', color: '#475569' }}>{t('Attended')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -361,7 +365,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                                         background: reg.status === 'REGISTERED' ? '#dcfce7' : '#fee2e2',
                                                         color: reg.status === 'REGISTERED' ? '#16a34a' : '#dc2626'
                                                     }}>
-                                                        {reg.status}
+                                                        {t(reg.status === 'REGISTERED' ? 'Registered' : 'Cancelled')}
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: '0.75rem', color: '#64748b', fontSize: '0.9rem' }}>
@@ -377,7 +381,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                                                 onChange={() => toggleAttendance(reg)}
                                                                 style={{ width: '18px', height: '18px' }}
                                                             />
-                                                            <span style={{ fontSize: '0.85rem', color: '#475569' }}>{Number(reg.attended) ? 'Yes' : 'No'}</span>
+                                                            <span style={{ fontSize: '0.85rem', color: '#475569' }}>{Number(reg.attended) ? t('Yes') : t('No')}</span>
                                                         </label>
                                                     ) : '-'}
                                                 </td>
@@ -389,9 +393,9 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                             )}
                             <div style={{ marginTop: '1.5rem', flexWrap: 'wrap', gap: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ color: '#64748b' }}>
-                                    <strong>{registrations.filter(r => r.status === 'REGISTERED').length}</strong> active registrations
-                                    {viewingEvent.capacity ? ` out of ${viewingEvent.capacity} capacity` : ''}
-                                    {viewingStarted && <> · <strong>{registrations.filter(r => r.status === 'REGISTERED' && Number(r.attended)).length}</strong> attended</>}
+                                    {t('{n} active registrations', { n: registrations.filter(r => r.status === 'REGISTERED').length })}
+                                    {viewingEvent.capacity ? ` · ${t('capacity {n}', { n: viewingEvent.capacity })}` : ''}
+                                    {viewingStarted && <> · {t('{n} attended', { n: registrations.filter(r => r.status === 'REGISTERED' && Number(r.attended)).length })}</>}
                                 </span>
                                 {registrations.length > 0 && (
                                     <button
@@ -408,7 +412,7 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                                 a.click()
                                                 URL.revokeObjectURL(url)
                                             } else if (result.error) {
-                                                alert(result.error)
+                                                alert(t(result.error))
                                             }
                                             setLoading(null)
                                         }}
@@ -426,8 +430,8 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                             gap: '0.5rem'
                                         }}
                                     >
-                                        <i className={loading === 'export' ? 'fa fa-spinner fa-spin' : 'fa fa-download'}></i>
-                                        {loading === 'export' ? 'Exporting...' : 'Export to Excel'}
+                                        <i className={loading === 'export' ? 'fa fa-spinner fa-spin' : 'fa fa-download'} aria-hidden="true"></i>
+                                        {loading === 'export' ? t('Exporting...') : t('Export to Excel')}
                                     </button>
                                 )}
                             </div>
@@ -460,10 +464,10 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                             background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
                         }}>
                             <h3 style={{ margin: 0, color: '#1e293b' }}>
-                                {editEvent ? 'Edit Event' : 'Create Event'}
+                                {editEvent ? t('Edit Event') : t('Create Event')}
                             </h3>
                             <button
-                                aria-label="Close"
+                                aria-label={t('Close')}
                                 onClick={() => { setShowForm(false); setEditEvent(null) }}
                                 style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}
                             >
@@ -472,93 +476,88 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                         </div>
                         <form onSubmit={handleSubmit} style={{ padding: 'clamp(1rem, 4vw, 2rem)' }}>
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Title *</label>
+                                <label htmlFor="ev-title" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Title')} *</label>
                                 <input
-                                    type="text" name="title" required
+                                    id="ev-title" type="text" name="title" required
                                     defaultValue={editEvent?.title || ''}
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                 />
                             </div>
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Event Type *</label>
+                                <label htmlFor="ev-type" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Event Type')} *</label>
                                 <select
-                                    name="eventType" required
+                                    id="ev-type" name="eventType" required
                                     defaultValue={eventTypeOf(editEvent?.eventType)}
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                 >
-                                    {EVENT_TYPE_KEYS.map(t => (
-                                        <option key={t} value={t}>{EVENT_TYPES[t].label}</option>
+                                    {EVENT_TYPE_KEYS.map(type => (
+                                        <option key={type} value={type}>{t(EVENT_TYPES[type].label)}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className={styles.formGrid2}>
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Format</label>
+                                    <label htmlFor="ev-format" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Format')}</label>
                                     <select
-                                        name="category"
+                                        id="ev-format" name="category"
                                         defaultValue={editEvent?.category || 'General'}
                                         style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                     >
-                                        <option value="Workshop">Workshop</option>
-                                        <option value="Competition">Competition</option>
-                                        <option value="Exhibition">Exhibition</option>
-                                        <option value="Seminar">Seminar</option>
-                                        <option value="Conference">Conference</option>
-                                        <option value="Training">Training</option>
-                                        <option value="Networking">Networking</option>
-                                        <option value="General">General</option>
+                                        {['Workshop', 'Competition', 'Exhibition', 'Seminar', 'Conference', 'Training', 'Networking', 'General'].map(f => (
+                                            <option key={f} value={f}>{t(f)}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Capacity</label>
+                                    <label htmlFor="ev-capacity" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Capacity')}</label>
                                     <input
-                                        type="number" name="capacity" min={1} step={1}
+                                        id="ev-capacity" type="number" name="capacity" min={1} step={1}
                                         defaultValue={editEvent?.capacity || ''}
-                                        placeholder="Unlimited"
+                                        placeholder={t('Unlimited')}
                                         style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                     />
                                 </div>
                             </div>
                             <div className={styles.formGrid2}>
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Start Date *</label>
+                                    <label htmlFor="ev-start" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Start Date & Time')} *</label>
                                     <input
-                                        type="datetime-local" name="startDate" required
+                                        id="ev-start" type="datetime-local" name="startDate" required
                                         defaultValue={editEvent ? formatDateTimeLocal(editEvent.startDate) : ''}
                                         style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>End Date</label>
+                                    <label htmlFor="ev-end" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('End Date & Time')}</label>
                                     <input
-                                        type="datetime-local" name="endDate"
+                                        id="ev-end" type="datetime-local" name="endDate"
                                         defaultValue={editEvent?.endDate ? formatDateTimeLocal(editEvent.endDate) : ''}
                                         style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                     />
                                 </div>
                             </div>
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label htmlFor="registrationDeadline" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Registration closes</label>
+                                <label htmlFor="registrationDeadline" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Registration closes')}</label>
                                 <input
                                     id="registrationDeadline" type="datetime-local" name="registrationDeadline"
                                     defaultValue={editEvent?.registrationDeadline ? formatDateTimeLocal(editEvent.registrationDeadline) : ''}
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                 />
-                                <small style={{ color: '#64748b' }}>Optional. If empty, registration stays open until the event starts.</small>
+                                <small style={{ color: '#64748b' }}>{t('Optional. If empty, registration stays open until the event starts.')}</small>
                             </div>
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Location</label>
+                                <label htmlFor="ev-location" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Location')}</label>
                                 <input
-                                    type="text" name="location"
+                                    id="ev-location" type="text" name="location"
                                     defaultValue={editEvent?.location || ''}
-                                    placeholder="e.g., Innovation Lab, Building A"
+                                    placeholder={t('e.g., Innovation Lab, Building A')}
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem' }}
                                 />
                             </div>
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>Description</label>
+                                <label htmlFor="ev-description" style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>{t('Description')}</label>
                                 <textarea
-                                    name="description" rows={4}
+                                    id="ev-description" name="description" rows={4}
                                     defaultValue={editEvent?.description || ''}
                                     style={{ width: '100%', padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit' }}
                                 ></textarea>
@@ -570,14 +569,14 @@ export default function EventsManagementClient({ events, now }: EventsManagement
                                     onClick={() => { setShowForm(false); setEditEvent(null) }}
                                     style={{ padding: '0.75rem 1.5rem', borderRadius: '10px', border: 'none', background: '#f1f5f9', fontWeight: 600, cursor: 'pointer' }}
                                 >
-                                    Cancel
+                                    {t('Cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading === 'form'}
                                     style={{ padding: '0.75rem 1.5rem', borderRadius: '10px', border: 'none', background: 'var(--gold)', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                 >
-                                    {loading === 'form' ? 'Saving...' : editEvent ? 'Update Event' : 'Create Event'}
+                                    {loading === 'form' ? t('Saving...') : editEvent ? t('Update Event') : t('Create Event')}
                                 </button>
                             </div>
                         </form>

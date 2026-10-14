@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation'
 import { getClubRegistrations } from '@/actions/club'
 import { getContactMessages } from '@/actions/contact'
 import RequestsClient from './RequestsClient'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Requests & Messages' }
+export const generateMetadata = () => pageTitle('Requests & Messages')
 
 export const dynamic = 'force-dynamic'
 

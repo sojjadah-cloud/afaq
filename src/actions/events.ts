@@ -9,6 +9,7 @@ import { getActiveUser } from '@/lib/session'
 import { nowInOman } from '@/lib/utils'
 import { eventStatus, minute, EVENT_STATUS_LABELS } from '@/lib/eventStatus'
 import { randomBytes } from 'crypto'
+import { getT } from '@/i18n/server'
 
 // Validates and normalises the event form shared by create and update.
 function readEventForm(formData: FormData) {
@@ -104,7 +105,8 @@ export async function registerForEvent(eventId: string) {
         )
         const status = eventStatus(event, Number(countResult[0]?.count) || 0, nowInOman())
         if (status !== 'OPEN') {
-            return { error: status === 'FULL' ? 'Event is full' : `${EVENT_STATUS_LABELS[status]}. You can no longer register.` }
+            const { t } = await getT()
+            return { error: status === 'FULL' ? t('Event is full') : t('{status}. You can no longer register.', { status: t(EVENT_STATUS_LABELS[status]) }) }
         }
 
         // Check existing registration
@@ -185,7 +187,8 @@ export async function updateEvent(eventId: string, formData: FormData) {
                 [eventId]
             )
             if ((Number(taken[0]?.count) || 0) > v.capacity) {
-                return { error: `${taken[0].count} people are already registered. Capacity cannot be lower than that.` }
+                const { t } = await getT()
+                return { error: t('{n} people are already registered. Capacity cannot be lower than that.', { n: taken[0].count }) }
             }
         }
         await query(

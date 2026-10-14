@@ -6,9 +6,12 @@ import { RowDataPacket } from '@/lib/types'
 import { initials, todayInOman } from '@/lib/utils'
 import CancelBookingButton from '@/components/CancelBookingButton'
 import styles from './student.module.css'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
+import { formatDay as formatStoredDay } from '@/i18n/core'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'My Dashboard' }
+export const generateMetadata = () => pageTitle('My Dashboard')
 
 const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', STAFF: 'Staff', STUDENT: 'Student' }
 const PROJECT_STATUS: Record<string, string> = {
@@ -27,15 +30,11 @@ const MEMBERSHIP: Record<string, { label: string; text: string }> = {
     REJECTED: { label: 'Not approved', text: 'Your application was not approved. Contact the club for details.' },
 }
 
-function formatDay(value: string | null) {
-    if (!value) return ''
-    const [y, m, d] = String(value).slice(0, 10).split('-').map(Number)
-    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 export default async function StudentProfile() {
     const session = await getSession()
     if (!session.isLoggedIn || !session.userId) redirect('/login')
+    const { t, lang } = await getT()
+    const formatDay = (value: unknown) => (value ? formatStoredDay(lang, value) : '')
     const today = todayInOman()
     const weekAhead = new Date(Date.parse(today) + 7 * 864e5).toISOString().slice(0, 10)
 
@@ -103,10 +102,10 @@ export default async function StudentProfile() {
     const memberStatus = membership[0] ? MEMBERSHIP[membership[0].status] : null
 
     const attention = [
-        ...joinRequests.map(r => ({ icon: 'fa-user-plus', text: `${r.name} wants to join ${r.title}`, href: `/projects/${r.projectId}`, action: 'Review' })),
-        ...upcomingBookings.filter(isOverdue).map(b => ({ icon: 'fa-triangle-exclamation', text: `${b.labName} was due back on ${formatDay(b.returnDate)}. Please return it to the tool store.`, href: '#bookings', action: 'View' })),
-        ...soonBookings.filter(b => !isOut(b)).map(b => ({ icon: 'fa-calendar-check', text: `${b.labName} on ${formatDay(b.bookingDate)}, ${b.timeSlot} (${BOOKING_STATUS[b.status]})`, href: '#bookings', action: 'View' })),
-        ...upcomingEvents.slice(0, 3).map(e => ({ icon: 'fa-calendar-days', text: `${e.title} on ${formatDay(e.startDate)}`, href: `/events/${e.id}`, action: 'Open' })),
+        ...joinRequests.map(r => ({ icon: 'fa-user-plus', text: t('{name} wants to join {project}', { name: r.name, project: r.title }), href: `/projects/${r.projectId}`, action: 'Review' })),
+        ...upcomingBookings.filter(isOverdue).map(b => ({ icon: 'fa-triangle-exclamation', text: t('{item} was due back on {date}. Please return it to the tool store.', { item: b.labName, date: formatDay(b.returnDate) }), href: '#bookings', action: 'View' })),
+        ...soonBookings.filter(b => !isOut(b)).map(b => ({ icon: 'fa-calendar-check', text: `${b.labName} · ${formatDay(b.bookingDate)}, ${b.timeSlot} (${t(BOOKING_STATUS[b.status])})`, href: '#bookings', action: 'View' })),
+        ...upcomingEvents.slice(0, 3).map(e => ({ icon: 'fa-calendar-days', text: `${e.title} · ${formatDay(e.startDate)}`, href: `/events/${e.id}`, action: 'Open' })),
     ]
 
     return (
@@ -116,33 +115,33 @@ export default async function StudentProfile() {
                     <div className={styles.avatarPlaceholder}>{initials(user.name || user.email, 'U')}</div>
                     <div>
                         <h1>{user.name || user.email}</h1>
-                        <p className={styles.militaryId}>Military ID: {user.militaryId}</p>
+                        <p className={styles.militaryId}>{t('Military ID')}: <span dir="ltr">{user.militaryId}</span></p>
                         <div className={styles.badges}>
-                            <span className={styles.badge}>{user.yearLevel || ROLE_LABELS[user.role] || 'Member'}</span>
-                            {user.department && <span className={styles.badge}>{user.department}</span>}
-                            {user.programme && <span className={styles.badge}>{user.programme}</span>}
+                            <span className={styles.badge}>{t(user.yearLevel || ROLE_LABELS[user.role] || 'Member')}</span>
+                            {user.department && <span className={styles.badge}>{t(user.department)}</span>}
+                            {user.programme && <span className={styles.badge}>{t(user.programme)}</span>}
                         </div>
                     </div>
                 </div>
                 <div className={styles.actions}>
-                    <Link href="/projects?new=1" className={styles.actionBtn}><i className="fa-solid fa-plus"></i> New Project</Link>
-                    <Link href="/equipment" className={styles.actionBtn}><i className="fa-solid fa-screwdriver-wrench"></i> Book or Borrow</Link>
-                    <Link href="/student/settings" className={styles.actionBtnSecondary}><i className="fa-solid fa-gear"></i> Settings</Link>
+                    <Link href="/projects?new=1" className={styles.actionBtn}><i className="fa-solid fa-plus" aria-hidden="true"></i> {t('New Project')}</Link>
+                    <Link href="/equipment" className={styles.actionBtn}><i className="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> {t('Book or Borrow')}</Link>
+                    <Link href="/student/settings" className={styles.actionBtnSecondary}><i className="fa-solid fa-gear" aria-hidden="true"></i> {t('Settings')}</Link>
                 </div>
             </header>
 
             <div className={styles.topGrid}>
                 <section className={styles.section} aria-labelledby="attention-title">
-                    <h2 id="attention-title"><i className="fa-solid fa-bell"></i> Needs your attention</h2>
+                    <h2 id="attention-title"><i className="fa-solid fa-bell" aria-hidden="true"></i> {t('Needs your attention')}</h2>
                     {attention.length === 0 ? (
-                        <p className={styles.empty}>Nothing pending right now.</p>
+                        <p className={styles.empty}>{t('Nothing pending right now.')}</p>
                     ) : (
                         <ul className={styles.attentionList}>
                             {attention.map((a, i) => (
                                 <li key={i}>
-                                    <i className={`fa-solid ${a.icon}`}></i>
+                                    <i className={`fa-solid ${a.icon}`} aria-hidden="true"></i>
                                     <span>{a.text}</span>
-                                    <Link href={a.href} className={styles.link}>{a.action}</Link>
+                                    <Link href={a.href} className={styles.link}>{t(a.action)}</Link>
                                 </li>
                             ))}
                         </ul>
@@ -150,61 +149,61 @@ export default async function StudentProfile() {
                 </section>
 
                 <section className={styles.section} aria-labelledby="membership-title">
-                    <h2 id="membership-title"><i className="fa-solid fa-id-badge"></i> Club membership</h2>
+                    <h2 id="membership-title"><i className="fa-solid fa-id-badge" aria-hidden="true"></i> {t('Club membership')}</h2>
                     {memberStatus ? (
                         <div className={styles.membership}>
-                            <span className={`${styles.status} ${styles[`member${membership[0].status}`] || ''}`}>{memberStatus.label}</span>
-                            <p>{memberStatus.text}</p>
-                            <small>Applied {formatDay(membership[0].createdAt)}</small>
+                            <span className={`${styles.status} ${styles[`member${membership[0].status}`] || ''}`}>{t(memberStatus.label)}</span>
+                            <p>{t(memberStatus.text)}</p>
+                            <small>{t('Applied {date}', { date: formatDay(membership[0].createdAt) })}</small>
                         </div>
                     ) : (
                         <div className={styles.membership}>
-                            <p>You have not applied to join the AFAQ Scientific Club yet.</p>
-                            <Link href="/#join" className={styles.link}>Apply to join</Link>
+                            <p>{t('You have not applied to join the AFAQ Scientific Club yet.')}</p>
+                            <Link href="/#join" className={styles.link}>{t('Apply to join')}</Link>
                         </div>
                     )}
                 </section>
             </div>
 
             <section className={styles.section} aria-labelledby="projects-title">
-                <h2 id="projects-title"><i className="fa-solid fa-lightbulb"></i> My Projects</h2>
+                <h2 id="projects-title"><i className="fa-solid fa-lightbulb" aria-hidden="true"></i> {t('My Projects')}</h2>
                 <div className={styles.list}>
                     {projects.length === 0 ? (
-                        <p className={styles.empty}>You are not part of any project yet. <Link href="/projects">Browse projects</Link> or start a new one.</p>
+                        <p className={styles.empty}>{t('You are not part of any project yet.')} <Link href="/projects">{t('Browse projects')}</Link></p>
                     ) : projects.map(p => (
                         <div key={p.id} className={styles.card}>
                             <div className={styles.cardBody}>
                                 <h3>{p.title}</h3>
                                 <div className={styles.cardMeta}>
-                                    <span className={`${styles.status} ${styles[String(p.status).toLowerCase()] || ''}`}>{PROJECT_STATUS[p.status] || p.status}</span>
-                                    <span>{p.createdById === user.id ? 'Owner' : 'Member'}</span>
+                                    <span className={`${styles.status} ${styles[String(p.status).toLowerCase()] || ''}`}>{t(PROJECT_STATUS[p.status] || p.status)}</span>
+                                    <span>{p.createdById === user.id ? t('Owner') : t('Member')}</span>
                                 </div>
-                                <div className={styles.progress}><div style={{ width: `${Number(p.progress) || 0}%` }}></div></div>
+                                <div className={styles.progress} role="progressbar" aria-valuenow={Number(p.progress) || 0} aria-valuemin={0} aria-valuemax={100} aria-label={t('Project progress')}><div style={{ width: `${Number(p.progress) || 0}%` }}></div></div>
                             </div>
-                            <Link href={`/projects/${p.id}`} className={styles.link}>Open</Link>
+                            <Link href={`/projects/${p.id}`} className={styles.link}>{t('Open')}</Link>
                         </div>
                     ))}
                 </div>
             </section>
 
             <section className={styles.section} id="bookings" aria-labelledby="bookings-title">
-                <h2 id="bookings-title"><i className="fa-solid fa-calendar-check"></i> Bookings &amp; borrowed items</h2>
+                <h2 id="bookings-title"><i className="fa-solid fa-calendar-check" aria-hidden="true"></i> {t('Bookings & borrowed items')}</h2>
                 {bookings.length === 0 ? (
-                    <p className={styles.empty}>No bookings yet. <Link href="/equipment">Browse workshops, labs and tools</Link>.</p>
+                    <p className={styles.empty}>{t('No bookings yet.')} <Link href="/equipment">{t('Browse workshops, labs and tools')}</Link></p>
                 ) : (
                     <>
-                        <h3 className={styles.subTitle}>Current &amp; upcoming</h3>
-                        {upcomingBookings.length === 0 ? <p className={styles.empty}>No upcoming bookings.</p> : (
+                        <h3 className={styles.subTitle}>{t('Current & upcoming')}</h3>
+                        {upcomingBookings.length === 0 ? <p className={styles.empty}>{t('No upcoming bookings.')}</p> : (
                             <div className={styles.list}>
                                 {upcomingBookings.map(b => (
                                     <div key={b.id} className={styles.card}>
                                         <div className={styles.cardBody}>
                                             <h3>{b.labName}</h3>
-                                            <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · return by ${formatDay(b.returnDate)}` : ''}</p>
+                                            <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · ${t('return by {date}', { date: formatDay(b.returnDate) })}` : ''}</p>
                                             {isOut(b) ? (
-                                                <span className={`${styles.status} ${isOverdue(b) ? styles.rejected : styles.approved}`}>{isOverdue(b) ? 'Overdue' : 'Borrowed'}</span>
+                                                <span className={`${styles.status} ${isOverdue(b) ? styles.rejected : styles.approved}`}>{isOverdue(b) ? t('Overdue') : t('Borrowed')}</span>
                                             ) : (
-                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{BOOKING_STATUS[b.status] || b.status}</span>
+                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{t(BOOKING_STATUS[b.status] || b.status)}</span>
                                             )}
                                         </div>
                                         {!isOut(b) && <CancelBookingButton bookingId={b.id} label={b.labName} />}
@@ -214,14 +213,14 @@ export default async function StudentProfile() {
                         )}
                         {pastBookings.length > 0 && (
                             <>
-                                <h3 className={styles.subTitle}>History</h3>
+                                <h3 className={styles.subTitle}>{t('History')}</h3>
                                 <div className={styles.list}>
                                     {pastBookings.map(b => (
                                         <div key={b.id} className={`${styles.card} ${styles.cardMuted}`}>
                                             <div className={styles.cardBody}>
                                                 <h3>{b.labName}</h3>
-                                                <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · return by ${formatDay(b.returnDate)}` : ''}</p>
-                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{b.returnDate && b.status === 'COMPLETED' ? 'Returned' : BOOKING_STATUS[b.status] || b.status}</span>
+                                                <p>{formatDay(b.bookingDate)} · {b.timeSlot}{b.returnDate ? ` · ${t('return by {date}', { date: formatDay(b.returnDate) })}` : ''}</p>
+                                                <span className={`${styles.status} ${styles[String(b.status).toLowerCase()] || ''}`}>{b.returnDate && b.status === 'COMPLETED' ? t('Returned') : t(BOOKING_STATUS[b.status] || b.status)}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -233,9 +232,9 @@ export default async function StudentProfile() {
             </section>
 
             <section className={styles.section} aria-labelledby="events-title">
-                <h2 id="events-title"><i className="fa-solid fa-calendar-days"></i> Events</h2>
+                <h2 id="events-title"><i className="fa-solid fa-calendar-days" aria-hidden="true"></i> {t('Events')}</h2>
                 {events.length === 0 ? (
-                    <p className={styles.empty}>No registered events. <Link href="/events">See upcoming events</Link>.</p>
+                    <p className={styles.empty}>{t('No registered events.')} <Link href="/events">{t('See upcoming events')}</Link></p>
                 ) : (
                     <div className={styles.list}>
                         {[...upcomingEvents, ...pastEvents].map(e => {
@@ -246,10 +245,10 @@ export default async function StudentProfile() {
                                         <h3>{e.title}</h3>
                                         <p>{formatDay(e.startDate)}{e.location ? ` · ${e.location}` : ''}</p>
                                         <span className={`${styles.status} ${past ? (e.attended ? styles.completed : styles.cancelled) : styles.approved}`}>
-                                            {past ? (e.attended ? 'Attended' : 'Registered') : 'Upcoming'}
+                                            {past ? (e.attended ? t('Attended') : t('Registered')) : t('Upcoming')}
                                         </span>
                                     </div>
-                                    <Link href={`/events/${e.id}`} className={styles.link}>Open</Link>
+                                    <Link href={`/events/${e.id}`} className={styles.link}>{t('Open')}</Link>
                                 </div>
                             )
                         })}

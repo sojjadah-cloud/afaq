@@ -10,6 +10,8 @@ import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { initials } from '@/lib/utils'
 import { CLUB_SLUG } from '@/lib/sections'
 import { STAGES, StageKey, STATUS_LABELS } from '../stages'
+import { getT } from '@/i18n/server'
+import { formatDay } from '@/i18n/core'
 import { recordTitle } from '@/lib/metadata'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -57,6 +59,7 @@ export default async function ProjectDetails({
 }) {
     const { id } = await params
     const session = await getSession()
+    const { t, lang } = await getT()
 
     // Fetch Project Details with Creator Name
     const projects = await query<Project[]>(
@@ -159,26 +162,26 @@ export default async function ProjectDetails({
         <main className={styles.main}>
             <div className={styles.header}>
                 <Link href={backHref} className={styles.backLink}>
-                    <i className="fa-solid fa-arrow-left"></i> Back to {stage ? sectionName : 'Projects'}
+                    <i className="fa-solid fa-arrow-left" aria-hidden="true"></i> {stage ? t('Back to {name}', { name: t(sectionName) }) : t('Back to Projects')}
                 </Link>
                 <div className={styles.titleSection}>
                     <h1>{project.title}</h1>
                     <span className={`${styles.status} ${styles[project.status.toLowerCase()]}`}>
-                        {STATUS_LABELS[project.status] || project.status}
+                        {t(STATUS_LABELS[project.status] || project.status)}
                     </span>
                 </div>
                 <div className={styles.meta}>
                     <span className={styles.metaItem}>
-                        <i className="fa-solid fa-building-columns"></i> {sectionName}
+                        <i className="fa-solid fa-building-columns" aria-hidden="true"></i> {t(sectionName)}
                     </span>
                     <span className={styles.metaItem}>
-                        <i className="fa-solid fa-tag"></i> {project.category}
+                        <i className="fa-solid fa-tag" aria-hidden="true"></i> {t(project.category)}
                     </span>
                     <span className={styles.metaItem}>
-                        <i className="fa-solid fa-calendar"></i> {new Date(project.createdAt).toLocaleDateString()}
+                        <i className="fa-solid fa-calendar" aria-hidden="true"></i> {formatDay(lang, project.createdAt)}
                     </span>
                     <span className={styles.metaItem}>
-                        <i className="fa-solid fa-user"></i> {project.creatorName || `User ${project.createdById}`}
+                        <i className="fa-solid fa-user" aria-hidden="true"></i> {project.creatorName || project.militaryId}
                     </span>
                 </div>
             </div>
@@ -186,14 +189,14 @@ export default async function ProjectDetails({
             <div className={styles.grid}>
                 <div className={styles.content}>
                     <section className={styles.section}>
-                        <h2>Description</h2>
+                        <h2>{t('Description')}</h2>
                         <div className={`${styles.description} markdown-content`}>
                             <MarkdownRenderer content={project.description} />
                         </div>
                     </section>
 
                     <section className={styles.section}>
-                        <h2>Progress</h2>
+                        <h2>{t('Progress')}</h2>
                         <div className={styles.progressContainer}>
                             <div className={styles.progressBar}>
                                 <div
@@ -201,13 +204,13 @@ export default async function ProjectDetails({
                                     style={{ width: `${project.progress}%` }}
                                 ></div>
                             </div>
-                            <span className={styles.progressText}>{project.progress}% Complete</span>
+                            <span className={styles.progressText}>{t('{n}% complete', { n: project.progress })}</span>
                         </div>
                     </section>
 
                     {attachments.length > 0 && (
                         <section className={styles.section}>
-                            <h2>Attachments</h2>
+                            <h2>{t('Attachments')}</h2>
                             <div className={styles.attachmentList}>
                                 {attachments.map(att => (
                                     <div key={att.id} className={styles.attachmentItem}>
@@ -222,9 +225,9 @@ export default async function ProjectDetails({
                                             </div>
                                         ) : (
                                             <a href={att.url} download={att.name} className={styles.fileLink}>
-                                                <i className={`fa-solid ${fileIcon(att.name)}`}></i>
+                                                <i className={`fa-solid ${fileIcon(att.name)}`} aria-hidden="true"></i>
                                                 <span>{att.name}</span>
-                                                <i className="fa-solid fa-download" style={{ marginLeft: 'auto' }}></i>
+                                                <i className="fa-solid fa-download" style={{ marginInlineStart: 'auto' }} aria-hidden="true"></i>
                                             </a>
                                         )}
                                     </div>
@@ -245,17 +248,17 @@ export default async function ProjectDetails({
 
                 <aside className={styles.sidebar}>
                     <div className={styles.card}>
-                        <h3>Supervisor</h3>
+                        <h3>{t('Supervisor')}</h3>
                         {supervisorName ? (
                             <div className={styles.member}>
                                 <div className={styles.memberAvatar}>{initials(supervisorName)}</div>
                                 <div className={styles.memberInfo}>
                                     <span className={styles.memberName}>{supervisorName}</span>
-                                    <span className={styles.memberRole}>Supervisor</span>
+                                    <span className={styles.memberRole}>{t('Supervisor')}</span>
                                 </div>
                             </div>
                         ) : (
-                            <p className={styles.empty}>No supervisor assigned yet.</p>
+                            <p className={styles.empty}>{t('No supervisor assigned yet.')}</p>
                         )}
                         {isStaff && (
                             <SupervisorPicker
@@ -267,10 +270,10 @@ export default async function ProjectDetails({
                     </div>
 
                     <div className={styles.card}>
-                        <h3>Team Members</h3>
+                        <h3>{t('Team Members')}</h3>
                         <div className={styles.memberList}>
                             {members.filter(m => m.status === 'APPROVED' || m.role === 'Owner').length === 0 ? (
-                                <p className={styles.empty}>No active members.</p>
+                                <p className={styles.empty}>{t('No active members.')}</p>
                             ) : (
                                 members.filter(m => m.status === 'APPROVED' || m.role === 'Owner' || m.status === undefined).map(member => (
                                     <div key={member.userId} className={styles.member}>
@@ -279,9 +282,9 @@ export default async function ProjectDetails({
                                         </div>
                                         <div className={styles.memberInfo}>
                                             <span className={styles.memberName}>
-                                                {member.fullName || `Cadet ${member.militaryId}`}
+                                                {member.fullName || member.militaryId}
                                             </span>
-                                            <span className={styles.memberRole}>{member.role}</span>
+                                            <span className={styles.memberRole}>{t(member.role)}</span>
                                         </div>
                                     </div>
                                 ))
@@ -291,7 +294,7 @@ export default async function ProjectDetails({
 
                     {session.isLoggedIn && (
                         <div className={styles.card}>
-                            <h3>Actions</h3>
+                            <h3>{t('Actions')}</h3>
                             <ProjectActions
                                 projectId={id}
                                 isOwner={isOwner}

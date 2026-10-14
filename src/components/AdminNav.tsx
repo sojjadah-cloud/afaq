@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import styles from '../app/admin/admin.module.css'
 import { useAdminRole } from './AdminRoleContext'
 import { STAFF_ADMIN_PATHS } from '@/lib/roles'
+import { useT } from '@/i18n/client'
 
 const adminNavItems = [
     { href: '/admin', label: 'Overview', icon: 'fa-chart-simple', exact: true },
@@ -21,6 +22,7 @@ const adminNavItems = [
 
 export default function AdminNav() {
     const pathname = usePathname()
+    const t = useT()
     const role = useAdminRole()
     const items = role === 'ADMIN'
         ? adminNavItems
@@ -34,16 +36,17 @@ export default function AdminNav() {
     }
 
     return (
-        <div className={styles.adminNav}>
+        <nav className={styles.adminNav} aria-label={t('Administration')}>
             {items.map(item => (
                 <Link
                     key={item.href}
                     href={item.href}
                     className={`${styles.navLink} ${isActive(item) ? styles.active : ''}`}
+                    aria-current={isActive(item) ? 'page' : undefined}
                 >
-                    <i className={`fa ${item.icon}`}></i> {item.label}
+                    <i className={`fa ${item.icon}`} aria-hidden="true"></i> {t(item.label)}
                 </Link>
             ))}
-        </div>
+        </nav>
     )
 }

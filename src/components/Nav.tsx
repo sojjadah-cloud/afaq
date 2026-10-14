@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './Nav.module.css'
+import { useT } from '@/i18n/client'
 
 const navItems = [
     { href: '/', label: 'Home', icon: 'fa-house' },
@@ -17,18 +18,20 @@ const navItems = [
 
 export default function Nav() {
     const pathname = usePathname()
+    const t = useT()
 
     return (
-        <nav className={styles.nav}>
+        <nav className={styles.nav} aria-label={t('Main')}>
             <ul>
                 {navItems.map((item) => (
                     <li key={item.href}>
                         <Link
                             href={item.href}
                             className={pathname === item.href ? styles.active : ''}
+                            aria-current={pathname === item.href ? 'page' : undefined}
                         >
-                            <i className={`fa ${item.icon}`}></i>
-                            {item.label}
+                            <i className={`fa ${item.icon}`} aria-hidden="true"></i>
+                            {t(item.label)}
                         </Link>
                     </li>
                 ))}

@@ -342,7 +342,7 @@
 
 .technician i {
     color: var(--gold);
-    margin-right: 0.25rem;
+    margin-inline-end: 0.25rem;
 }
 
 .steps {

@@ -7,6 +7,8 @@ import styles from './Header.module.css'
 import LogoutButton from './LogoutButton'
 import SearchBar from './SearchBar'
 import NotificationBell from './NotificationBell'
+import LanguageSwitch from './LanguageSwitch'
+import { getT } from '@/i18n/server'
 
 const ROLE_LABELS: Record<string, string> = {
     ADMIN: 'Administrator',
@@ -16,8 +18,9 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default async function Header() {
     const session = await getSession()
+    const { t } = await getT()
 
-    let displayName = 'Guest'
+    let displayName = t('Guest')
     let avatar = 'GU'
     if (session.isLoggedIn) {
         let fullName = ''
@@ -28,33 +31,34 @@ export default async function Header() {
         displayName = fullName || session.militaryId
         avatar = initials(fullName, session.militaryId.slice(-2).toUpperCase())
     }
-    const roleLabel = ROLE_LABELS[session.role] || 'Member'
+    const roleLabel = t(ROLE_LABELS[session.role] || 'Member')
 
     return (
         <header className={styles.header}>
             <h1>
                 <Link href="/" className={styles.brand}>
-                    AFAQ Innovation Portal<span className={styles.titleSuffix}> – Military Technological College</span>
+                    {t('AFAQ Innovation Portal')}<span className={styles.titleSuffix}> – {t('Military Technological College')}</span>
                 </Link>
             </h1>
             <div className={styles.headerCenter}>
                 <SearchBar />
             </div>
             <div className={styles.headerActions}>
+                <LanguageSwitch className={styles.langBtn} />
                 {session.isLoggedIn && <NotificationBell />}
                 {session.role === 'ADMIN' && (
-                    <Link href="/admin" className={styles.adminLink} aria-label="Admin Panel">
-                        <i className="fa-solid fa-shield-halved"></i> <span className={styles.linkText}>Admin Panel</span>
+                    <Link href="/admin" className={styles.adminLink} aria-label={t('Admin Panel')}>
+                        <i className="fa-solid fa-shield-halved" aria-hidden="true"></i> <span className={styles.linkText}>{t('Admin Panel')}</span>
                     </Link>
                 )}
                 {session.role === 'STAFF' && (
-                    <Link href="/staff" className={styles.adminLink} aria-label="Staff Panel">
-                        <i className="fa-solid fa-clipboard-check"></i> <span className={styles.linkText}>Staff Panel</span>
+                    <Link href="/staff" className={styles.adminLink} aria-label={t('Staff Panel')}>
+                        <i className="fa-solid fa-clipboard-check" aria-hidden="true"></i> <span className={styles.linkText}>{t('Staff Panel')}</span>
                     </Link>
                 )}
                 {session.isLoggedIn ? (
                     <>
-                        <Link href="/student" className={styles.userBox} title="My profile" aria-label={`My profile: ${displayName}`}>
+                        <Link href="/student" className={styles.userBox} title={t('My dashboard')} aria-label={t('My dashboard: {name}', { name: displayName })}>
                             <span className={styles.userText}>
                                 <span className={styles.userName}>{displayName}</span>
                                 <span className={styles.userRole}>{roleLabel}</span>
@@ -64,7 +68,7 @@ export default async function Header() {
                         <LogoutButton />
                     </>
                 ) : (
-                    <Link href="/login" className={styles.adminLink}><i className="fa-solid fa-right-to-bracket"></i> <span className={styles.linkText}>Log In</span></Link>
+                    <Link href="/login" className={styles.adminLink}><i className="fa-solid fa-right-to-bracket" aria-hidden="true"></i> <span className={styles.linkText}>{t('Log In')}</span></Link>
                 )}
             </div>
         </header>

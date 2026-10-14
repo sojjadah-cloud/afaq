@@ -9,6 +9,7 @@ import { saveUpload, FORM_EXTENSIONS, ATTACHMENT_EXTENSIONS } from '@/lib/files'
 import { getActiveUser } from '@/lib/session'
 import { createNotification } from '@/lib/notify'
 import { randomBytes } from 'crypto'
+import { getT } from '@/i18n/server'
 
 export async function createProject(formData: FormData) {
     const session = await getSession()
@@ -34,7 +35,7 @@ export async function createProject(formData: FormData) {
 
     const wordCount = description.trim().split(/\s+/).length
     if (wordCount > 1000) {
-        return { error: `Description exceeds word limit (1000 words). Current: ${wordCount}` }
+        return { error: (await getT()).t('Description exceeds the 1000-word limit (currently {n} words)', { n: wordCount }) }
     }
 
     const form = await saveUpload(formData.get('applicationForm') as File | null, {
@@ -152,7 +153,7 @@ export async function editProject(projectId: string, formData: FormData) {
     // Enforce word limit (e.g., 1000 words)
     const wordCount = description.trim().split(/\s+/).length
     if (wordCount > 1000) {
-        return { error: `Description exceeds word limit (1000 words). Current: ${wordCount}` }
+        return { error: (await getT()).t('Description exceeds the 1000-word limit (currently {n} words)', { n: wordCount }) }
     }
 
     try {

@@ -3,8 +3,9 @@ import { redirect } from 'next/navigation'
 import { getEvents } from '@/actions/events'
 import { nowInOman } from '@/lib/utils'
 import EventsManagementClient from './EventsManagementClient'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Events Management' }
+export const generateMetadata = () => pageTitle('Events Management')
 
 export const dynamic = 'force-dynamic'
 

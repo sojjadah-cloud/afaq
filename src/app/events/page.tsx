@@ -4,8 +4,9 @@ import { getSession } from '@/lib/auth'
 import EventsClient from './EventsClient'
 import { CalendarEventItem } from './EventCalendar'
 import { todayInOman } from '@/lib/utils'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Events' }
+export const generateMetadata = () => pageTitle('Events')
 
 export const dynamic = 'force-dynamic'
 

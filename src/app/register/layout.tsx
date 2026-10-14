@@ -1,8 +1,6 @@
-import type { Metadata } from 'next'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata: Metadata = {
-    title: 'Register',
-}
+export const generateMetadata = () => pageTitle('Register')
 
 export default function RegisterLayout({
     children,

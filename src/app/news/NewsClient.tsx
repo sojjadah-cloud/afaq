@@ -6,6 +6,7 @@ import Link from 'next/link'
 import styles from './page.module.css'
 import { createNews, deleteNews } from '@/actions/news'
 import { uploadImage } from '@/actions/upload'
+import { useT, useFormatDay } from '@/i18n/client'
 
 export interface NewsItem {
     id: string
@@ -25,13 +26,6 @@ const TABS: { key: Filter; label: string; href: string; icon: string }[] = [
     { key: 'ACHIEVEMENT', label: 'Achievements', href: '/news/achievement', icon: 'fa-trophy' },
 ]
 
-function formatDate(value: string | null) {
-    if (!value) return ''
-    const [y, m, d] = String(value).slice(0, 10).split('-').map(Number)
-    if (!y || !m || !d) return ''
-    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-
 interface NewsClientProps {
     items: NewsItem[]
     counts: Record<Filter, number>
@@ -42,6 +36,9 @@ interface NewsClientProps {
 
 export default function NewsClient({ items, counts, active, userRole, isLoggedIn }: NewsClientProps) {
     const router = useRouter()
+    const t = useT()
+    const formatDay = useFormatDay()
+    const formatDate = (value: string | null) => (value ? formatDay(value, { day: 'numeric', month: 'long', year: 'numeric' }) : '')
     const [showModal, setShowModal] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -62,7 +59,7 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
             uploadData.set('file', imageFile)
             const uploadResult = await uploadImage(uploadData)
             if (uploadResult.error) {
-                setError(uploadResult.error)
+                setError(t(uploadResult.error))
                 setLoading(false)
                 return
             }
@@ -73,7 +70,7 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
         const result = await createNews(formData)
         setLoading(false)
         if (result.error) {
-            setError(result.error)
+            setError(t(result.error))
         } else {
             setShowModal(false)
             router.refresh()
@@ -81,25 +78,25 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
     }
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this entry?')) return
+        if (!confirm(t('Delete this entry?'))) return
         const result = await deleteNews(id)
-        if (result.error) alert(result.error)
+        if (result.error) alert(t(result.error))
         else router.refresh()
     }
 
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>News &amp; Achievements</h2>
-                <p>Latest updates, milestones and wins from the AFAQ Scientific Club.</p>
+                <h2>{t('News & Achievements')}</h2>
+                <p>{t('Latest updates, milestones and wins from the AFAQ Scientific Club.')}</p>
                 {canCreate && (
-                    <button className={styles.createBtn} onClick={() => setShowModal(true)}>
-                        <i className="fa fa-plus"></i> Add Entry
+                    <button type="button" className={styles.createBtn} onClick={() => setShowModal(true)}>
+                        <i className="fa fa-plus" aria-hidden="true"></i> {t('Add Entry')}
                     </button>
                 )}
             </div>
 
-            <nav className={styles.tabs} aria-label="Filter">
+            <nav className={styles.tabs} aria-label={t('Filter')}>
                 {TABS.map(tab => (
                     <Link
                         key={tab.key}
@@ -107,7 +104,7 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
                         className={`${styles.tab} ${active === tab.key ? styles.tabActive : ''}`}
                         aria-current={active === tab.key ? 'page' : undefined}
                     >
-                        <i className={`fa-solid ${tab.icon}`}></i> {tab.label}
+                        <i className={`fa-solid ${tab.icon}`} aria-hidden="true"></i> {t(tab.label)}
                         <span className={styles.tabCount}>{counts[tab.key]}</span>
                     </Link>
                 ))}
@@ -115,8 +112,8 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
 
             {items.length === 0 ? (
                 <div className={styles.emptyState}>
-                    <i className="fa fa-newspaper"></i>
-                    <p>No entries yet.</p>
+                    <i className="fa fa-newspaper" aria-hidden="true"></i>
+                    <p>{t('No entries yet.')}</p>
                 </div>
             ) : (
                 <div className={styles.newsGrid}>
@@ -133,8 +130,8 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
                                         </div>
                                     )}
                                     <span className={`${styles.typeTag} ${isAchievement ? styles.typeTagGold : ''}`}>
-                                        <i className={`fa-solid ${isAchievement ? 'fa-trophy' : 'fa-bullhorn'}`}></i>
-                                        {isAchievement ? 'Achievement' : 'News'}
+                                        <i className={`fa-solid ${isAchievement ? 'fa-trophy' : 'fa-bullhorn'}`} aria-hidden="true"></i>
+                                        {isAchievement ? t('Achievement') : t('News')}
                                     </span>
                                 </div>
                                 <div className={styles.newsBody}>
@@ -142,14 +139,14 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
                                     <p className={styles.newsSummary}>{item.summary}</p>
                                     <div className={styles.newsMeta}>
                                         {item.eventDate && (
-                                            <span><i className="fa-regular fa-calendar"></i> {formatDate(item.eventDate)}</span>
+                                            <span><i className="fa-regular fa-calendar" aria-hidden="true"></i> {formatDate(item.eventDate)}</span>
                                         )}
                                         {item.location && (
-                                            <span><i className="fa-solid fa-location-dot"></i> {item.location}</span>
+                                            <span><i className="fa-solid fa-location-dot" aria-hidden="true"></i> {item.location}</span>
                                         )}
                                         {canDelete && (
-                                            <button className={styles.deleteBtn} onClick={() => handleDelete(item.id)} aria-label={`Delete ${item.title}`}>
-                                                <i className="fa fa-trash"></i>
+                                            <button type="button" className={styles.deleteBtn} onClick={() => handleDelete(item.id)} aria-label={t('Delete {name}', { name: item.title })}>
+                                                <i className="fa fa-trash" aria-hidden="true"></i>
                                             </button>
                                         )}
                                     </div>
@@ -162,55 +159,55 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
 
             {showModal && (
                 <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                    <div className={styles.modalContent} role="dialog" aria-modal="true" aria-labelledby="news-form-title" onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>Add News / Achievement</h3>
-                            <button className={styles.closeBtn} onClick={() => setShowModal(false)} aria-label="Close">
-                                <i className="fa fa-times"></i>
+                            <h3 id="news-form-title">{t('Add News / Achievement')}</h3>
+                            <button type="button" className={styles.closeBtn} onClick={() => setShowModal(false)} aria-label={t('Close')}>
+                                <i className="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className={styles.form}>
                             <div className={styles.formGroup}>
-                                <label htmlFor="title">Title *</label>
+                                <label htmlFor="title">{t('Title')} *</label>
                                 <input type="text" id="title" name="title" required />
                             </div>
 
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="type">Type *</label>
+                                    <label htmlFor="type">{t('Type')} *</label>
                                     <select id="type" name="type" required defaultValue={active === 'ACHIEVEMENT' ? 'ACHIEVEMENT' : 'NEWS'}>
-                                        <option value="NEWS">News</option>
-                                        <option value="ACHIEVEMENT">Achievement</option>
+                                        <option value="NEWS">{t('News')}</option>
+                                        <option value="ACHIEVEMENT">{t('Achievement')}</option>
                                     </select>
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="eventDate">Date</label>
+                                    <label htmlFor="eventDate">{t('Date')}</label>
                                     <input type="date" id="eventDate" name="eventDate" />
                                 </div>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="location">Location</label>
-                                <input type="text" id="location" name="location" placeholder="e.g. Main Auditorium, MTC" />
+                                <label htmlFor="location">{t('Location')}</label>
+                                <input type="text" id="location" name="location" placeholder={t('e.g. Main Auditorium, MTC')} />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="summary">Description *</label>
-                                <textarea id="summary" name="summary" rows={5} placeholder="What happened?" required></textarea>
+                                <label htmlFor="summary">{t('Description')} *</label>
+                                <textarea id="summary" name="summary" rows={5} placeholder={t('What happened?')} required></textarea>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="image">Image</label>
+                                <label htmlFor="image">{t('Image')}</label>
                                 <input type="file" id="image" name="image" accept=".png,.jpg,.jpeg,.gif,.webp" />
                             </div>
 
-                            {error && <div className={styles.error}>{error}</div>}
+                            {error && <div className={styles.error} role="alert">{error}</div>}
 
                             <div className={styles.formActions}>
-                                <button type="button" onClick={() => setShowModal(false)} disabled={loading}>Cancel</button>
+                                <button type="button" onClick={() => setShowModal(false)} disabled={loading}>{t('Cancel')}</button>
                                 <button type="submit" className={styles.submitBtn} disabled={loading}>
-                                    {loading ? 'Adding...' : 'Add Entry'}
+                                    {loading ? t('Adding...') : t('Add Entry')}
                                 </button>
                             </div>
                         </form>

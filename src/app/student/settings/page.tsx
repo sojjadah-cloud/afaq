@@ -5,13 +5,16 @@ import { getSession } from '@/lib/auth'
 import { RowDataPacket } from '@/lib/types'
 import SettingsClient from './SettingsClient'
 import styles from './settings.module.css'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Account Settings' }
+export const generateMetadata = () => pageTitle('Account Settings')
 
 export default async function SettingsPage() {
     const session = await getSession()
     if (!session.isLoggedIn) redirect('/login')
+    const { t } = await getT()
 
     const rows = await query<RowDataPacket[]>(
         `SELECT u.militaryId, u.email, u.role, sp.fullName, sp.phone, sp.bio, sp.departmentId, sp.programmeId, sp.yearLevel
@@ -27,11 +30,11 @@ export default async function SettingsPage() {
     return (
         <main className={styles.main}>
             <Link href="/student" className={styles.backLink}>
-                <i className="fa-solid fa-arrow-left"></i> Back to my profile
+                <i className="fa-solid fa-arrow-left" aria-hidden="true"></i> {t('Back to my dashboard')}
             </Link>
             <div className={styles.header}>
-                <h2>Account Settings</h2>
-                <p>Update your personal details and password.</p>
+                <h2>{t('Account Settings')}</h2>
+                <p>{t('Update your personal details and password.')}</p>
             </div>
             <SettingsClient
                 profile={{

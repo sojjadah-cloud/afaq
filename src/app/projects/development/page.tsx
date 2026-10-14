@@ -1,6 +1,7 @@
 import StageSections from '../StageSections'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Projects in Development' }
+export const generateMetadata = () => pageTitle('Projects in Development')
 
 export const dynamic = 'force-dynamic'
 

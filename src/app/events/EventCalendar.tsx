@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import styles from './calendar.module.css'
 import { EVENT_TYPES, EVENT_TYPE_KEYS, EventType, eventTypeOf } from '@/lib/eventTypes'
+import { useLang, useT } from '@/i18n/client'
+import { localeOf } from '@/i18n/core'
 
 export interface CalendarEventItem {
     id: string
@@ -17,8 +19,14 @@ export interface CalendarEventItem {
     registrationCount: number
 }
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+// Month and weekday names come from Intl so they follow the visitor's language.
+function calendarNames(locale: string) {
+    const months = Array.from({ length: 12 }, (_, m) => new Date(2026, m, 1).toLocaleDateString(locale, { month: 'long' }))
+    const monthsShort = Array.from({ length: 12 }, (_, m) => new Date(2026, m, 1).toLocaleDateString(locale, { month: 'short' }))
+    // 4 January 2026 was a Sunday.
+    const weekdays = Array.from({ length: 7 }, (_, d) => new Date(2026, 0, 4 + d).toLocaleDateString(locale, { weekday: 'short' }))
+    return { months, monthsShort, weekdays }
+}
 
 // Dates are stored as local wall-clock strings ('YYYY-MM-DD HH:MM:SS'), so work
 // with the date part directly instead of going through time zones.
@@ -40,10 +48,10 @@ function eachDay(start: string, end: string | null) {
     return days
 }
 
-function formatRange(e: CalendarEventItem) {
+function formatRange(e: CalendarEventItem, monthsShort: string[]) {
     const fmt = (v: string) => {
         const [y, m, d] = dayKey(v).split('-').map(Number)
-        return `${d} ${MONTHS[m - 1].slice(0, 3)} ${y}`
+        return `${d} ${monthsShort[m - 1]} ${y}`
     }
     const start = fmt(e.startDate)
     const end = e.endDate && dayKey(e.endDate) !== dayKey(e.startDate) ? fmt(e.endDate) : null
@@ -52,6 +60,9 @@ function formatRange(e: CalendarEventItem) {
 }
 
 export default function EventCalendar({ events, today }: { events: CalendarEventItem[]; today: string }) {
+    const t = useT()
+    const lang = useLang()
+    const { months: MONTHS, monthsShort, weekdays: WEEKDAYS } = useMemo(() => calendarNames(localeOf(lang)), [lang])
     const [ty, tm] = today.split('-').map(Number)
     const [year, setYear] = useState(ty)
     const [month, setMonth] = useState(tm - 1)
@@ -77,8 +88,8 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
         .sort((a, b) => a.startDate.localeCompare(b.startDate))
     const agenda = selectedDay ? byDay.get(selectedDay) || [] : monthEvents
 
-    const upcomingCounts = EVENT_TYPE_KEYS.reduce((acc, t) => {
-        acc[t] = events.filter(e => eventTypeOf(e.eventType) === t && dayKey(e.endDate || e.startDate) >= today).length
+    const upcomingCounts = EVENT_TYPE_KEYS.reduce((acc, type) => {
+        acc[type] = events.filter(e => eventTypeOf(e.eventType) === type && dayKey(e.endDate || e.startDate) >= today).length
         return acc
     }, {} as Record<EventType, number>)
 
@@ -101,35 +112,35 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
         setMonth(tm - 1)
         setSelectedDay(null)
     }
-    const toggleType = (t: EventType) =>
-        setHidden(h => (h.includes(t) ? h.filter(x => x !== t) : [...h, t]))
+    const toggleType = (type: EventType) =>
+        setHidden(h => (h.includes(type) ? h.filter(x => x !== type) : [...h, type]))
 
     return (
         <div className={styles.wrapper}>
-            <section className={styles.legend} aria-label="Event types">
-                {EVENT_TYPE_KEYS.map(t => {
-                    const meta = EVENT_TYPES[t]
-                    const off = hidden.includes(t)
+            <section className={styles.legend} aria-label={t('Event types')}>
+                {EVENT_TYPE_KEYS.map(type => {
+                    const meta = EVENT_TYPES[type]
+                    const off = hidden.includes(type)
                     return (
                         <button
-                            key={t}
+                            key={type}
                             type="button"
                             className={`${styles.legendItem} ${off ? styles.legendOff : ''}`}
                             style={{ borderColor: off ? undefined : meta.color }}
-                            onClick={() => toggleType(t)}
+                            onClick={() => toggleType(type)}
                             aria-pressed={!off}
-                            title={off ? `Show ${meta.label}` : `Hide ${meta.label}`}
+                            title={off ? t('Show {name}', { name: t(meta.label) }) : t('Hide {name}', { name: t(meta.label) })}
                         >
-                            <span className={styles.legendIcon} style={{ color: meta.color, background: meta.bg }}>
+                            <span className={styles.legendIcon} style={{ color: meta.color, background: meta.bg }} aria-hidden="true">
                                 <i className={`fa-solid ${meta.icon}`}></i>
                             </span>
                             <span className={styles.legendText}>
-                                <strong>{meta.label}</strong>
-                                <small>{meta.description}</small>
+                                <strong>{t(meta.label)}</strong>
+                                <small>{t(meta.description)}</small>
                             </span>
                             <span className={styles.legendCount} style={{ color: meta.color }}>
-                                {upcomingCounts[t]}
-                                <small>upcoming</small>
+                                {upcomingCounts[type]}
+                                <small>{t('upcoming')}</small>
                             </span>
                         </button>
                     )
@@ -138,14 +149,14 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
 
             <section className={styles.calendar}>
                 <div className={styles.toolbar}>
-                    <button type="button" className={styles.navBtn} onClick={() => shiftMonth(-1)} aria-label="Previous month">
-                        <i className="fa-solid fa-chevron-left"></i>
+                    <button type="button" className={styles.navBtn} onClick={() => shiftMonth(-1)} aria-label={t('Previous month')}>
+                        <i className="fa-solid fa-chevron-left" aria-hidden="true"></i>
                     </button>
                     <h3>{MONTHS[month]} {year}</h3>
-                    <button type="button" className={styles.navBtn} onClick={() => shiftMonth(1)} aria-label="Next month">
-                        <i className="fa-solid fa-chevron-right"></i>
+                    <button type="button" className={styles.navBtn} onClick={() => shiftMonth(1)} aria-label={t('Next month')}>
+                        <i className="fa-solid fa-chevron-right" aria-hidden="true"></i>
                     </button>
-                    <button type="button" className={styles.todayBtn} onClick={goToday}>Today</button>
+                    <button type="button" className={styles.todayBtn} onClick={goToday}>{t('Today')}</button>
                 </div>
 
                 <div className={styles.grid}>
@@ -167,19 +178,20 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
                                 type="button"
                                 className={classes}
                                 onClick={() => setSelectedDay(key === selectedDay ? null : key)}
-                                aria-label={`${day} ${MONTHS[month]}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
+                                aria-label={`${day} ${MONTHS[month]}${dayEvents.length ? `, ${t('{n} events', { n: dayEvents.length })}` : ''}`}
+                                aria-pressed={key === selectedDay}
                             >
                                 <span className={styles.dayNumber}>{day}</span>
                                 <span className={styles.chips}>
                                     {dayEvents.slice(0, 2).map(e => {
                                         const meta = EVENT_TYPES[eventTypeOf(e.eventType)]
                                         return (
-                                            <span key={e.id} className={styles.chip} style={{ background: meta.bg, color: meta.color, borderLeftColor: meta.color }}>
+                                            <span key={e.id} className={styles.chip} style={{ background: meta.bg, color: meta.color, borderInlineStartColor: meta.color }}>
                                                 {e.title}
                                             </span>
                                         )
                                     })}
-                                    {dayEvents.length > 2 && <span className={styles.more}>+{dayEvents.length - 2} more</span>}
+                                    {dayEvents.length > 2 && <span className={styles.more}>{t('+{n} more', { n: dayEvents.length - 2 })}</span>}
                                 </span>
                                 <span className={styles.dots}>
                                     {dayEvents.slice(0, 3).map(e => (
@@ -196,18 +208,18 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
                 <div className={styles.agendaHeader}>
                     <h3>
                         {selectedDay
-                            ? `Events on ${Number(selectedDay.slice(8))} ${MONTHS[Number(selectedDay.slice(5, 7)) - 1]}`
-                            : `Events in ${MONTHS[month]} ${year}`}
+                            ? t('Events on {date}', { date: `${Number(selectedDay.slice(8))} ${MONTHS[Number(selectedDay.slice(5, 7)) - 1]}` })
+                            : t('Events in {month}', { month: `${MONTHS[month]} ${year}` })}
                     </h3>
                     {selectedDay && (
                         <button type="button" className={styles.clearBtn} onClick={() => setSelectedDay(null)}>
-                            Show whole month
+                            {t('Show whole month')}
                         </button>
                     )}
                 </div>
 
                 {agenda.length === 0 ? (
-                    <p className={styles.emptyAgenda}>No events {selectedDay ? 'on this day' : 'this month'}.</p>
+                    <p className={styles.emptyAgenda}>{selectedDay ? t('No events on this day.') : t('No events this month.')}</p>
                 ) : (
                     <div className={styles.agendaList}>
                         {agenda.map(e => {
@@ -215,24 +227,24 @@ export default function EventCalendar({ events, today }: { events: CalendarEvent
                             const [, m, d] = dayKey(e.startDate).split('-').map(Number)
                             const isPast = dayKey(e.endDate || e.startDate) < today
                             return (
-                                <Link key={e.id} href={`/events/${e.id}`} className={`${styles.agendaItem} ${isPast ? styles.agendaPast : ''}`} style={{ borderLeftColor: meta.color }}>
+                                <Link key={e.id} href={`/events/${e.id}`} className={`${styles.agendaItem} ${isPast ? styles.agendaPast : ''}`} style={{ borderInlineStartColor: meta.color }}>
                                     <div className={styles.agendaDate} style={{ background: meta.color }}>
                                         <span>{d}</span>
-                                        <small>{MONTHS[m - 1].slice(0, 3)}</small>
+                                        <small>{monthsShort[m - 1]}</small>
                                     </div>
                                     <div className={styles.agendaBody}>
                                         <div className={styles.agendaTags}>
                                             <span className={styles.typeBadge} style={{ color: meta.color, background: meta.bg }}>
-                                                <i className={`fa-solid ${meta.icon}`}></i> {meta.label}
+                                                <i className={`fa-solid ${meta.icon}`} aria-hidden="true"></i> {t(meta.label)}
                                             </span>
-                                            <span className={styles.categoryBadge}>{e.category}</span>
-                                            {isPast && <span className={styles.categoryBadge}>Past</span>}
+                                            <span className={styles.categoryBadge}>{t(e.category)}</span>
+                                            {isPast && <span className={styles.categoryBadge}>{t('Past')}</span>}
                                         </div>
                                         <h4>{e.title}</h4>
                                         <div className={styles.agendaMeta}>
-                                            <span><i className="fa-regular fa-clock"></i> {formatRange(e)}</span>
-                                            {e.location && <span><i className="fa-solid fa-location-dot"></i> {e.location}</span>}
-                                            <span><i className="fa-solid fa-users"></i> {e.registrationCount} registered</span>
+                                            <span><i className="fa-regular fa-clock" aria-hidden="true"></i> {formatRange(e, monthsShort)}</span>
+                                            {e.location && <span><i className="fa-solid fa-location-dot" aria-hidden="true"></i> {e.location}</span>}
+                                            <span><i className="fa-solid fa-users" aria-hidden="true"></i> {t('{n} registered', { n: e.registrationCount })}</span>
                                         </div>
                                     </div>
                                 </Link>

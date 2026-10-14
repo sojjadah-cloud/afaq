@@ -42,7 +42,7 @@
     display: flex;
     flex-direction: column;
     line-height: 1.15;
-    text-align: right;
+    text-align: end;
 }
 
 .userName {
@@ -74,8 +74,41 @@
     font-weight: 700;
 }
 
+.langBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 36px;
+    margin-inline-end: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 6px;
+    background: transparent;
+    color: white;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.langBtn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.langBtn:focus-visible,
+.logoutBtn:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.langBtn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .logoutBtn {
-    margin-left: 1rem;
+    margin-inline-start: 1rem;
     padding: 0.5rem;
     border: none;
     background: transparent;
@@ -94,7 +127,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-right: 1rem;
+    margin-inline-end: 1rem;
     padding: 0.5rem 1rem;
     background: white;
     color: var(--gold);
@@ -142,6 +175,15 @@
 }
 
 @media (max-width: 650px) {
+    .langBtn span {
+        display: none;
+    }
+
+    .langBtn {
+        margin-inline-end: 0.35rem;
+        padding: 0.4rem 0.55rem;
+    }
+
     .headerCenter {
         width: 100%;
     }
@@ -172,7 +214,7 @@
     }
 
     .adminLink {
-        margin-right: 0;
+        margin-inline-end: 0;
         padding: 0.5rem 0.65rem;
     }
 
@@ -181,7 +223,7 @@
     }
 
     .logoutBtn {
-        margin-left: 0;
+        margin-inline-start: 0;
     }
 }
 

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import styles from './topic.module.css'
 import { initials } from '@/lib/utils'
 import { createForumReply, deleteForumPost, getMuteSettings, updateMuteSettings } from '@/actions/forum'
+import { useT, useLang } from '@/i18n/client'
+import { localeOf } from '@/i18n/core'
 
 interface Reply {
     id: string
@@ -52,6 +54,8 @@ interface TopicClientProps {
 
 export default function TopicClient({ topic, isLoggedIn, userId, userRole }: TopicClientProps) {
     const router = useRouter()
+    const t = useT()
+    const lang = useLang()
     const [replyContent, setReplyContent] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -88,7 +92,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    const showUserCard = (e: React.MouseEvent, authorId: string, authorName: string, authorMilitaryId: string) => {
+    const showUserCard = (e: React.MouseEvent | React.KeyboardEvent, authorId: string, authorName: string, authorMilitaryId: string) => {
         e.stopPropagation()
 
         // Count posts by this user in this topic
@@ -126,10 +130,10 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
             formData.append('replyToId', replyingTo.id)
         }
 
-        const result = await createForumReply(topic.id, formData)
+        const result = await createForumReply(topic.id, formData).catch(() => ({ error: 'Something went wrong. Please try again.' }))
 
         if (result.error) {
-            setError(result.error)
+            setError(t(result.error))
         } else {
             setReplyContent('')
             setReplyingTo(null)
@@ -140,11 +144,11 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
     }
 
     const handleDelete = async (postId: string) => {
-        if (!confirm('Are you sure you want to delete this?')) return
+        if (!confirm(t('Are you sure you want to delete this?'))) return
 
         const result = await deleteForumPost(postId)
         if (result.error) {
-            alert(result.error)
+            alert(t(result.error))
         } else {
             if (postId === topic.id) {
                 router.push(`/forums/${topic.categoryId}`)
@@ -161,7 +165,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
     }
 
     const formatDate = (date: string) => {
-        return new Date(date).toLocaleString('en-US', {
+        return new Date(String(date).replace(' ', 'T')).toLocaleString(localeOf(lang), {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -195,27 +199,27 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                     className={styles.userCard}
                     style={{ left: cardPosition.x, top: cardPosition.y }}
                 >
-                    <div className={styles.userCardAvatar}>
+                    <div className={styles.userCardAvatar} aria-hidden="true">
                         {initials(userCard.name)}
                     </div>
                     <div className={styles.userCardInfo}>
                         <div className={styles.userCardName}>{userCard.name}</div>
                         <div className={styles.userCardMeta}>
-                            <span><i className="fa fa-id-card"></i> {userCard.militaryId || 'N/A'}</span>
+                            <span><i className="fa fa-id-card" aria-hidden="true"></i> {userCard.militaryId || '—'}</span>
                         </div>
                         <div className={styles.userCardStats}>
-                            <span><i className="fa fa-comments"></i> {userCard.postsCount} posts in topic</span>
+                            <span><i className="fa fa-comments" aria-hidden="true"></i> {t('{n} posts in this topic', { n: userCard.postsCount })}</span>
                         </div>
                     </div>
-                    <button className={styles.userCardClose} onClick={() => setUserCard(null)}>
-                        <i className="fa fa-times"></i>
+                    <button type="button" className={styles.userCardClose} onClick={() => setUserCard(null)} aria-label={t('Close')}>
+                        <i className="fa fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
             )}
 
             {/* Back Link */}
             <Link href={`/forums/${topic.categoryId}`} className={styles.backLink}>
-                <i className="fa fa-arrow-left"></i> Back to Topics
+                <i className="fa fa-arrow-left" aria-hidden="true"></i> {t('Back to Topics')}
             </Link>
 
             {/* Post Card - Centered */}
@@ -224,8 +228,11 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                     <div
                         className={styles.authorInfo}
                         onClick={(e) => showUserCard(e, topic.authorId, topic.authorName, topic.authorMilitaryId)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showUserCard(e, topic.authorId, topic.authorName, topic.authorMilitaryId) } }}
                     >
-                        <div className={styles.authorAvatar}>
+                        <div className={styles.authorAvatar} aria-hidden="true">
                             {initials(topic.authorName, 'OP')}
                         </div>
                         <div>
@@ -237,18 +244,24 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                         {isLoggedIn && (
                             <button
                                 className={styles.iconBtn}
+                                type="button"
                                 onClick={() => setShowMuteSettings(!showMuteSettings)}
-                                title="Notification Settings"
+                                title={t('Notification settings')}
+                                aria-label={t('Notification settings')}
+                                aria-expanded={showMuteSettings}
                             >
-                                <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`}></i>
+                                <i className={`fa ${showMuteSettings ? 'fa-bell-slash' : 'fa-bell'}`} aria-hidden="true"></i>
                             </button>
                         )}
                         {canDelete(topic.authorId) && (
                             <button
+                                type="button"
                                 className={`${styles.iconBtn} ${styles.deleteBtn}`}
                                 onClick={() => handleDelete(topic.id)}
+                                aria-label={t('Delete topic')}
+                                title={t('Delete topic')}
                             >
-                                <i className="fa fa-trash"></i>
+                                <i className="fa fa-trash" aria-hidden="true"></i>
                             </button>
                         )}
                     </div>
@@ -257,9 +270,9 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                 {/* Mute Settings */}
                 {showMuteSettings && (
                     <div className={styles.mutePanel}>
-                        <label><input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} /> Mute topic replies</label>
-                        <label><input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} /> Mute thread replies</label>
-                        <label><input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} /> Mute quote replies</label>
+                        <label><input type="checkbox" checked={muteSettings.muteTopicReplies} onChange={() => handleMuteToggle('muteTopicReplies')} /> {t('Mute topic replies')}</label>
+                        <label><input type="checkbox" checked={muteSettings.muteThreadReplies} onChange={() => handleMuteToggle('muteThreadReplies')} /> {t('Mute thread replies')}</label>
+                        <label><input type="checkbox" checked={muteSettings.muteQuoteReplies} onChange={() => handleMuteToggle('muteQuoteReplies')} /> {t('Mute quote replies')}</label>
                     </div>
                 )}
 
@@ -267,7 +280,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                     {topic.title}
                     {isAnnouncement && (
                         <span className={styles.announcementBadge}>
-                            <i className="fa fa-bullhorn"></i> Announcement
+                            <i className="fa fa-bullhorn" aria-hidden="true"></i> {t('Announcement')}
                         </span>
                     )}
                 </h1>
@@ -278,14 +291,15 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
 
                 <footer className={styles.postFooter}>
                     <div className={styles.postStats}>
-                        <span><i className="fa fa-comments"></i> {topic.replies.length} replies</span>
+                        <span><i className="fa fa-comments" aria-hidden="true"></i> {t('{n} replies', { n: topic.replies.length })}</span>
                     </div>
                     {isLoggedIn && (
                         <button
+                            type="button"
                             className={styles.replyBtn}
                             onClick={() => { setReplyingTo(null); setShowReplyForm(!showReplyForm); }}
                         >
-                            <i className="fa fa-reply"></i> Reply
+                            <i className="fa fa-reply" aria-hidden="true"></i> {t('Reply')}
                         </button>
                     )}
                 </footer>
@@ -297,28 +311,29 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                     {replyingTo && (
                         <div className={styles.replyingToBar}>
                             <span>
-                                <i className="fa fa-quote-left"></i> Replying to <strong>{replyingTo.authorName}</strong>
+                                <i className="fa fa-quote-left" aria-hidden="true"></i> {t('Replying to')} <strong>{replyingTo.authorName}</strong>
                             </span>
-                            <button onClick={() => setReplyingTo(null)}>
-                                <i className="fa fa-times"></i>
+                            <button type="button" onClick={() => setReplyingTo(null)} aria-label={t('Stop replying to {name}', { name: replyingTo.authorName })}>
+                                <i className="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
                     )}
                     <form onSubmit={handleReply} className={styles.replyForm}>
-                        {error && <div className={styles.error}>{error}</div>}
+                        {error && <div className={styles.error} role="alert">{error}</div>}
                         <textarea
                             value={replyContent}
                             onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder={replyingTo ? `Reply to ${replyingTo.authorName}...` : "Write your reply..."}
+                            placeholder={replyingTo ? t('Reply to {name}...', { name: replyingTo.authorName }) : t('Write your reply...')}
+                            aria-label={t('Your reply')}
                             autoFocus
                             required
                         />
                         <div className={styles.formActions}>
                             <button type="button" className={styles.cancelBtn} onClick={() => setShowReplyForm(false)}>
-                                Cancel
+                                {t('Cancel')}
                             </button>
                             <button type="submit" className={styles.submitBtn} disabled={loading || !replyContent.trim()}>
-                                {loading ? <><i className="fa fa-spinner fa-spin"></i> Sending...</> : <><i className="fa fa-paper-plane"></i> Send Reply</>}
+                                {loading ? <><i className="fa fa-spinner fa-spin" aria-hidden="true"></i> {t('Sending...')}</> : <><i className="fa fa-paper-plane" aria-hidden="true"></i> {t('Send Reply')}</>}
                             </button>
                         </div>
                     </form>
@@ -329,7 +344,7 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
             {topic.replies.length > 0 && (
                 <section className={styles.repliesSection}>
                     <h3 className={styles.repliesTitle}>
-                        <i className="fa fa-comments"></i> {topic.replies.length} {topic.replies.length === 1 ? 'Reply' : 'Replies'}
+                        <i className="fa fa-comments" aria-hidden="true"></i> {topic.replies.length === 1 ? t('1 reply') : t('{n} replies', { n: topic.replies.length })}
                     </h3>
 
                     <div className={styles.repliesList}>
@@ -348,8 +363,11 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                                         <div
                                             className={styles.quotedReply}
                                             onClick={() => scrollToReply(quotedReply.id)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); scrollToReply(quotedReply.id) } }}
                                         >
-                                            <i className="fa fa-quote-left"></i>
+                                            <i className="fa fa-quote-left" aria-hidden="true"></i>
                                             <span className={styles.quotedAuthor}>{reply.replyToAuthorName || quotedReply.authorName}:</span>
                                             <span className={styles.quotedText}>{quotedReply.content.slice(0, 80)}...</span>
                                         </div>
@@ -359,14 +377,17 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                                         <div
                                             className={styles.replyAuthorInfo}
                                             onClick={(e) => showUserCard(e, reply.authorId, reply.authorName, reply.authorMilitaryId)}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showUserCard(e, reply.authorId, reply.authorName, reply.authorMilitaryId) } }}
                                         >
-                                            <div className={styles.replyAvatar}>
+                                            <div className={styles.replyAvatar} aria-hidden="true">
                                                 {initials(reply.authorName)}
                                             </div>
                                             <div>
                                                 <span className={styles.replyAuthorName}>
                                                     {reply.authorName}
-                                                    {isOP && <span className={styles.opBadge}>OP</span>}
+                                                    {isOP && <span className={styles.opBadge} title={t('Topic author')}>{t('Author')}</span>}
                                                 </span>
                                                 <span className={styles.replyDate}>{formatDate(reply.createdAt)}</span>
                                             </div>
@@ -374,13 +395,13 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
                                         <div className={styles.replyActions}>
                                             <span className={styles.replyNumber}>#{index + 1}</span>
                                             {isLoggedIn && (
-                                                <button className={styles.quoteBtn} onClick={() => openReplyTo(reply)}>
-                                                    <i className="fa fa-reply"></i>
+                                                <button type="button" className={styles.quoteBtn} onClick={() => openReplyTo(reply)} aria-label={t('Reply to {name}', { name: reply.authorName })} title={t('Reply')}>
+                                                    <i className="fa fa-reply" aria-hidden="true"></i>
                                                 </button>
                                             )}
                                             {canDelete(reply.authorId) && (
-                                                <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDelete(reply.id)}>
-                                                    <i className="fa fa-trash"></i>
+                                                <button type="button" className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => handleDelete(reply.id)} aria-label={t('Delete reply')} title={t('Delete reply')}>
+                                                    <i className="fa fa-trash" aria-hidden="true"></i>
                                                 </button>
                                             )}
                                         </div>
@@ -399,8 +420,8 @@ export default function TopicClient({ topic, isLoggedIn, userId, userRole }: Top
             {/* Login Prompt */}
             {!isLoggedIn && (
                 <div className={styles.loginPrompt}>
-                    <i className="fa fa-lock"></i>
-                    <span><Link href="/login">Log in</Link> to join the discussion</span>
+                    <i className="fa fa-lock" aria-hidden="true"></i>
+                    <span><Link href="/login">{t('Log In')}</Link> {t('to join the discussion')}</span>
                 </div>
             )}
         </main>

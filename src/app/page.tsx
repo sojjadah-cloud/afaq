@@ -3,6 +3,9 @@ import styles from './page.module.css'
 import { query } from '@/lib/db'
 import { RowDataPacket } from '@/lib/types'
 import JoinClub from './JoinClub'
+import { getT } from '@/i18n/server'
+import { formatDay } from '@/i18n/core'
+import { nowInOman } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,13 +48,9 @@ function excerpt(text: string, max = 120) {
     return plain.slice(0, plain.lastIndexOf(' ', max)) + '…'
 }
 
-function formatDate(value: string | null, opts: Intl.DateTimeFormatOptions) {
-    if (!value) return ''
-    const d = new Date(String(value).replace(' ', 'T'))
-    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-GB', opts)
-}
-
 export default async function HomePage() {
+    const { t, lang } = await getT()
+    const formatDate = (value: unknown, opts: Intl.DateTimeFormatOptions) => (value ? formatDay(lang, value, opts) : '')
     const [members, projects, research, labs] = await Promise.all([
         count('SELECT COUNT(*) as count FROM users'),
         count("SELECT COUNT(*) as count FROM projects WHERE status IN ('START', 'DEVELOPMENT', 'COMPLETED')"),
@@ -61,8 +60,9 @@ export default async function HomePage() {
 
     const upcomingEvents = await query<RowDataPacket[]>(
         `SELECT id, title, category, startDate, location FROM events
-         WHERE startDate >= DATETIME('now')
-         ORDER BY startDate ASC LIMIT 3`
+         WHERE startDate >= ?
+         ORDER BY startDate ASC LIMIT 3`,
+        [nowInOman()]
     )
 
     const latestNews = await query<RowDataPacket[]>(
@@ -97,17 +97,17 @@ export default async function HomePage() {
         <main className={styles.page}>
             <section className={styles.hero}>
                 <div className={styles.heroContent}>
-                    <span className={styles.heroEyebrow}>Military Technological College · Scientific Club</span>
-                    <h1>AFAQ Innovation Portal</h1>
+                    <span className={styles.heroEyebrow}>{t('Military Technological College')} · {t('Scientific Club')}</span>
+                    <h1>{t('AFAQ Innovation Portal')}</h1>
                     <p className={styles.visionStatement}>
-                        &ldquo;A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact.&rdquo;
+                        &ldquo;{t('A strategic start for AFAQ members to connect, collaborate, and transform ideas into innovation impact.')}&rdquo;
                     </p>
                     <div className={styles.heroActions}>
                         <Link href="/projects" className={styles.heroPrimary}>
-                            <i className="fa-solid fa-rocket"></i> Explore Projects
+                            <i className="fa-solid fa-rocket" aria-hidden="true"></i> {t('Explore Projects')}
                         </Link>
-                        <Link href="/lab-booking" className={styles.heroSecondary}>
-                            <i className="fa-solid fa-calendar-plus"></i> Book a Lab
+                        <Link href="/equipment" className={styles.heroSecondary}>
+                            <i className="fa-solid fa-calendar-plus" aria-hidden="true"></i> {t('Book a Lab')}
                         </Link>
                     </div>
                 </div>
@@ -116,10 +116,10 @@ export default async function HomePage() {
             <section className={styles.statsStrip}>
                 {stats.map(s => (
                     <div key={s.label} className={styles.statTile}>
-                        <i className={`fa-solid ${s.icon}`}></i>
+                        <i className={`fa-solid ${s.icon}`} aria-hidden="true"></i>
                         <div>
                             <div className={styles.statNumber}>{s.value}</div>
-                            <div className={styles.statText}>{s.label}</div>
+                            <div className={styles.statText}>{t(s.label)}</div>
                         </div>
                     </div>
                 ))}
@@ -127,15 +127,15 @@ export default async function HomePage() {
 
             <section className={styles.block}>
                 <div className={styles.blockHeader}>
-                    <h2>Explore the Portal</h2>
+                    <h2>{t('Explore the Portal')}</h2>
                 </div>
                 <div className={styles.portalGrid}>
                     {PORTAL_LINKS.map(link => (
                         <Link key={link.href} href={link.href} className={styles.portalCard}>
-                            <div className={styles.portalIcon}><i className={`fa-solid ${link.icon}`}></i></div>
+                            <div className={styles.portalIcon} aria-hidden="true"><i className={`fa-solid ${link.icon}`}></i></div>
                             <div>
-                                <div className={styles.portalTitle}>{link.title}</div>
-                                <div className={styles.portalDesc}>{link.desc}</div>
+                                <div className={styles.portalTitle}>{t(link.title)}</div>
+                                <div className={styles.portalDesc}>{t(link.desc)}</div>
                             </div>
                         </Link>
                     ))}
@@ -145,11 +145,11 @@ export default async function HomePage() {
             <section className={`${styles.block} ${styles.twoCol}`}>
                 <div className={styles.panel}>
                     <div className={styles.blockHeader}>
-                        <h2>Upcoming Events</h2>
-                        <Link href="/events" className={styles.seeAll}>All events <i className="fa-solid fa-arrow-right"></i></Link>
+                        <h2>{t('Upcoming Events')}</h2>
+                        <Link href="/events" className={styles.seeAll}>{t('All events')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i></Link>
                     </div>
                     {upcomingEvents.length === 0 ? (
-                        <p className={styles.emptyText}>No upcoming events scheduled.</p>
+                        <p className={styles.emptyText}>{t('No upcoming events scheduled.')}</p>
                     ) : (
                         <ul className={styles.eventList}>
                             {upcomingEvents.map(e => (
@@ -162,8 +162,8 @@ export default async function HomePage() {
                                         <div className={styles.eventInfo}>
                                             <div className={styles.eventTitle}>{e.title}</div>
                                             <div className={styles.eventMeta}>
-                                                <span className={styles.tag}>{e.category}</span>
-                                                {e.location && <span><i className="fa-solid fa-location-dot"></i> {e.location}</span>}
+                                                <span className={styles.tag}>{t(e.category)}</span>
+                                                {e.location && <span><i className="fa-solid fa-location-dot" aria-hidden="true"></i> {e.location}</span>}
                                             </div>
                                         </div>
                                     </Link>
@@ -175,16 +175,16 @@ export default async function HomePage() {
 
                 <div className={styles.panel}>
                     <div className={styles.blockHeader}>
-                        <h2>News &amp; Achievements</h2>
-                        <Link href="/news" className={styles.seeAll}>All news <i className="fa-solid fa-arrow-right"></i></Link>
+                        <h2>{t('News & Achievements')}</h2>
+                        <Link href="/news" className={styles.seeAll}>{t('All news')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i></Link>
                     </div>
                     {latestNews.length === 0 ? (
-                        <p className={styles.emptyText}>No news yet.</p>
+                        <p className={styles.emptyText}>{t('No news yet.')}</p>
                     ) : (
                         <ul className={styles.newsList}>
                             {latestNews.map(n => (
                                 <li key={n.id}>
-                                    <Link href={`/news/${n.type === 'ACHIEVEMENT' ? 'achievement' : 'news'}`} className={styles.newsItem}>
+                                    <Link href={`/news/${n.type === 'ACHIEVEMENT' ? 'achievement' : 'news'}#news-${n.id}`} className={styles.newsItem}>
                                         <span className={`${styles.newsIcon} ${n.type === 'ACHIEVEMENT' ? styles.newsIconGold : ''}`}>
                                             <i className={`fa-solid ${n.type === 'ACHIEVEMENT' ? 'fa-trophy' : 'fa-newspaper'}`}></i>
                                         </span>
@@ -202,16 +202,16 @@ export default async function HomePage() {
 
             <section className={styles.block}>
                 <div className={styles.blockHeader}>
-                    <h2>Featured Projects</h2>
-                    <Link href="/projects" className={styles.seeAll}>All projects <i className="fa-solid fa-arrow-right"></i></Link>
+                    <h2>{t('Featured Projects')}</h2>
+                    <Link href="/projects" className={styles.seeAll}>{t('All projects')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i></Link>
                 </div>
                 <div className={styles.projectGrid}>
                     {featuredProjects.map(p => (
                         <Link key={p.id} href={`/projects/${p.id}`} className={styles.projectCard}>
                             <div className={styles.projectTop}>
-                                <span className={styles.tag}>{p.category}</span>
+                                <span className={styles.tag}>{t(p.category)}</span>
                                 <span className={`${styles.statusPill} ${p.status === 'COMPLETED' ? styles.statusDone : ''}`}>
-                                    {STATUS_LABELS[p.status] || p.status}
+                                    {t(STATUS_LABELS[p.status] || p.status)}
                                 </span>
                             </div>
                             <h3>{p.title}</h3>
@@ -229,14 +229,14 @@ export default async function HomePage() {
 
             <section className={styles.block}>
                 <div className={styles.blockHeader}>
-                    <h2>Innovation Tracks</h2>
+                    <h2>{t('Innovation Tracks')}</h2>
                 </div>
                 <div className={styles.trackGrid}>
-                    {TRACKS.map(t => (
-                        <div key={t.key} className={styles.trackCard}>
-                            <i className={`fa-solid ${t.icon}`}></i>
-                            <div className={styles.trackLabel}>{t.label}</div>
-                            <div className={styles.trackCount}>{trackCounts[t.key] || 0} projects</div>
+                    {TRACKS.map(track => (
+                        <div key={track.key} className={styles.trackCard}>
+                            <i className={`fa-solid ${track.icon}`} aria-hidden="true"></i>
+                            <div className={styles.trackLabel}>{t(track.label)}</div>
+                            <div className={styles.trackCount}>{t('{n} projects', { n: trackCounts[track.key] || 0 })}</div>
                         </div>
                     ))}
                 </div>

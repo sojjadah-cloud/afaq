@@ -2,8 +2,9 @@ import { query } from '@/lib/db'
 import { RowDataPacket } from '@/lib/types'
 import ProjectsClient from './ProjectsClient'
 import { getProjectSections } from '@/lib/sections'
+import { pageTitle } from '@/lib/metadata'
 
-export const metadata = { title: 'Projects' }
+export const generateMetadata = () => pageTitle('Projects')
 
 export const dynamic = 'force-dynamic'
 

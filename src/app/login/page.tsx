@@ -5,9 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loginUser } from '@/actions/auth'
 import styles from './page.module.css'
+import { useT } from '@/i18n/client'
+import LanguageSwitch from '@/components/LanguageSwitch'
 
 function LoginForm() {
     const router = useRouter()
+    const t = useT()
     const next = useSearchParams().get('next') || ''
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
@@ -19,7 +22,7 @@ function LoginForm() {
         setLoading(true)
         const result = await loginUser(new FormData(e.currentTarget))
         if (result?.error) {
-            setError(result.error)
+            setError(t(result.error))
             setLoading(false)
         } else {
             router.push(result.redirectTo ?? '/')
@@ -31,16 +34,16 @@ function LoginForm() {
         <form onSubmit={handleSubmit} className={styles.form} noValidate>
             {error && (
                 <div className={styles.error} role="alert">
-                    <i className="fa fa-exclamation-circle"></i> {error}
+                    <i className="fa fa-exclamation-circle" aria-hidden="true"></i> {error}
                 </div>
             )}
 
             <input type="hidden" name="next" value={next} />
 
             <label className={styles.field}>
-                <span>Military ID or email</span>
+                <span>{t('Military ID or email')}</span>
                 <div className={styles.inputWrap}>
-                    <i className="fa-solid fa-id-card"></i>
+                    <i className="fa-solid fa-id-card" aria-hidden="true"></i>
                     <input
                         name="militaryId"
                         type="text"
@@ -48,62 +51,65 @@ function LoginForm() {
                         autoCapitalize="none"
                         spellCheck={false}
                         required
-                        placeholder="e.g. 2100003"
+                        placeholder={t('e.g. 2100003')}
+                        dir="ltr"
                     />
                 </div>
             </label>
 
             <label className={styles.field}>
-                <span>Password</span>
+                <span>{t('Password')}</span>
                 <div className={styles.inputWrap}>
-                    <i className="fa-solid fa-lock"></i>
+                    <i className="fa-solid fa-lock" aria-hidden="true"></i>
                     <input
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="current-password"
                         required
-                        placeholder="Your password"
+                        placeholder={t('Your password')}
                     />
                     <button
                         type="button"
                         className={styles.toggle}
                         onClick={() => setShowPassword(v => !v)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showPassword ? t('Hide password') : t('Show password')}
                     >
-                        <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                        <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} aria-hidden="true"></i>
                     </button>
                 </div>
             </label>
 
             <button type="submit" className={styles.submit} disabled={loading}>
-                {loading ? <><i className="fa fa-spinner fa-spin"></i> Signing in...</> : <>Sign In <i className="fa-solid fa-arrow-right"></i></>}
+                {loading ? <><i className="fa fa-spinner fa-spin" aria-hidden="true"></i> {t('Signing in...')}</> : <>{t('Sign In')} <i className="fa-solid fa-arrow-right" aria-hidden="true"></i></>}
             </button>
 
             <p className={styles.help}>
-                Forgot your password? Contact the club administrator to reset it.
+                {t('Forgot your password? Contact the club administrator to reset it.')}
             </p>
         </form>
     )
 }
 
 export default function LoginPage() {
+    const t = useT()
     return (
         <div className={styles.page}>
             <div className={styles.topBar}>
-                <span className={styles.brandMark}>
+                <span className={styles.brandMark} aria-hidden="true">
                     <i className="fa fa-rocket"></i>
                 </span>
-                AFAQ Innovation
+                {t('AFAQ Innovation')}
             </div>
+            <LanguageSwitch className={styles.langBtn} />
 
             <div className={styles.card}>
                 <div className={styles.cardHeader}>
-                    <div className={styles.logo}>
+                    <div className={styles.logo} aria-hidden="true">
                         <i className="fa fa-rocket"></i>
                     </div>
-                    <span className={styles.eyebrow}>Secure Sign In</span>
-                    <h1>Log In to Your Account</h1>
-                    <p>Sign in with your military ID and password</p>
+                    <span className={styles.eyebrow}>{t('Secure Sign In')}</span>
+                    <h1>{t('Log In to Your Account')}</h1>
+                    <p>{t('Sign in with your military ID and password')}</p>
                 </div>
 
                 <Suspense>
@@ -111,15 +117,15 @@ export default function LoginPage() {
                 </Suspense>
 
                 <div className={styles.divider}>
-                    <span>New to AFAQ?</span>
+                    <span>{t('New to AFAQ?')}</span>
                 </div>
 
                 <Link href="/register" className={styles.signupBtn}>
-                    <i className="fa fa-user-plus"></i> Create New Account
+                    <i className="fa fa-user-plus" aria-hidden="true"></i> {t('Create New Account')}
                 </Link>
             </div>
 
-            <p className={styles.pageFooter}>© 2026 MTC AFAQ Innovation Portal · Military Technological College</p>
+            <p className={styles.pageFooter}>© {new Date().getFullYear()} {t('AFAQ Innovation Portal')} · {t('Military Technological College')}</p>
         </div>
     )
 }

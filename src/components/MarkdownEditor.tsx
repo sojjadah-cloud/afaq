@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import styles from './MarkdownEditor.module.css'
 import { uploadImage } from '@/actions/upload'
+import { useT } from '@/i18n/client'
 
 interface MarkdownEditorProps {
     value?: string
@@ -19,6 +20,7 @@ export default function MarkdownEditor({
     className,
     maxWords
 }: MarkdownEditorProps) {
+    const t = useT()
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [isDragging, setIsDragging] = useState(false)
@@ -123,7 +125,7 @@ export default function MarkdownEditor({
 
     const handleImageUpload = async (file: File) => {
         if (!file.type.startsWith('image/')) {
-            alert('Please upload an image file.')
+            alert(t('Please upload an image file.'))
             return
         }
 
@@ -139,13 +141,13 @@ export default function MarkdownEditor({
             const result = await uploadImage(formData)
 
             if (result.error) {
-                alert(result.error)
+                alert(t(result.error))
             } else if (result.url) {
                 insertText(`\n![${file.name}](${result.url})\n`, '')
             }
         } catch (error) {
             console.error('Compression/Upload error:', error)
-            alert('Failed to process image.')
+            alert(t('Failed to process image.'))
         }
 
         setIsUploading(false)
@@ -195,10 +197,10 @@ export default function MarkdownEditor({
         >
             <div className={styles.toolbar}>
                 <div className={styles.toolGroup}>
-                    <button type="button" onClick={() => insertText('**', '**')} title="Bold">
+                    <button type="button" onClick={() => insertText('**', '**')} title={t('Bold')} aria-label={t('Bold')}>
                         <i className="fa-solid fa-bold"></i>
                     </button>
-                    <button type="button" onClick={() => insertText('*', '*')} title="Italic">
+                    <button type="button" onClick={() => insertText('*', '*')} title={t('Italic')} aria-label={t('Italic')}>
                         <i className="fa-solid fa-italic"></i>
                     </button>
                 </div>
@@ -206,18 +208,18 @@ export default function MarkdownEditor({
                 <div className={styles.separator}></div>
 
                 <div className={styles.toolGroup}>
-                    <button type="button" onClick={() => insertText('# ')} title="H1">H1</button>
-                    <button type="button" onClick={() => insertText('## ')} title="H2">H2</button>
-                    <button type="button" onClick={() => insertText('### ')} title="H3">H3</button>
+                    <button type="button" onClick={() => insertText('# ')} title={t('Heading 1')} aria-label={t('Heading 1')}>H1</button>
+                    <button type="button" onClick={() => insertText('## ')} title={t('Heading 2')} aria-label={t('Heading 2')}>H2</button>
+                    <button type="button" onClick={() => insertText('### ')} title={t('Heading 3')} aria-label={t('Heading 3')}>H3</button>
                 </div>
 
                 <div className={styles.separator}></div>
 
                 <div className={styles.toolGroup}>
-                    <button type="button" onClick={() => insertText('- ')} title="Bullet List">
+                    <button type="button" onClick={() => insertText('- ')} title={t('Bullet List')} aria-label={t('Bullet List')}>
                         <i className="fa-solid fa-list-ul"></i>
                     </button>
-                    <button type="button" onClick={() => insertText('1. ')} title="Ordered List">
+                    <button type="button" onClick={() => insertText('1. ')} title={t('Ordered List')} aria-label={t('Ordered List')}>
                         <i className="fa-solid fa-list-ol"></i>
                     </button>
                 </div>
@@ -225,13 +227,13 @@ export default function MarkdownEditor({
                 <div className={styles.separator}></div>
 
                 <div className={styles.toolGroup}>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} title="Upload Image">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} title={t('Upload Image')} aria-label={t('Upload Image')}>
                         <i className="fa-regular fa-image"></i>
                     </button>
-                    <button type="button" onClick={() => insertText('[Link Text](url)')} title="Link">
+                    <button type="button" onClick={() => insertText('[Link Text](url)')} title={t('Link')} aria-label={t('Link')}>
                         <i className="fa-solid fa-link"></i>
                     </button>
-                    <button type="button" onClick={insertTable} title="Table">
+                    <button type="button" onClick={insertTable} title={t('Table')} aria-label={t('Table')}>
                         <i className="fa-solid fa-table"></i>
                     </button>
                 </div>
@@ -242,13 +244,14 @@ export default function MarkdownEditor({
                     className={styles.hiddenInput}
                     accept="image/*"
                     onChange={onFileChange}
+                    aria-label={t('Upload Image')}
                 />
 
-                {isUploading && <span className={styles.uploadingText}>Uploading...</span>}
+                {isUploading && <span className={styles.uploadingText} role="status">{t('Uploading...')}</span>}
 
                 {maxWords && (
                     <span className={`${styles.wordCount} ${wordCount > maxWords ? styles.limitReached : ''}`}>
-                        {wordCount} / {maxWords} words
+                        {t('{n} / {max} words', { n: wordCount, max: maxWords })}
                     </span>
                 )}
             </div>
@@ -258,7 +261,7 @@ export default function MarkdownEditor({
                 name={name}
                 defaultValue={value}
                 onChange={handleInput}
-                placeholder={placeholder || 'Type here... Drag & drop images supported.'}
+                placeholder={placeholder || t('Type here... Drag & drop images supported.')}
                 required={required}
                 className={`${styles.textarea} ${className || ''}`}
                 dir="auto"
@@ -267,7 +270,7 @@ export default function MarkdownEditor({
             {isDragging && (
                 <div className={styles.dragOverlay}>
                     <i className="fa-solid fa-cloud-upload-alt fa-3x"></i>
-                    <p>Drop image to upload</p>
+                    <p>{t('Drop image to upload')}</p>
                 </div>
             )}
         </div>

@@ -8,6 +8,12 @@ import { updateRegistrationStatus } from '@/actions/club'
 import { updateContactStatus } from '@/actions/contact'
 import AdminNav from '@/components/AdminNav'
 import ExportButton from '@/components/ExportButton'
+import { useT, useFormatDay } from '@/i18n/client'
+
+const STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Pending', APPROVED: 'Approved', REJECTED: 'Rejected',
+    NEW: 'New', READ: 'Read', REPLIED: 'Replied', CLOSED: 'Closed',
+}
 
 interface Registration {
     id: string
@@ -41,6 +47,8 @@ interface RequestsClientProps {
 
 export default function RequestsClient({ initialRegistrations, initialMessages }: RequestsClientProps) {
     const router = useRouter()
+    const t = useT()
+    const formatDay = useFormatDay()
     const [activeTab, setActiveTab] = useState<'registrations' | 'messages'>('registrations')
     const [regFilter, setRegFilter] = useState('all')
     const [msgFilter, setMsgFilter] = useState('all')
@@ -62,7 +70,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
         setLoading(regId)
         const result = await updateRegistrationStatus(regId, status)
         if (result.error) {
-            alert(result.error)
+            alert(t(result.error))
         }
         setLoading(null)
         setSelectedItem(null)
@@ -73,7 +81,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
         setLoading(msgId)
         const result = await updateContactStatus(msgId, status)
         if (result.error) {
-            alert(result.error)
+            alert(t(result.error))
         }
         setLoading(null)
         setSelectedItem(null)
@@ -102,8 +110,8 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Requests & Messages</h2>
-                <p>Manage Club Registrations & Contact Messages</p>
+                <h2>{t('Requests & Messages')}</h2>
+                <p>{t('Club registrations and contact messages')}</p>
             </div>
 
             <AdminNav />
@@ -119,13 +127,13 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                     className={`${styles.filterBtn} ${activeTab === 'registrations' ? styles.active : ''}`}
                     onClick={() => setActiveTab('registrations')}
                 >
-                    <i className="fa fa-user-plus"></i> Registrations ({initialRegistrations.length})
+                    <i className="fa fa-user-plus" aria-hidden="true"></i> {t('Club registrations')} ({initialRegistrations.length})
                 </button>
                 <button
                     className={`${styles.filterBtn} ${activeTab === 'messages' ? styles.active : ''}`}
                     onClick={() => setActiveTab('messages')}
                 >
-                    <i className="fa fa-envelope"></i> Messages ({initialMessages.length})
+                    <i className="fa fa-envelope" aria-hidden="true"></i> {t('Messages')} ({initialMessages.length})
                 </button>
             </div>
 
@@ -137,7 +145,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             className={`${styles.filterBtn} ${regFilter === 'all' ? styles.active : ''}`}
                             onClick={() => setRegFilter('all')}
                         >
-                            All ({initialRegistrations.length})
+                            {t('All')} ({initialRegistrations.length})
                         </button>
                         {regStatuses.map(status => {
                             const count = initialRegistrations.filter(r => r.status === status).length
@@ -147,7 +155,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                     className={`${styles.filterBtn} ${regFilter === status ? styles.active : ''}`}
                                     onClick={() => setRegFilter(status)}
                                 >
-                                    {status} ({count})
+                                    {t(STATUS_LABELS[status] || status)} ({count})
                                 </button>
                             )
                         })}
@@ -158,20 +166,20 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Military ID</th>
-                                        <th>Department</th>
-                                        <th>Year</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>{t('Name')}</th>
+                                        <th>{t('Military ID')}</th>
+                                        <th>{t('Department')}</th>
+                                        <th>{t('Year')}</th>
+                                        <th>{t('Date')}</th>
+                                        <th>{t('Status')}</th>
+                                        <th>{t('Actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredRegs.length === 0 ? (
                                         <tr>
                                             <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                                No registrations found.
+                                                {t('No registrations found.')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -181,10 +189,10 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                     <strong>{reg.fullName}</strong><br />
                                                     <small style={{ color: '#64748b' }}>{reg.email}</small>
                                                 </td>
-                                                <td>{reg.militaryId}</td>
-                                                <td>{reg.department}</td>
-                                                <td>{reg.yearLevel || '-'}</td>
-                                                <td>{new Date(reg.createdAt).toLocaleDateString()}</td>
+                                                <td dir="ltr">{reg.militaryId}</td>
+                                                <td>{t(reg.department)}</td>
+                                                <td>{reg.yearLevel ? t(reg.yearLevel) : '-'}</td>
+                                                <td>{formatDay(reg.createdAt)}</td>
                                                 <td>
                                                     <span style={{
                                                         padding: '0.25rem 0.75rem',
@@ -194,7 +202,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                         background: getRegStatusColor(reg.status).bg,
                                                         color: getRegStatusColor(reg.status).color
                                                     }}>
-                                                        {reg.status}
+                                                        {t(STATUS_LABELS[reg.status] || reg.status)}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -202,9 +210,10 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                         <button
                                                             className={styles.viewBtn}
                                                             onClick={() => setSelectedItem(reg)}
-                                                            title="View Details"
+                                                            title={t('View details')}
+                                                            aria-label={t('View details for {name}', { name: reg.fullName })}
                                                         >
-                                                            <i className="fa fa-eye"></i>
+                                                            <i className="fa fa-eye" aria-hidden="true"></i>
                                                         </button>
                                                         {reg.status === 'PENDING' && (
                                                             <>
@@ -212,17 +221,19 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                                     className={styles.approveBtn}
                                                                     onClick={() => handleRegAction(reg.id, 'APPROVED')}
                                                                     disabled={loading === reg.id}
-                                                                    title="Approve"
+                                                                    title={t('Approve')}
+                                                                    aria-label={t('Approve {name}', { name: reg.fullName })}
                                                                 >
-                                                                    <i className="fa fa-check"></i>
+                                                                    <i className="fa fa-check" aria-hidden="true"></i>
                                                                 </button>
                                                                 <button
                                                                     className={styles.rejectBtn}
                                                                     onClick={() => handleRegAction(reg.id, 'REJECTED')}
                                                                     disabled={loading === reg.id}
-                                                                    title="Reject"
+                                                                    title={t('Reject')}
+                                                                    aria-label={t('Reject {name}', { name: reg.fullName })}
                                                                 >
-                                                                    <i className="fa fa-times"></i>
+                                                                    <i className="fa fa-times" aria-hidden="true"></i>
                                                                 </button>
                                                             </>
                                                         )}
@@ -246,7 +257,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             className={`${styles.filterBtn} ${msgFilter === 'all' ? styles.active : ''}`}
                             onClick={() => setMsgFilter('all')}
                         >
-                            All ({initialMessages.length})
+                            {t('All')} ({initialMessages.length})
                         </button>
                         {msgStatuses.map(status => {
                             const count = initialMessages.filter(m => m.status === status).length
@@ -256,7 +267,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                     className={`${styles.filterBtn} ${msgFilter === status ? styles.active : ''}`}
                                     onClick={() => setMsgFilter(status)}
                                 >
-                                    {status} ({count})
+                                    {t(STATUS_LABELS[status] || status)} ({count})
                                 </button>
                             )
                         })}
@@ -267,19 +278,19 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th>From</th>
-                                        <th>Subject</th>
-                                        <th>Message</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>{t('From')}</th>
+                                        <th>{t('Subject')}</th>
+                                        <th>{t('Message')}</th>
+                                        <th>{t('Date')}</th>
+                                        <th>{t('Status')}</th>
+                                        <th>{t('Actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredMsgs.length === 0 ? (
                                         <tr>
                                             <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                                No messages found.
+                                                {t('No messages found.')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -289,11 +300,11 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                     <strong>{msg.name}</strong><br />
                                                     <small style={{ color: '#64748b' }}>{msg.email}</small>
                                                 </td>
-                                                <td><strong>{msg.subject}</strong></td>
+                                                <td><strong>{t(msg.subject)}</strong></td>
                                                 <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                     {msg.message}
                                                 </td>
-                                                <td>{new Date(msg.createdAt).toLocaleDateString()}</td>
+                                                <td>{formatDay(msg.createdAt)}</td>
                                                 <td>
                                                     <span style={{
                                                         padding: '0.25rem 0.75rem',
@@ -303,7 +314,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                         background: getMsgStatusColor(msg.status).bg,
                                                         color: getMsgStatusColor(msg.status).color
                                                     }}>
-                                                        {msg.status}
+                                                        {t(STATUS_LABELS[msg.status] || msg.status)}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -311,18 +322,20 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                         <button
                                                             className={styles.viewBtn}
                                                             onClick={() => setSelectedItem(msg)}
-                                                            title="View Details"
+                                                            title={t('View details')}
+                                                            aria-label={t('View details for {name}', { name: msg.name })}
                                                         >
-                                                            <i className="fa fa-eye"></i>
+                                                            <i className="fa fa-eye" aria-hidden="true"></i>
                                                         </button>
                                                         {msg.status === 'NEW' && (
                                                             <button
                                                                 className={styles.approveBtn}
                                                                 onClick={() => handleMsgAction(msg.id, 'READ')}
                                                                 disabled={loading === msg.id}
-                                                                title="Mark as Read"
+                                                                title={t('Mark as read')}
+                                                                aria-label={t('Mark as read')}
                                                             >
-                                                                <i className="fa fa-check"></i>
+                                                                <i className="fa fa-check" aria-hidden="true"></i>
                                                             </button>
                                                         )}
                                                         {(msg.status === 'NEW' || msg.status === 'READ') && (
@@ -330,9 +343,10 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                                 className={styles.completeBtn}
                                                                 onClick={() => handleMsgAction(msg.id, 'REPLIED')}
                                                                 disabled={loading === msg.id}
-                                                                title="Mark as Replied"
+                                                                title={t('Mark as replied')}
+                                                                aria-label={t('Mark as replied')}
                                                             >
-                                                                <i className="fa fa-reply"></i>
+                                                                <i className="fa fa-reply" aria-hidden="true"></i>
                                                             </button>
                                                         )}
                                                         {msg.status !== 'CLOSED' && (
@@ -340,9 +354,10 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                                 className={styles.cancelBtn}
                                                                 onClick={() => handleMsgAction(msg.id, 'CLOSED')}
                                                                 disabled={loading === msg.id}
-                                                                title="Close"
+                                                                title={t('Close message')}
+                                                                aria-label={t('Close message')}
                                                             >
-                                                                <i className="fa fa-archive"></i>
+                                                                <i className="fa fa-archive" aria-hidden="true"></i>
                                                             </button>
                                                         )}
                                                     </div>
@@ -364,7 +379,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, padding: '2rem'
+                        zIndex: 1000, padding: '1rem'
                     }}
                     onClick={() => setSelectedItem(null)}
                 >
@@ -374,82 +389,87 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                             maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,0.3)'
                         }}
                         onClick={e => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="request-detail-title"
                     >
                         <div style={{
-                            padding: '1.5rem 2rem', borderBottom: '1px solid #e2e8f0',
+                            padding: '1.25rem clamp(1rem, 4vw, 2rem)', borderBottom: '1px solid #e2e8f0',
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             background: 'linear-gradient(135deg, #fffbef, white)', borderRadius: '20px 20px 0 0'
                         }}>
-                            <h3 style={{ margin: 0, color: '#1e293b' }}>
-                                {'fullName' in selectedItem ? 'Registration Details' : 'Message Details'}
+                            <h3 id="request-detail-title" style={{ margin: 0, color: '#1e293b' }}>
+                                {'fullName' in selectedItem ? t('Registration details') : t('Message details')}
                             </h3>
                             <button
+                                type="button"
                                 onClick={() => setSelectedItem(null)}
+                                aria-label={t('Close')}
                                 style={{
                                     width: '40px', height: '40px', borderRadius: '50%', border: 'none',
                                     background: '#f1f5f9', cursor: 'pointer', color: '#64748b'
                                 }}
                             >
-                                <i className="fa fa-times"></i>
+                                <i className="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
-                        <div style={{ padding: '2rem' }}>
+                        <div style={{ padding: 'clamp(1rem, 4vw, 2rem)' }}>
                             {'fullName' in selectedItem ? (
                                 // Registration details
                                 <>
                                     <div className={styles.formGrid2}>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Name</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Name')}</label>
                                             <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.fullName}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Military ID</label>
-                                            <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.militaryId}</p>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Military ID')}</label>
+                                            <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}><span dir="ltr">{selectedItem.militaryId}</span></p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Email</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Email')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.email}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Phone</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Phone')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.phone || '-'}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Department</label>
-                                            <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.department}</p>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Department')}</label>
+                                            <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{t(selectedItem.department)}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Year</label>
-                                            <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.yearLevel || '-'}</p>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Year')}</label>
+                                            <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.yearLevel ? t(selectedItem.yearLevel) : '-'}</p>
                                         </div>
                                     </div>
                                     {selectedItem.interests && (
                                         <div style={{ marginBottom: '1rem' }}>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Interests</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Interests')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.interests}</p>
                                         </div>
                                     )}
                                     {selectedItem.motivation && (
                                         <div style={{ marginBottom: '1rem' }}>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Motivation</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Motivation')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#475569', lineHeight: 1.6 }}>{selectedItem.motivation}</p>
                                         </div>
                                     )}
                                     {selectedItem.status === 'PENDING' && (
-                                        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
                                             <button
                                                 onClick={() => handleRegAction(selectedItem.id, 'APPROVED')}
                                                 disabled={loading === selectedItem.id}
                                                 style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: 'none', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                             >
-                                                <i className="fa fa-check"></i> Approve
+                                                <i className="fa fa-check" aria-hidden="true"></i> {t('Approve')}
                                             </button>
                                             <button
                                                 onClick={() => handleRegAction(selectedItem.id, 'REJECTED')}
                                                 disabled={loading === selectedItem.id}
                                                 style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: 'none', background: '#ef4444', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                             >
-                                                <i className="fa fa-times"></i> Reject
+                                                <i className="fa fa-times" aria-hidden="true"></i> {t('Reject')}
                                             </button>
                                         </div>
                                     )}
@@ -459,34 +479,34 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                 <>
                                     <div className={styles.formGrid2}>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>From</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('From')}</label>
                                             <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.name}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Email</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Email')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.email}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Phone</label>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Phone')}</label>
                                             <p style={{ margin: '0.25rem 0 0', color: '#1e293b' }}>{selectedItem.phone || '-'}</p>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Subject</label>
-                                            <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{selectedItem.subject}</p>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Subject')}</label>
+                                            <p style={{ margin: '0.25rem 0 0', fontWeight: 600, color: '#1e293b' }}>{t(selectedItem.subject)}</p>
                                         </div>
                                     </div>
                                     <div style={{ marginBottom: '1rem' }}>
-                                        <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Message</label>
+                                        <label style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>{t('Message')}</label>
                                         <p style={{ margin: '0.25rem 0 0', color: '#475569', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{selectedItem.message}</p>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
                                         {selectedItem.status === 'NEW' && (
                                             <button
                                                 onClick={() => handleMsgAction(selectedItem.id, 'READ')}
                                                 disabled={loading === selectedItem.id}
                                                 style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: 'none', background: '#f59e0b', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                             >
-                                                <i className="fa fa-check"></i> Mark Read
+                                                <i className="fa fa-check" aria-hidden="true"></i> {t('Mark as read')}
                                             </button>
                                         )}
                                         {selectedItem.status !== 'REPLIED' && selectedItem.status !== 'CLOSED' && (
@@ -495,7 +515,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                 disabled={loading === selectedItem.id}
                                                 style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: 'none', background: '#10b981', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                             >
-                                                <i className="fa fa-reply"></i> Mark Replied
+                                                <i className="fa fa-reply" aria-hidden="true"></i> {t('Mark as replied')}
                                             </button>
                                         )}
                                         {selectedItem.status !== 'CLOSED' && (
@@ -504,7 +524,7 @@ export default function RequestsClient({ initialRegistrations, initialMessages }
                                                 disabled={loading === selectedItem.id}
                                                 style={{ flex: 1, padding: '0.75rem', borderRadius: '10px', border: 'none', background: '#64748b', color: 'white', fontWeight: 600, cursor: 'pointer' }}
                                             >
-                                                <i className="fa fa-archive"></i> Close
+                                                <i className="fa fa-archive" aria-hidden="true"></i> {t('Close message')}
                                             </button>
                                         )}
                                     </div>

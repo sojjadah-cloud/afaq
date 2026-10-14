@@ -3,7 +3,7 @@
 .toastContainer {
     position: fixed;
     bottom: 2rem;
-    right: 2rem;
+    inset-inline-end: 2rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -59,7 +59,7 @@
 
 /* Toast Types */
 .success {
-    border-left: 4px solid #10b981;
+    border-inline-start: 4px solid #10b981;
 }
 
 .success .icon {
@@ -67,7 +67,7 @@
 }
 
 .error {
-    border-left: 4px solid #ef4444;
+    border-inline-start: 4px solid #ef4444;
 }
 
 .error .icon {
@@ -75,7 +75,7 @@
 }
 
 .warning {
-    border-left: 4px solid #f59e0b;
+    border-inline-start: 4px solid #f59e0b;
 }
 
 .warning .icon {
@@ -83,7 +83,7 @@
 }
 
 .info {
-    border-left: 4px solid #3b82f6;
+    border-inline-start: 4px solid #3b82f6;
 }
 
 .info .icon {
@@ -104,8 +104,8 @@
 
 @media (max-width: 640px) {
     .toastContainer {
-        left: 1rem;
-        right: 1rem;
+        inset-inline-start: 1rem;
+        inset-inline-end: 1rem;
         bottom: 1rem;
     }
 

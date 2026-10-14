@@ -144,7 +144,7 @@
     font-size: 0.7rem;
     font-weight: 600;
     border-radius: 20px;
-    margin-left: 0.75rem;
+    margin-inline-start: 0.75rem;
     vertical-align: middle;
 }
 
@@ -234,7 +234,7 @@
 }
 
 .replyingToBar i {
-    margin-right: 0.4rem;
+    margin-inline-end: 0.4rem;
     color: #3b82f6;
 }
 
@@ -365,7 +365,7 @@
     padding: 0.5rem 0.75rem;
     margin-bottom: 0.75rem;
     background: #f8fafc;
-    border-left: 3px solid #3b82f6;
+    border-inline-start: 3px solid #3b82f6;
     border-radius: 0 6px 6px 0;
     cursor: pointer;
     font-size: 0.8rem;
@@ -520,8 +520,8 @@
     }
 
     .userCard {
-        left: 1rem !important;
-        right: 1rem;
+        inset-inline-start: 1rem !important;
+        inset-inline-end: 1rem;
         width: auto;
     }
 }
@@ -605,7 +605,7 @@
 .userCardClose {
     position: absolute;
     top: 0.5rem;
-    right: 0.5rem;
+    inset-inline-end: 0.5rem;
     width: 24px;
     height: 24px;
     background: #f1f5f9;

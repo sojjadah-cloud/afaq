@@ -264,7 +264,7 @@
     align-items: center;
     gap: 0.4rem;
     font-size: 0.9rem;
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 
 .card:hover .link {
@@ -272,7 +272,7 @@
 }
 
 .deleteBtn {
-    margin-left: auto;
+    margin-inline-start: auto;
     background: rgba(239, 68, 68, 0.1);
     color: #dc2626;
     border: none;
@@ -290,8 +290,8 @@
 .modalOverlay {
     position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);

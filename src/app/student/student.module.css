@@ -29,7 +29,7 @@
     content: '';
     position: absolute;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     width: 300px;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(226, 183, 20, 0.05));
@@ -253,7 +253,7 @@
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
+    inset-inline-start: 0;
     width: 0;
     height: 2px;
     background: var(--gold);
@@ -546,4 +546,14 @@
     .card {
         flex-direction: column;
     }
+}
+
+/* Long names and IDs wrap instead of pushing the header off-screen. */
+.profileInfo,
+.profileInfo > div {
+    min-width: 0;
+}
+
+.profileInfo h1 {
+    overflow-wrap: anywhere;
 }

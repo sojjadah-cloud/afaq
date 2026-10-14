@@ -5,8 +5,10 @@ import { todayInOman } from '@/lib/utils'
 import { getTechnicianResources, unitFor } from '@/lib/equipment'
 import TechnicianRequest from '@/components/TechnicianRequest'
 import styles from './page.module.css'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
-export const metadata = { title: 'Workshops, Labs & Tools' }
+export const generateMetadata = () => pageTitle('Workshops, Labs & Tools')
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +19,7 @@ const STEPS = [
 ]
 
 export default async function EquipmentPage() {
+    const { t } = await getT()
     const categories = await query<RowDataPacket[]>(
         `SELECT c.id, c.key, c.label, c.description, c.icon, c.technician,
                 (SELECT COUNT(*) FROM labs l WHERE l.categoryId = c.id AND l.isBookable = 1) as resourceCount
@@ -28,8 +31,8 @@ export default async function EquipmentPage() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Workshops, Labs &amp; Tools</h2>
-                <p>Club workshops, external workshops, specialised labs and tools you can borrow for your project.</p>
+                <h2>{t('Workshops, Labs & Tools')}</h2>
+                <p>{t('Club workshops, external workshops, specialised labs and tools you can borrow for your project.')}</p>
                 <div className={styles.headerAction}>
                     <TechnicianRequest resources={resources} minDate={todayInOman()} />
                 </div>
@@ -38,16 +41,16 @@ export default async function EquipmentPage() {
             <div className={styles.categoryGrid}>
                 {categories.map(category => (
                     <Link key={category.id} href={`/equipment/${category.id}`} className={styles.categoryCard}>
-                        <div className={styles.iconWrapper}>
+                        <div className={styles.iconWrapper} aria-hidden="true">
                             <i className={category.icon || 'fa-solid fa-flask'}></i>
                         </div>
-                        <h3>{category.label}</h3>
-                        <p>{category.description}</p>
+                        <h3>{t(category.label)}</h3>
+                        <p>{t(category.description)}</p>
                         <div className={styles.categoryFooter}>
-                            <span className={styles.labCount}>{unitFor(category.key, Number(category.resourceCount))}</span>
+                            <span className={styles.labCount}>{unitFor(category.key, Number(category.resourceCount), t)}</span>
                             {category.technician && (
                                 <span className={styles.technician}>
-                                    <i className="fa-solid fa-user-gear"></i> {category.technician}
+                                    <i className="fa-solid fa-user-gear" aria-hidden="true"></i> {category.technician}
                                 </span>
                             )}
                         </div>
@@ -55,13 +58,13 @@ export default async function EquipmentPage() {
                 ))}
             </div>
 
-            <section className={styles.steps} aria-label="How it works">
+            <section className={styles.steps} aria-label={t('How it works')}>
                 {STEPS.map((step, i) => (
                     <div key={step.title} className={styles.step}>
-                        <span className={styles.stepIcon}><i className={`fa-solid ${step.icon}`}></i></span>
+                        <span className={styles.stepIcon} aria-hidden="true"><i className={`fa-solid ${step.icon}`}></i></span>
                         <div>
-                            <strong>{i + 1}. {step.title}</strong>
-                            <p>{step.text}</p>
+                            <strong>{i + 1}. {t(step.title)}</strong>
+                            <p>{t(step.text)}</p>
                         </div>
                     </div>
                 ))}

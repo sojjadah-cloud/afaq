@@ -5,12 +5,15 @@ import { RowDataPacket } from '@/lib/types'
 import AdminNav from '@/components/AdminNav'
 import styles from '../admin.module.css'
 import DepartmentsClient, { AdminDepartment } from './DepartmentsClient'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
-export const metadata = { title: 'Departments & Programmes' }
+export const generateMetadata = () => pageTitle('Departments & Programmes')
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDepartmentsPage() {
+    const { t } = await getT()
     const session = await getSession()
     if (session.role !== 'ADMIN') redirect('/staff')
 
@@ -41,8 +44,8 @@ export default async function AdminDepartmentsPage() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Departments</h2>
-                <p>Academic departments and their programmes</p>
+                <h2>{t('Departments')}</h2>
+                <p>{t('Academic departments and their programmes')}</p>
             </div>
             <AdminNav />
             <DepartmentsClient departments={data} />

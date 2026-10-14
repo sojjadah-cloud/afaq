@@ -5,12 +5,15 @@ import { RowDataPacket } from '@/lib/types'
 import AdminNav from '@/components/AdminNav'
 import styles from '../admin.module.css'
 import UsersClient, { AdminUserRow } from './UsersClient'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
-export const metadata = { title: 'User Management' }
+export const generateMetadata = () => pageTitle('User Management')
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminUsersPage() {
+    const { t } = await getT()
     const session = await getSession()
     if (session.role !== 'ADMIN') redirect('/staff')
 
@@ -39,8 +42,8 @@ export default async function AdminUsersPage() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Users</h2>
-                <p>Accounts, roles and access</p>
+                <h2>{t('Users')}</h2>
+                <p>{t('Accounts, roles and access')}</p>
             </div>
             <AdminNav />
             <UsersClient

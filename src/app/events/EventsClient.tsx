@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { createEvent } from '@/actions/events'
 import EventCalendar, { CalendarEventItem } from './EventCalendar'
 import { EVENT_TYPES, EVENT_TYPE_KEYS } from '@/lib/eventTypes'
+import { useT } from '@/i18n/client'
 
 interface EventsClientProps {
     events: CalendarEventItem[]
@@ -15,6 +16,7 @@ interface EventsClientProps {
 
 export default function EventsClient({ events, canCreate, today }: EventsClientProps) {
     const router = useRouter()
+    const t = useT()
     const [showForm, setShowForm] = useState(false)
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState({ type: '', text: '' })
@@ -25,12 +27,12 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
         setMessage({ type: '', text: '' })
 
         const formData = new FormData(e.currentTarget)
-        const result = await createEvent(formData)
+        const result = await createEvent(formData).catch(() => ({ error: 'Something went wrong. Please try again.' }))
 
-        if (result.error) {
-            setMessage({ type: 'error', text: result.error })
+        if ('error' in result && result.error) {
+            setMessage({ type: 'error', text: t(result.error) })
         } else {
-            setMessage({ type: 'success', text: 'Event created successfully!' })
+            setMessage({ type: 'success', text: t('Event created successfully!') })
             setShowForm(false)
             router.refresh()
         }
@@ -41,20 +43,20 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
         <main className={styles.main}>
             <div className={styles.pageHeader}>
                 <div>
-                    <h2>Events Calendar</h2>
-                    <p>Club activities, student activities, events at Omani universities and colleges, and conferences.</p>
+                    <h2>{t('Events Calendar')}</h2>
+                    <p>{t('Club activities, student activities, events at Omani universities and colleges, and conferences.')}</p>
                 </div>
                 {canCreate && (
-                    <button className={styles.createBtn} onClick={() => setShowForm(true)}>
-                        <i className="fa fa-plus"></i> Create Event
+                    <button type="button" className={styles.createBtn} onClick={() => setShowForm(true)}>
+                        <i className="fa fa-plus" aria-hidden="true"></i> {t('Create Event')}
                     </button>
                 )}
             </div>
 
             {/* Success/Error Message */}
             {message.text && (
-                <div className={`${styles.toast} ${styles[message.type]}`}>
-                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                <div className={`${styles.toast} ${styles[message.type]}`} role={message.type === 'error' ? 'alert' : 'status'}>
+                    <i className={`fa ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`} aria-hidden="true"></i>
                     {message.text}
                 </div>
             )}
@@ -62,10 +64,10 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
             {events.length === 0 ? (
                 <div className={styles.emptyState}>
                     <i className="fa fa-calendar-xmark" style={{ fontSize: '3rem', color: '#cbd5e1', marginBottom: '1rem' }}></i>
-                    <p>No events scheduled at the moment.</p>
+                    <p>{t('No events scheduled at the moment.')}</p>
                     {canCreate && (
-                        <button className={styles.createBtn} onClick={() => setShowForm(true)}>
-                            <i className="fa fa-plus"></i> Create First Event
+                        <button type="button" className={styles.createBtn} onClick={() => setShowForm(true)}>
+                            <i className="fa fa-plus" aria-hidden="true"></i> {t('Create First Event')}
                         </button>
                     )}
                 </div>
@@ -76,87 +78,82 @@ export default function EventsClient({ events, canCreate, today }: EventsClientP
             {/* Create Event Modal */}
             {showForm && (
                 <div className={styles.modalOverlay} onClick={() => setShowForm(false)}>
-                    <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+                    <div className={styles.modalContent} role="dialog" aria-modal="true" aria-labelledby="new-event-title" onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>Create New Event</h3>
-                            <button className={styles.closeBtn} onClick={() => setShowForm(false)}>
-                                <i className="fa fa-times"></i>
+                            <h3 id="new-event-title">{t('Create New Event')}</h3>
+                            <button type="button" className={styles.closeBtn} onClick={() => setShowForm(false)} aria-label={t('Close')}>
+                                <i className="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className={styles.form}>
                             <div className={styles.formGroup}>
-                                <label htmlFor="title">Event Title *</label>
-                                <input type="text" id="title" name="title" required placeholder="Enter event title" />
+                                <label htmlFor="title">{t('Event Title')} *</label>
+                                <input type="text" id="title" name="title" required placeholder={t('Enter event title')} />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="eventType">Event Type *</label>
+                                <label htmlFor="eventType">{t('Event Type')} *</label>
                                 <select id="eventType" name="eventType" required defaultValue="CLUB">
-                                    {EVENT_TYPE_KEYS.map(t => (
-                                        <option key={t} value={t}>{EVENT_TYPES[t].label}</option>
+                                    {EVENT_TYPE_KEYS.map(type => (
+                                        <option key={type} value={type}>{t(EVENT_TYPES[type].label)}</option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="category">Format</label>
+                                    <label htmlFor="category">{t('Format')}</label>
                                     <select id="category" name="category">
-                                        <option value="Workshop">Workshop</option>
-                                        <option value="Competition">Competition</option>
-                                        <option value="Exhibition">Exhibition</option>
-                                        <option value="Seminar">Seminar</option>
-                                        <option value="Conference">Conference</option>
-                                        <option value="Training">Training</option>
-                                        <option value="Networking">Networking</option>
-                                        <option value="General">General</option>
+                                        {['Workshop', 'Competition', 'Exhibition', 'Seminar', 'Conference', 'Training', 'Networking', 'General'].map(f => (
+                                            <option key={f} value={f}>{t(f)}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="capacity">Capacity</label>
-                                    <input type="number" id="capacity" name="capacity" min={1} step={1} placeholder="Leave empty for unlimited" />
+                                    <label htmlFor="capacity">{t('Capacity')}</label>
+                                    <input type="number" id="capacity" name="capacity" min={1} step={1} placeholder={t('Leave empty for unlimited')} />
                                 </div>
                             </div>
 
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="startDate">Start Date & Time *</label>
+                                    <label htmlFor="startDate">{t('Start Date & Time')} *</label>
                                     <input type="datetime-local" id="startDate" name="startDate" required />
                                 </div>
                                 <div className={styles.formGroup}>
-                                    <label htmlFor="endDate">End Date & Time</label>
+                                    <label htmlFor="endDate">{t('End Date & Time')}</label>
                                     <input type="datetime-local" id="endDate" name="endDate" />
                                 </div>
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="registrationDeadline">Registration closes</label>
+                                <label htmlFor="registrationDeadline">{t('Registration closes')}</label>
                                 <input type="datetime-local" id="registrationDeadline" name="registrationDeadline" />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="location">Location</label>
-                                <input type="text" id="location" name="location" placeholder="e.g., Innovation Lab, Building A" />
+                                <label htmlFor="location">{t('Location')}</label>
+                                <input type="text" id="location" name="location" placeholder={t('e.g., Innovation Lab, Building A')} />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="description">Description</label>
+                                <label htmlFor="description">{t('Description')}</label>
                                 <textarea
                                     id="description"
                                     name="description"
                                     rows={4}
-                                    placeholder="Describe the event, what participants will learn or experience..."
+                                    placeholder={t('Describe the event, what participants will learn or experience...')}
                                 ></textarea>
                             </div>
 
                             <div className={styles.formActions}>
-                                <button type="button" onClick={() => setShowForm(false)}>Cancel</button>
+                                <button type="button" onClick={() => setShowForm(false)}>{t('Cancel')}</button>
                                 <button type="submit" className={styles.submitBtn} disabled={loading}>
                                     {loading ? (
-                                        <><i className="fa fa-spinner fa-spin"></i> Creating...</>
+                                        <><i className="fa fa-spinner fa-spin" aria-hidden="true"></i> {t('Creating...')}</>
                                     ) : (
-                                        <><i className="fa fa-check"></i> Create Event</>
+                                        <><i className="fa fa-check" aria-hidden="true"></i> {t('Create Event')}</>
                                     )}
                                 </button>
                             </div>

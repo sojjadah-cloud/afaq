@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { RowDataPacket } from '@/lib/types'
 import { randomBytes } from 'crypto'
+import { getT } from '@/i18n/server'
 
 interface User extends RowDataPacket {
     id: string
@@ -69,7 +70,8 @@ export async function loginUser(formData: FormData) {
     const keys = [`id:${identifier.toLowerCase()}`, `ip:${ip}`]
     const wait = Math.max(...keys.map(lockedFor))
     if (wait > 0) {
-        return { error: `Too many failed attempts. Try again in ${Math.ceil(wait / 60000)} minutes.` }
+        const { t } = await getT()
+        return { error: t('Too many failed attempts. Try again in {n} minutes.', { n: Math.ceil(wait / 60000) }) }
     }
 
     try {

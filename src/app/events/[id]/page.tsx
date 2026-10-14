@@ -9,6 +9,8 @@ import EventActions from './EventActions'
 import { nowInOman } from '@/lib/utils'
 import { eventStatus, minute, EVENT_STATUS_LABELS } from '@/lib/eventStatus'
 import { EVENT_TYPES, eventTypeOf } from '@/lib/eventTypes'
+import { getT } from '@/i18n/server'
+import { formatDay as formatStoredDay } from '@/i18n/core'
 import { recordTitle } from '@/lib/metadata'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -35,9 +37,14 @@ interface Registration extends RowDataPacket {
     status: string
 }
 
+function multiDayOf(event: { startDate: unknown; endDate?: unknown }) {
+    return !!event.endDate && String(event.endDate).slice(0, 10) !== String(event.startDate).slice(0, 10)
+}
+
 export default async function EventDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     const session = await getSession()
+    const { t, lang } = await getT()
 
     const events = await query<Event[]>(`
         SELECT 
@@ -71,14 +78,15 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
     const status = eventStatus(event, Number(event.registrationCount) - ownSeat, now)
     const deadline = event.registrationDeadline ? String(event.registrationDeadline) : ''
     const type = EVENT_TYPES[eventTypeOf(event.eventType)]
-    const formatDay = (d: Date | string) =>
-        new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-    const multiDay = event.endDate && String(event.endDate).slice(0, 10) !== String(event.startDate).slice(0, 10)
+    const formatDay = (d: unknown) => formatStoredDay(lang, d, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    const startTime = String(event.startDate).slice(11, 16)
+    const endTime = event.endDate && !multiDayOf(event) ? String(event.endDate).slice(11, 16) : ''
+    const multiDay = multiDayOf(event)
 
     return (
         <main className={styles.main}>
             <Link href="/events" className={styles.backLink}>
-                <i className="fa fa-arrow-left"></i> Back to Events
+                <i className="fa fa-arrow-left" aria-hidden="true"></i> {t('Back to Events')}
             </Link>
 
             <div className={styles.eventContainer}>
@@ -86,40 +94,40 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
                     <div className={styles.eventHeader}>
                         <div className={styles.badgeRow}>
                             <span className={styles.typeBadge} style={{ color: type.color, background: type.bg }}>
-                                <i className={`fa-solid ${type.icon}`}></i> {type.label}
+                                <i className={`fa-solid ${type.icon}`} aria-hidden="true"></i> {t(type.label)}
                             </span>
-                            <span className={styles.eventCategory}>{event.category}</span>
+                            <span className={styles.eventCategory}>{t(event.category)}</span>
                         </div>
                         <h1 className={styles.eventTitle}>{event.title}</h1>
 
                         <div className={styles.detailsGrid}>
                             <div className={styles.detailItem}>
-                                <div className={styles.detailIcon}>
+                                <div className={styles.detailIcon} aria-hidden="true">
                                     <i className="fa-regular fa-calendar"></i>
                                 </div>
                                 <div className={styles.detailText}>
-                                    <h4>Date</h4>
+                                    <h4>{t('Date')}</h4>
                                     <p>{formatDay(event.startDate)}{multiDay ? ` – ${formatDay(event.endDate)}` : ''}</p>
                                 </div>
                             </div>
 
                             <div className={styles.detailItem}>
-                                <div className={styles.detailIcon}>
+                                <div className={styles.detailIcon} aria-hidden="true">
                                     <i className="fa-regular fa-clock"></i>
                                 </div>
                                 <div className={styles.detailText}>
-                                    <h4>Time</h4>
-                                    <p>{new Date(event.startDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
+                                    <h4>{t('Time')}</h4>
+                                    <p dir="ltr">{endTime ? `${startTime} – ${endTime}` : startTime}</p>
                                 </div>
                             </div>
 
                             <div className={styles.detailItem}>
-                                <div className={styles.detailIcon}>
+                                <div className={styles.detailIcon} aria-hidden="true">
                                     <i className="fa-solid fa-location-dot"></i>
                                 </div>
                                 <div className={styles.detailText}>
-                                    <h4>Location</h4>
-                                    <p>{event.location || 'TBD'}</p>
+                                    <h4>{t('Location')}</h4>
+                                    <p>{event.location && event.location !== 'TBD' ? event.location : t('To be announced')}</p>
                                 </div>
                             </div>
                         </div>
@@ -134,11 +142,11 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
 
                 <aside className={styles.sidebar}>
                     <div className={styles.actionCard}>
-                        <h3 className={styles.actionTitle}>Registration</h3>
+                        <h3 className={styles.actionTitle}>{t('Registration')}</h3>
 
                         {!session.isLoggedIn ? (
                             <Link href={`/login?next=/events/${event.id}`} className={styles.registerBtn}>
-                                Login to Register
+                                {t('Log in to register')}
                             </Link>
                         ) : (
                             <EventActions
@@ -150,20 +158,20 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
                             />
                         )}
 
-                        <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+                        <div style={{ marginTop: '1.5rem', textAlign: 'start' }}>
                             <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                                <span>Status:</span>
-                                <strong>{EVENT_STATUS_LABELS[status]}</strong>
+                                <span>{t('Status')}:</span>
+                                <strong>{t(EVENT_STATUS_LABELS[status])}</strong>
                             </p>
                             {deadline && (status === 'OPEN' || status === 'FULL') && (
                                 <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                                    <span>Registration closes:</span>
+                                    <span>{t('Registration closes')}:</span>
                                     <strong>{formatDay(deadline.slice(0, 10))}, {deadline.slice(11, 16)}</strong>
                                 </p>
                             )}
-                            <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
-                                <span>Capacity:</span>
-                                <strong>{event.capacity ? `${event.registrationCount} / ${event.capacity}` : 'Unlimited'}</strong>
+                            <p style={{ color: '#718096', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                                <span>{t('Capacity')}:</span>
+                                <strong>{event.capacity ? `${event.registrationCount} / ${event.capacity}` : t('Unlimited')}</strong>
                             </p>
                         </div>
                     </div>

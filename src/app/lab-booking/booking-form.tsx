@@ -4,6 +4,7 @@ import { createBooking, getAvailability } from '@/actions/labs'
 import { useEffect, useState } from 'react'
 import styles from './page.module.css'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/i18n/client'
 
 export type BookingMode = 'book' | 'borrow' | 'access'
 
@@ -56,6 +57,7 @@ export default function BookingForm({ labId, mode = 'book', minDate }: { labId: 
     const [taken, setTaken] = useState<string[]>([])
     const [unitsLeft, setUnitsLeft] = useState<number | null>(null)
     const router = useRouter()
+    const t = useT()
     const copy = COPY[mode]
     const isBorrow = mode === 'borrow'
 
@@ -97,7 +99,7 @@ export default function BookingForm({ labId, mode = 'book', minDate }: { labId: 
         setIsSubmitting(false)
 
         if ('error' in result && result.error) {
-            setError(result.error)
+            setError(t(result.error))
             if (date) getAvailability(labId, date).then(a => { setTaken(a.takenSlots); setUnitsLeft(isBorrow ? a.unitsLeft : null) }).catch(() => {})
         } else {
             setSuccess(true)
@@ -108,10 +110,10 @@ export default function BookingForm({ labId, mode = 'book', minDate }: { labId: 
     if (success) {
         return (
             <div className={styles.successState}>
-                <div className={styles.successIcon}><i className="fa fa-check-circle"></i></div>
-                <h3>{copy.done}</h3>
-                <p>{copy.doneText}</p>
-                <p>Redirecting to your dashboard...</p>
+                <div className={styles.successIcon} aria-hidden="true"><i className="fa fa-check-circle"></i></div>
+                <h3>{t(copy.done)}</h3>
+                <p>{t(copy.doneText)}</p>
+                <p>{t('Redirecting to your dashboard...')}</p>
             </div>
         )
     }
@@ -124,48 +126,48 @@ export default function BookingForm({ labId, mode = 'book', minDate }: { labId: 
             {error && <div className={styles.errorMessage} role="alert">{error}</div>}
 
             <div className={styles.formGroup}>
-                <label htmlFor="date">{copy.date}</label>
+                <label htmlFor="date">{t(copy.date)}</label>
                 <input
                     type="date" id="date" name="date" required min={minDate} className={styles.input}
                     value={date} onChange={e => changeDate(e.target.value)}
                 />
                 {isBorrow && unitsLeft !== null && (
                     <p className={`${styles.availability} ${noUnits ? styles.availabilityNone : ''}`} aria-live="polite">
-                        {noUnits ? 'No units free on this date.' : `${unitsLeft} ${unitsLeft === 1 ? 'unit' : 'units'} free on this date.`}
+                        {noUnits ? t('No units free on this date.') : t('{n} units free on this date.', { n: unitsLeft })}
                     </p>
                 )}
                 {allTaken && (
                     <p className={`${styles.availability} ${styles.availabilityNone}`} aria-live="polite">
-                        Fully booked on this date. Please choose another day.
+                        {t('Fully booked on this date. Please choose another day.')}
                     </p>
                 )}
             </div>
 
             {isBorrow && (
                 <div className={styles.formGroup}>
-                    <label htmlFor="returnDate">Return date</label>
+                    <label htmlFor="returnDate">{t('Return date')}</label>
                     <input
                         type="date" id="returnDate" name="returnDate" required className={styles.input}
                         min={date || minDate} max={date ? addDays(date, MAX_BORROW_DAYS) : undefined}
                         value={returnDate} onChange={e => setReturnDate(e.target.value)}
                         disabled={!date}
                     />
-                    <p className={styles.availability}>Items can be borrowed for up to {MAX_BORROW_DAYS} days.</p>
+                    <p className={styles.availability}>{t('Items can be borrowed for up to {n} days.', { n: MAX_BORROW_DAYS })}</p>
                 </div>
             )}
 
             <div className={styles.formGroup}>
-                <label htmlFor="timeSlot">{copy.slot}</label>
+                <label htmlFor="timeSlot">{t(copy.slot)}</label>
                 <select
                     id="timeSlot" name="timeSlot" required className={styles.select}
                     value={timeSlot} onChange={e => setTimeSlot(e.target.value)}
                 >
-                    <option value="">Select a time...</option>
+                    <option value="">{t('Select a time...')}</option>
                     {TIME_SLOTS.map(slot => {
                         const isTaken = !isBorrow && taken.includes(slot)
                         return (
                             <option key={slot} value={slot} disabled={isTaken}>
-                                {slot.replace('-', ' - ')}{isTaken ? ' (booked)' : ''}
+                                {slot.replace('-', ' - ')}{isTaken ? ` (${t('booked')})` : ''}
                             </option>
                         )
                     })}
@@ -173,12 +175,12 @@ export default function BookingForm({ labId, mode = 'book', minDate }: { labId: 
             </div>
 
             <div className={styles.formGroup}>
-                <label htmlFor="purpose">Purpose</label>
-                <textarea id="purpose" name="purpose" required maxLength={500} className={styles.textarea} placeholder={copy.purpose}></textarea>
+                <label htmlFor="purpose">{t('Purpose')}</label>
+                <textarea id="purpose" name="purpose" required maxLength={500} className={styles.textarea} placeholder={t(copy.purpose)}></textarea>
             </div>
 
             <button type="submit" className={styles.submitBtn} disabled={isSubmitting || allTaken || noUnits}>
-                {isSubmitting ? copy.busy : copy.submit}
+                {isSubmitting ? t(copy.busy) : t(copy.submit)}
             </button>
         </form>
     )

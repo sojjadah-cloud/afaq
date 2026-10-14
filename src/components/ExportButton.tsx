@@ -5,6 +5,7 @@ import {
     exportBookingsCSV, exportClubRegistrationsCSV, exportContactMessagesCSV,
     exportEventsCSV, exportProjectsCSV, exportUsersCSV,
 } from '@/actions/export'
+import { useT } from '@/i18n/client'
 
 const EXPORTS = {
     projects: exportProjectsCSV,
@@ -16,14 +17,15 @@ const EXPORTS = {
 }
 
 export default function ExportButton({ kind, label = 'Export CSV' }: { kind: keyof typeof EXPORTS; label?: string }) {
+    const t = useT()
     const [busy, setBusy] = useState(false)
 
     const download = async () => {
         setBusy(true)
-        const result = await EXPORTS[kind]()
+        const result = await EXPORTS[kind]().catch(() => ({ error: 'Something went wrong. Please try again.' }))
         setBusy(false)
         if ('error' in result && result.error) {
-            alert(result.error)
+            alert(t(result.error))
             return
         }
         if (!('csv' in result) || !result.csv) return
@@ -49,7 +51,7 @@ export default function ExportButton({ kind, label = 'Export CSV' }: { kind: key
                 cursor: busy ? 'wait' : 'pointer', whiteSpace: 'nowrap',
             }}
         >
-            <i className={busy ? 'fa fa-spinner fa-spin' : 'fa-solid fa-file-csv'}></i> {busy ? 'Exporting...' : label}
+            <i className={busy ? 'fa fa-spinner fa-spin' : 'fa-solid fa-file-csv'} aria-hidden="true"></i> {busy ? t('Exporting...') : t(label)}
         </button>
     )
 }

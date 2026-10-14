@@ -6,6 +6,8 @@ import styles from '../admin.module.css'
 import { approveBooking, rejectBooking, cancelBooking, completeBooking } from '@/actions/bookings'
 import AdminNav from '@/components/AdminNav'
 import ExportButton from '@/components/ExportButton'
+import { useT, useLang } from '@/i18n/client'
+import { formatDay, Lang } from '@/i18n/core'
 
 interface Booking {
     id: string
@@ -27,11 +29,12 @@ interface BookingsClientProps {
 }
 
 const STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED']
+const STATUS_LABELS: Record<string, string> = {
+    PENDING: 'Pending', APPROVED: 'Approved', REJECTED: 'Rejected', COMPLETED: 'Completed', CANCELLED: 'Cancelled',
+}
 
-function formatDate(value: string) {
-    if (!value) return ''
-    const [y, m, d] = value.slice(0, 10).split('-').map(Number)
-    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+function formatDateFor(lang: Lang, value: string) {
+    return value ? formatDay(lang, value) : ''
 }
 
 function getStatusColor(status: string) {
@@ -46,6 +49,9 @@ function getStatusColor(status: string) {
 
 export default function BookingsClient({ initialBookings, today }: BookingsClientProps) {
     const router = useRouter()
+    const t = useT()
+    const lang = useLang()
+    const formatDate = (value: string) => formatDateFor(lang, value)
     const [filter, setFilter] = useState('all')
     const [loading, setLoading] = useState<string | null>(null)
     const [completing, setCompleting] = useState<Booking | null>(null)
@@ -62,12 +68,12 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
             : initialBookings.filter(b => b.status === filter)
 
     const handleAction = async (action: 'approve' | 'reject' | 'cancel', booking: Booking) => {
-        if (action === 'cancel' && !confirm(`Cancel ${booking.userName}'s booking for ${booking.labName}?`)) return
+        if (action === 'cancel' && !confirm(t("Cancel {name}'s booking for {item}?", { name: booking.userName, item: booking.labName }))) return
         setLoading(booking.id)
         const run = action === 'approve' ? approveBooking : action === 'reject' ? rejectBooking : cancelBooking
         const result = await run(booking.id).catch(() => ({ error: 'Something went wrong. Please try again.' }))
         setLoading(null)
-        if ('error' in result && result.error) alert(result.error)
+        if ('error' in result && result.error) alert(t(result.error))
         router.refresh()
     }
 
@@ -84,7 +90,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
         const result = await completeBooking(completing.id, note).catch(() => ({ error: 'Something went wrong. Please try again.' }))
         setLoading(null)
         if ('error' in result && result.error) {
-            setDialogError(result.error)
+            setDialogError(t(result.error))
             return
         }
         setCompleting(null)
@@ -94,8 +100,8 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Booking Management</h2>
-                <p>Review requests, track borrowed items and record returns</p>
+                <h2>{t('Booking Management')}</h2>
+                <p>{t('Review requests, track borrowed items and record returns')}</p>
             </div>
 
             <AdminNav />
@@ -109,7 +115,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                     className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
                     onClick={() => setFilter('all')}
                 >
-                    All ({initialBookings.length})
+                    {t('All')} ({initialBookings.length})
                 </button>
                 {STATUSES.map(status => (
                     <button
@@ -117,14 +123,14 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                         className={`${styles.filterBtn} ${filter === status ? styles.active : ''}`}
                         onClick={() => setFilter(status)}
                     >
-                        {status} ({initialBookings.filter(b => b.status === status).length})
+                        {t(STATUS_LABELS[status])} ({initialBookings.filter(b => b.status === status).length})
                     </button>
                 ))}
                 <button
                     className={`${styles.filterBtn} ${filter === 'OVERDUE' ? styles.active : ''}`}
                     onClick={() => setFilter('OVERDUE')}
                 >
-                    OVERDUE ({overdueCount})
+                    {t('Overdue')} ({overdueCount})
                 </button>
             </div>
 
@@ -133,20 +139,20 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Item</th>
-                                <th>User</th>
-                                <th>Date</th>
-                                <th>Time Slot</th>
-                                <th>Purpose</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th>{t('Item')}</th>
+                                <th>{t('User')}</th>
+                                <th>{t('Date')}</th>
+                                <th>{t('Time Slot')}</th>
+                                <th>{t('Purpose')}</th>
+                                <th>{t('Status')}</th>
+                                <th>{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredBookings.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
-                                        No bookings found.
+                                        {t('No bookings found.')}
                                     </td>
                                 </tr>
                             ) : (
@@ -154,7 +160,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                     <tr key={booking.id}>
                                         <td>
                                             <strong>{booking.labName}</strong>
-                                            {booking.isBorrow && <><br /><small style={{ color: '#718096' }}>Borrowed item</small></>}
+                                            {booking.isBorrow && <><br /><small style={{ color: '#718096' }}>{t('Borrowed item')}</small></>}
                                         </td>
                                         <td>
                                             {booking.userName}<br />
@@ -166,7 +172,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                                 <>
                                                     <br />
                                                     <small style={{ color: isOverdue(booking) ? '#b91c1c' : '#718096', fontWeight: isOverdue(booking) ? 700 : 400 }}>
-                                                        Return by {formatDate(booking.returnDate)}
+                                                        {t('Return by {date}', { date: formatDate(booking.returnDate) })}
                                                     </small>
                                                 </>
                                             )}
@@ -175,7 +181,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                         <td style={{ maxWidth: '220px', overflowWrap: 'anywhere' }}>
                                             {booking.purpose || '-'}
                                             {booking.returnNote && (
-                                                <><br /><small style={{ color: '#718096' }}>Return note: {booking.returnNote}</small></>
+                                                <><br /><small style={{ color: '#718096' }}>{t('Return note')}: {booking.returnNote}</small></>
                                             )}
                                         </td>
                                         <td>
@@ -183,11 +189,11 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                                 className={styles.statusBadge}
                                                 style={{ background: getStatusColor(booking.status), color: 'white' }}
                                             >
-                                                {booking.isBorrow && booking.status === 'COMPLETED' ? 'RETURNED' : booking.status}
+                                                {booking.isBorrow && booking.status === 'COMPLETED' ? t('Returned') : t(STATUS_LABELS[booking.status] || booking.status)}
                                             </span>
                                             {isOverdue(booking) && (
                                                 <span className={styles.statusBadge} style={{ background: '#b91c1c', color: 'white', marginTop: '0.35rem' }}>
-                                                    OVERDUE
+                                                    {t('Overdue')}
                                                 </span>
                                             )}
                                         </td>
@@ -200,14 +206,14 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                                             onClick={() => handleAction('approve', booking)}
                                                             disabled={loading === booking.id}
                                                         >
-                                                            <i className="fa fa-check"></i> Approve
+                                                            <i className="fa fa-check" aria-hidden="true"></i> {t('Approve')}
                                                         </button>
                                                         <button
                                                             className={styles.rejectBtn}
                                                             onClick={() => handleAction('reject', booking)}
                                                             disabled={loading === booking.id}
                                                         >
-                                                            <i className="fa fa-times"></i> Reject
+                                                            <i className="fa fa-times" aria-hidden="true"></i> {t('Reject')}
                                                         </button>
                                                     </>
                                                 )}
@@ -217,7 +223,7 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                                         onClick={() => openComplete(booking)}
                                                         disabled={loading === booking.id}
                                                     >
-                                                        <i className="fa fa-check-double"></i> {booking.isBorrow ? 'Mark returned' : 'Complete'}
+                                                        <i className="fa fa-check-double" aria-hidden="true"></i> {booking.isBorrow ? t('Mark returned') : t('Complete')}
                                                     </button>
                                                 )}
                                                 {(booking.status === 'PENDING' || booking.status === 'APPROVED') && (
@@ -225,10 +231,10 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                                                         className={styles.cancelBtn}
                                                         onClick={() => handleAction('cancel', booking)}
                                                         disabled={loading === booking.id}
-                                                        aria-label="Cancel booking"
-                                                        title="Cancel booking"
+                                                        aria-label={t('Cancel booking')}
+                                                        title={t('Cancel booking')}
                                                     >
-                                                        <i className="fa fa-ban"></i>
+                                                        <i className="fa fa-ban" aria-hidden="true"></i>
                                                     </button>
                                                 )}
                                             </div>
@@ -245,29 +251,29 @@ export default function BookingsClient({ initialBookings, today }: BookingsClien
                 <div className={styles.modalOverlay} onClick={() => setCompleting(null)}>
                     <div className={styles.modalBox} role="dialog" aria-modal="true" aria-labelledby="complete-title" onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHead}>
-                            <h3 id="complete-title">{completing.isBorrow ? 'Record return' : 'Complete booking'}</h3>
-                            <button type="button" className={styles.modalClose} onClick={() => setCompleting(null)} aria-label="Close"><i className="fa fa-times"></i></button>
+                            <h3 id="complete-title">{completing.isBorrow ? t('Record return') : t('Complete booking')}</h3>
+                            <button type="button" className={styles.modalClose} onClick={() => setCompleting(null)} aria-label={t('Close')}><i className="fa fa-times" aria-hidden="true"></i></button>
                         </div>
                         <form onSubmit={submitComplete} className={styles.modalBody}>
                             <p className={styles.hint}>
                                 {completing.labName} · {completing.userName} · {formatDate(completing.bookingDate)}
-                                {completing.isBorrow && completing.returnDate ? ` to ${formatDate(completing.returnDate)}` : ''}
+                                {completing.isBorrow && completing.returnDate ? ` – ${formatDate(completing.returnDate)}` : ''}
                             </p>
                             <label className={styles.field}>
-                                <span>{completing.isBorrow ? 'Condition on return' : 'Notes (optional)'}</span>
+                                <span>{completing.isBorrow ? t('Condition on return') : t('Notes (optional)')}</span>
                                 <textarea
                                     rows={3}
                                     maxLength={500}
                                     value={note}
                                     onChange={e => setNote(e.target.value)}
-                                    placeholder={completing.isBorrow ? 'e.g. Returned complete and working / Missing charger' : 'Anything worth recording about this session'}
+                                    placeholder={completing.isBorrow ? t('e.g. Returned complete and working / Missing charger') : t('Anything worth recording about this session')}
                                 />
                             </label>
                             {dialogError && <div className={styles.formError}>{dialogError}</div>}
                             <div className={styles.modalActions}>
-                                <button type="button" className={styles.secondaryBtn} onClick={() => setCompleting(null)}>Cancel</button>
+                                <button type="button" className={styles.secondaryBtn} onClick={() => setCompleting(null)}>{t('Cancel')}</button>
                                 <button type="submit" className={styles.primaryBtn} disabled={loading === completing.id}>
-                                    {loading === completing.id ? 'Saving...' : completing.isBorrow ? 'Mark as returned' : 'Mark as completed'}
+                                    {loading === completing.id ? t('Saving...') : completing.isBorrow ? t('Mark as returned') : t('Mark as completed')}
                                 </button>
                             </div>
                         </form>

@@ -3,12 +3,15 @@ import { RowDataPacket } from '@/lib/types'
 import AdminNav from '@/components/AdminNav'
 import styles from '../admin.module.css'
 import EquipmentAdminClient, { AdminCategory, AdminLab } from './EquipmentAdminClient'
+import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
 
-export const metadata = { title: 'Equipment Management' }
+export const generateMetadata = () => pageTitle('Equipment Management')
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminEquipmentPage() {
+    const { t } = await getT()
     const categories = await query<RowDataPacket[]>(
         'SELECT id, key, label, description, icon, technician, technicianContact FROM lab_categories ORDER BY sortOrder, createdAt'
     )
@@ -21,8 +24,8 @@ export default async function AdminEquipmentPage() {
     return (
         <main className={styles.main}>
             <div className={styles.header}>
-                <h2>Equipment Management</h2>
-                <p>Workshops, labs, tools and the technicians responsible for them</p>
+                <h2>{t('Equipment Management')}</h2>
+                <p>{t('Workshops, labs, tools and the technicians responsible for them')}</p>
             </div>
             <AdminNav />
             <EquipmentAdminClient

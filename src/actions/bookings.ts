@@ -6,6 +6,11 @@ import { getActiveUser } from '@/lib/session'
 import { createNotification } from '@/lib/notify'
 import { revalidatePath } from 'next/cache'
 import { RowDataPacket } from '@/lib/types'
+import { getT } from '@/i18n/server'
+
+const STATUS_WORDS: Record<string, string> = {
+    PENDING: 'pending', APPROVED: 'approved', REJECTED: 'rejected', COMPLETED: 'completed', CANCELLED: 'cancelled',
+}
 
 type Status = 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED'
 
@@ -34,7 +39,8 @@ async function moveBooking(bookingId: string, to: Status, note?: string) {
     const booking = rows[0]
     if (!booking) return { error: 'Booking not found' }
     if (!(TRANSITIONS[booking.status] || []).includes(to)) {
-        return { error: `A ${String(booking.status).toLowerCase()} booking cannot be changed to ${to.toLowerCase()}` }
+        const { t } = await getT()
+        return { error: t('A {from} booking cannot be changed to {to}', { from: t(STATUS_WORDS[booking.status] || booking.status), to: t(STATUS_WORDS[to] || to) }) }
     }
 
     try {

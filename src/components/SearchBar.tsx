@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { globalSearch, SearchResult, SearchType } from '@/actions/search'
 import styles from './SearchBar.module.css'
+import { useT } from '@/i18n/client'
 
 const TYPE_META: Record<SearchType, { icon: string; label: string }> = {
     project: { icon: 'fa-lightbulb', label: 'Project' },
@@ -17,6 +18,7 @@ const TYPE_META: Record<SearchType, { icon: string; label: string }> = {
 
 export default function SearchBar() {
     const router = useRouter()
+    const t = useT()
     const listId = useId()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<SearchResult[]>([])
@@ -97,12 +99,12 @@ export default function SearchBar() {
                 <input
                     type="search"
                     role="combobox"
-                    aria-label="Search the portal"
+                    aria-label={t('Search the portal')}
                     aria-expanded={isOpen && results.length > 0}
                     aria-controls={listId}
                     aria-autocomplete="list"
                     aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-                    placeholder="Search projects, events, news..."
+                    placeholder={t('Search projects, events, news...')}
                     value={query}
                     maxLength={100}
                     onChange={(e) => setQuery(e.target.value)}
@@ -114,7 +116,7 @@ export default function SearchBar() {
             </div>
 
             {isOpen && results.length > 0 && (
-                <ul className={styles.dropdown} id={listId} role="listbox" aria-label="Search results">
+                <ul className={styles.dropdown} id={listId} role="listbox" aria-label={t('Search results')}>
                     {results.map((result, index) => {
                         const meta = TYPE_META[result.type]
                         return (
@@ -134,8 +136,8 @@ export default function SearchBar() {
                                     <span className={styles.resultContent}>
                                         <span className={styles.resultTitle}>{result.title}</span>
                                         <span className={styles.resultMeta}>
-                                            <span className={styles.resultType}>{meta.label}</span>
-                                            {result.category && <span className={styles.resultCategory}>{result.category}</span>}
+                                            <span className={styles.resultType}>{t(meta.label)}</span>
+                                            {result.category && <span className={styles.resultCategory}>{t(result.category)}</span>}
                                         </span>
                                     </span>
                                 </Link>
@@ -149,7 +151,7 @@ export default function SearchBar() {
                 <div className={styles.dropdown} role="status">
                     <div className={styles.noResults}>
                         <i className="fa fa-search" aria-hidden="true"></i>
-                        <span>No results found for &ldquo;{query.trim()}&rdquo;</span>
+                        <span>{t('No results found for “{q}”', { q: query.trim() })}</span>
                     </div>
                 </div>
             )}
