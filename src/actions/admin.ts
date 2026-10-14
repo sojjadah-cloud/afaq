@@ -63,7 +63,7 @@ export async function createUserAccount(formData: FormData) {
         return { error: 'Students need a programme' }
     }
 
-    const existing = await query<RowDataPacket[]>('SELECT id FROM users WHERE militaryId = ? OR lower(email) = ?', [militaryId, email])
+    const existing = await query<RowDataPacket[]>('SELECT id FROM users WHERE upper(militaryId) = upper(?) OR lower(email) = ?', [militaryId, email])
     if (existing.length) return { error: 'A user with this military ID or email already exists' }
 
     const password = temporaryPassword()

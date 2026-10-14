@@ -76,11 +76,17 @@ export async function loginUser(formData: FormData) {
 
     try {
         const users = await query<User[]>(
-            'SELECT * FROM users WHERE militaryId = ? OR lower(email) = lower(?) LIMIT 1',
+            // Military IDs such as A-1001 are matched regardless of letter case: phone
+            // keyboards often type the first letter in lower case.
+            'SELECT * FROM users WHERE upper(militaryId) = upper(?) OR lower(email) = lower(?) LIMIT 1',
             [identifier, identifier]
         )
         const user = users[0]
-        const valid = await bcrypt.compare(password, user?.password || DUMMY_HASH)
+        // Passwords copied from a message often pick up a stray space at either end.
+        let valid = await bcrypt.compare(password, user?.password || DUMMY_HASH)
+        if (!valid && user && password.trim() !== password && password.trim()) {
+            valid = await bcrypt.compare(password.trim(), user.password)
+        }
 
         if (!user || !valid) {
             keys.forEach(recordFailure)
@@ -154,7 +160,7 @@ export async function registerUser(formData: FormData) {
     }
 
     try {
-        const existing = await query<User[]>('SELECT id FROM users WHERE militaryId = ? OR lower(email) = ?', [militaryId, email])
+        const existing = await query<User[]>('SELECT id FROM users WHERE upper(militaryId) = upper(?) OR lower(email) = ?', [militaryId, email])
         if (existing.length > 0) {
             return { error: 'An account with this military ID or email already exists' }
         }
