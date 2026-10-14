@@ -1,0 +1,93 @@
+/* Shared layout for the 404 and error pages. */
+.main {
+    width: 100%;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.card {
+    width: 100%;
+    max-width: 560px;
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: clamp(2rem, 6vw, 3rem) clamp(1.25rem, 5vw, 2.5rem);
+}
+
+.code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #fffbef;
+    color: var(--gold-dark);
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+
+.card h1 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 4vw, 1.8rem);
+    color: var(--ink);
+}
+
+.card p {
+    margin: 0 0 1.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.primary,
+.secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.7rem 1.4rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-family: inherit;
+}
+
+.primary {
+    background: var(--gold);
+    color: white;
+}
+
+.primary:hover {
+    background: var(--gold-dark);
+}
+
+.secondary {
+    background: white;
+    color: var(--ink);
+    border-color: var(--border);
+}
+
+.secondary:hover {
+    border-color: var(--gold-soft);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+    outline: 3px solid var(--gold-soft);
+    outline-offset: 2px;
+}

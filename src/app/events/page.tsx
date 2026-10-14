@@ -5,6 +5,8 @@ import EventsClient from './EventsClient'
 import { CalendarEventItem } from './EventCalendar'
 import { todayInOman } from '@/lib/utils'
 
+export const metadata = { title: 'Events' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function EventsPage() {

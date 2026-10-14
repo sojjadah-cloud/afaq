@@ -6,6 +6,8 @@ import { getTechnicianResources, unitFor } from '@/lib/equipment'
 import TechnicianRequest from '@/components/TechnicianRequest'
 import styles from './page.module.css'
 
+export const metadata = { title: 'Workshops, Labs & Tools' }
+
 export const dynamic = 'force-dynamic'
 
 const STEPS = [

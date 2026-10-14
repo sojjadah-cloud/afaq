@@ -6,6 +6,8 @@ import styles from '../admin.module.css'
 import AdminNav from '@/components/AdminNav'
 import ExportButton from '@/components/ExportButton'
 
+export const metadata = { title: 'Project Approvals' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function AdminProjectsPage() {

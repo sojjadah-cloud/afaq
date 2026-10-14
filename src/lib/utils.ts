@@ -46,9 +46,11 @@ export function stripMarkdown(markdown: string): string {
 export function initials(name?: string | null, fallback = 'AN'): string {
     let text = String(name || '').trim()
     if (text.includes('@')) text = text.split('@')[0].replace(/[._-]+/g, ' ')
-    const words = text.split(/\s+/).filter(w => w && !w.endsWith('.'))
+    // Skip ranks and titles ("Dr.", "Lt."), ordinals ("1st") and qualifiers in brackets ("(Air)").
+    const words = text.split(/\s+/).filter(w => w && !w.endsWith('.') && /^\p{L}/u.test(w))
     if (!words.length) return fallback
-    return words.map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    // Arabic family names usually start with the article "ال"; use the letter after it.
+    return words.map(w => (w.startsWith('ال') && w.length > 3 ? w[2] : w[0])).slice(0, 2).join('').toUpperCase()
 }
 
 export function cn(...classes: (string | undefined | null | false)[]) {

@@ -6,6 +6,8 @@ import AdminNav from '@/components/AdminNav'
 import styles from '../admin.module.css'
 import DepartmentsClient, { AdminDepartment } from './DepartmentsClient'
 
+export const metadata = { title: 'Departments & Programmes' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDepartmentsPage() {

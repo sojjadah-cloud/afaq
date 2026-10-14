@@ -10,6 +10,12 @@ import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import { initials } from '@/lib/utils'
 import { CLUB_SLUG } from '@/lib/sections'
 import { STAGES, StageKey, STATUS_LABELS } from '../stages'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    return recordTitle('SELECT title FROM projects WHERE id = ?', id, 'Project')
+}
 
 export const dynamic = 'force-dynamic'
 

@@ -2,6 +2,12 @@ import { getSession } from '@/lib/auth'
 import { getForumTopic } from '@/actions/forum'
 import { notFound } from 'next/navigation'
 import TopicClient from './TopicClient'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ topicId: string }> }) {
+    const { topicId } = await params
+    return recordTitle('SELECT title FROM forum_posts WHERE id = ?', topicId, 'Forum topic')
+}
 
 export const dynamic = 'force-dynamic'
 

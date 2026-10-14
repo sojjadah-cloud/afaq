@@ -4,6 +4,12 @@ import { getForumTopics } from '@/actions/forum'
 import { RowDataPacket } from '@/lib/types'
 import { notFound } from 'next/navigation'
 import CategoryClient from './CategoryClient'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ categoryId: string }> }) {
+    const { categoryId } = await params
+    return recordTitle('SELECT name as title FROM forum_categories WHERE id = ?', categoryId, 'Forum')
+}
 
 export const dynamic = 'force-dynamic'
 

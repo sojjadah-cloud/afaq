@@ -19,6 +19,13 @@ interface Research extends RowDataPacket {
 
 const VALID_CATEGORIES = ['Published', 'Ongoing', 'Thesis', 'Conference', 'Patent']
 
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
+    const { category } = await params
+    let name = category
+    try { name = decodeURIComponent(category) } catch { /* keep raw */ }
+    return { title: `Research: ${name.slice(0, 60)}` }
+}
+
 export default async function ResearchCategoryPage({ params }: { params: Promise<{ category: string }> }) {
     const { category } = await params
 

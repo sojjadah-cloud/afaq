@@ -6,6 +6,12 @@ import { todayInOman } from '@/lib/utils'
 import { ACTION_LABELS, bookingModeFor, getTechnicianResources, unitFor } from '@/lib/equipment'
 import TechnicianRequest from '@/components/TechnicianRequest'
 import styles from '../page.module.css'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ categoryId: string }> }) {
+    const { categoryId } = await params
+    return recordTitle('SELECT label as title FROM lab_categories WHERE id = ?', categoryId, 'Workshops, Labs & Tools')
+}
 
 export const dynamic = 'force-dynamic'
 

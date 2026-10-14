@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'Login - AFAQ Innovation Portal',
+    title: 'Log In',
 }
 
 export default function LoginLayout({

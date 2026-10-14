@@ -1,5 +1,7 @@
 import AboutClient from './AboutClient'
 
+export const metadata = { title: 'About' }
+
 export default function AboutPage() {
     // Management hierarchy data
     const managementTeam = {

@@ -57,6 +57,9 @@
     overflow-y: auto;
     z-index: 1000;
     animation: slideDown 0.2s ease-out;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .resultItem {
@@ -73,8 +76,24 @@
     border-bottom: none;
 }
 
-.resultItem:hover {
+.resultItem:hover,
+.resultActive,
+.resultItem:focus-visible {
     background: #fffbef;
+    outline: none;
+}
+
+.resultItem {
+    color: inherit;
+    text-decoration: none;
+}
+
+.resultTitle {
+    display: block;
+}
+
+.searchInput::-webkit-search-cancel-button {
+    filter: invert(1);
 }
 
 .resultIcon {
@@ -138,6 +157,18 @@
 .noResults i {
     font-size: 1.5rem;
     color: #cbd5e0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dropdown {
+        animation: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dropdown {
+        animation: none;
+    }
 }
 
 @keyframes slideDown {

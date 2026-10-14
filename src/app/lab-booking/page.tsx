@@ -7,6 +7,8 @@ import TechnicianRequest from '@/components/TechnicianRequest'
 import BookingForm from './booking-form'
 import styles from './page.module.css'
 
+export const metadata = { title: 'Book or Borrow' }
+
 export const dynamic = 'force-dynamic'
 
 const HEADINGS = {

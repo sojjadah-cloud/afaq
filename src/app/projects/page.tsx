@@ -3,6 +3,8 @@ import { RowDataPacket } from '@/lib/types'
 import ProjectsClient from './ProjectsClient'
 import { getProjectSections } from '@/lib/sections'
 
+export const metadata = { title: 'Projects' }
+
 export const dynamic = 'force-dynamic'
 
 interface CountResult extends RowDataPacket {

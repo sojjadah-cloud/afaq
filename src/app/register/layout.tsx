@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'Register - AFAQ Innovation Portal',
+    title: 'Register',
 }
 
 export default function RegisterLayout({

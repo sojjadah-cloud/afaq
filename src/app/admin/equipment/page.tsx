@@ -4,6 +4,8 @@ import AdminNav from '@/components/AdminNav'
 import styles from '../admin.module.css'
 import EquipmentAdminClient, { AdminCategory, AdminLab } from './EquipmentAdminClient'
 
+export const metadata = { title: 'Equipment Management' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function AdminEquipmentPage() {

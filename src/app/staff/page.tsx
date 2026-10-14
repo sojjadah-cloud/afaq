@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { RowDataPacket } from '@/lib/types'
 import styles from '../admin/admin.module.css'
 
+export const metadata = { title: 'Staff Dashboard' }
+
 export const dynamic = 'force-dynamic'
 
 interface PendingItem extends RowDataPacket {

@@ -123,7 +123,7 @@ export default function NewsClient({ items, counts, active, userRole, isLoggedIn
                     {items.map((item, index) => {
                         const isAchievement = item.type === 'ACHIEVEMENT'
                         return (
-                            <article key={item.id} className={`${styles.newsCard} ${index === 0 ? styles.featured : ''}`}>
+                            <article key={item.id} id={`news-${item.id}`} className={`${styles.newsCard} ${index === 0 ? styles.featured : ''}`}>
                                 <div className={styles.cover}>
                                     {item.imageUrl ? (
                                         <img src={item.imageUrl} alt="" loading={index < 3 ? 'eager' : 'lazy'} />

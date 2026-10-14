@@ -10,6 +10,11 @@ const TYPE_MAP: Record<string, 'NEWS' | 'ACHIEVEMENT'> = {
     achievement: 'ACHIEVEMENT',
 }
 
+export async function generateMetadata({ params }: { params: Promise<{ type: string }> }) {
+    const { type } = await params
+    return { title: type === 'achievement' ? 'Achievements' : 'News' }
+}
+
 export default async function NewsTypePage({ params }: { params: Promise<{ type: string }> }) {
     const { type } = await params
     const dbType = TYPE_MAP[type]

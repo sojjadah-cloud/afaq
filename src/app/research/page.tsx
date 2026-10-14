@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth'
 import { RowDataPacket } from '@/lib/types'
 import ResearchClient from './ResearchClient'
 
+export const metadata = { title: 'Research' }
+
 export const dynamic = 'force-dynamic'
 
 interface Research extends RowDataPacket {

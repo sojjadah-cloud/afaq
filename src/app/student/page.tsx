@@ -8,7 +8,7 @@ import CancelBookingButton from '@/components/CancelBookingButton'
 import styles from './student.module.css'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'My Profile' }
+export const metadata = { title: 'My Dashboard' }
 
 const ROLE_LABELS: Record<string, string> = { ADMIN: 'Administrator', STAFF: 'Staff', STUDENT: 'Student' }
 const PROJECT_STATUS: Record<string, string> = {

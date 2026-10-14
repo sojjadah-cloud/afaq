@@ -4,6 +4,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MarkdownRenderer } from '@/components/MarkdownRenderer'
 import styles from './page.module.css'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    return recordTitle('SELECT title FROM research WHERE id = ?', id, 'Research')
+}
 
 export const dynamic = 'force-dynamic'
 

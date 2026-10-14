@@ -9,6 +9,12 @@ import EventActions from './EventActions'
 import { nowInOman } from '@/lib/utils'
 import { eventStatus, minute, EVENT_STATUS_LABELS } from '@/lib/eventStatus'
 import { EVENT_TYPES, eventTypeOf } from '@/lib/eventTypes'
+import { recordTitle } from '@/lib/metadata'
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    return recordTitle('SELECT title FROM events WHERE id = ?', id, 'Event')
+}
 
 export const dynamic = 'force-dynamic'
 

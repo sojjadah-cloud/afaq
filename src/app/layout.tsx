@@ -7,8 +7,11 @@ import SiteChrome from '@/components/SiteChrome'
 import { ToastProvider } from '@/components/Toast'
 
 export const metadata: Metadata = {
-    title: 'AFAQ Innovation Portal',
-    description: 'Military Technological College Innovation Platform',
+    title: {
+        default: 'AFAQ Innovation Portal',
+        template: '%s | AFAQ Innovation Portal',
+    },
+    description: 'Innovation portal of the AFAQ Scientific Club at the Military Technological College, Oman: projects, events, workshops, labs and tools.',
 }
 
 export default function RootLayout({

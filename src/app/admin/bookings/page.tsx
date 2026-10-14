@@ -3,6 +3,8 @@ import { RowDataPacket } from '@/lib/types'
 import { todayInOman } from '@/lib/utils'
 import BookingsClient from './BookingsClient'
 
+export const metadata = { title: 'Booking Management' }
+
 export const dynamic = 'force-dynamic'
 
 interface Booking extends RowDataPacket {

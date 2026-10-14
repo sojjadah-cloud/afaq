@@ -6,6 +6,8 @@ import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
+export const metadata = { title: 'Analytics' }
+
 export const dynamic = 'force-dynamic'
 
 interface Stats extends RowDataPacket {

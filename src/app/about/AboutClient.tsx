@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import styles from './about.module.css'
 import { submitContactMessage } from '@/actions/contact'
+import { initials } from '@/lib/utils'
 
 interface ManagementTeam {
     patron: { name: string; title: string; role: string; image: string | null }
@@ -176,7 +177,7 @@ export default function AboutClient({ managementTeam, contactInfo }: AboutClient
                     <div className={styles.chainRow}>
                         <div className={`${styles.member} ${styles.patron}`}>
                             <div className={styles.avatar}>
-                                {managementTeam.patron.name.split(' ').map(n => n[0]).join('')}
+                                {initials(managementTeam.patron.name)}
                             </div>
                             <h3>{managementTeam.patron.name}</h3>
                             <span className={styles.title}>{managementTeam.patron.title}</span>
@@ -187,7 +188,7 @@ export default function AboutClient({ managementTeam, contactInfo }: AboutClient
 
                         <div className={`${styles.member} ${styles.advisor}`}>
                             <div className={styles.avatar}>
-                                {managementTeam.advisor.name.split(' ').map(n => n[0]).join('')}
+                                {initials(managementTeam.advisor.name)}
                             </div>
                             <h3>{managementTeam.advisor.name}</h3>
                             <span className={styles.title}>{managementTeam.advisor.title}</span>
@@ -198,7 +199,7 @@ export default function AboutClient({ managementTeam, contactInfo }: AboutClient
 
                         <div className={`${styles.member} ${styles.president}`}>
                             <div className={styles.avatar}>
-                                {managementTeam.president.name.split(' ').map(n => n[0]).join('')}
+                                {initials(managementTeam.president.name)}
                             </div>
                             <h3>{managementTeam.president.name}</h3>
                             <span className={styles.title}>{managementTeam.president.title}</span>
@@ -215,7 +216,7 @@ export default function AboutClient({ managementTeam, contactInfo }: AboutClient
                             {managementTeam.executives.map((exec, i) => (
                                 <div key={i} className={`${styles.member} ${styles.executive}`}>
                                     <div className={styles.avatar}>
-                                        {exec.name.split(' ').map(n => n[0]).join('')}
+                                        {initials(exec.name)}
                                     </div>
                                     <h3>{exec.name}</h3>
                                     <span className={styles.title}>{exec.title}</span>
@@ -234,7 +235,7 @@ export default function AboutClient({ managementTeam, contactInfo }: AboutClient
                             {managementTeam.heads.map((head, i) => (
                                 <div key={i} className={`${styles.member} ${styles.head}`}>
                                     <div className={styles.avatar}>
-                                        {head.name.split(' ').map(n => n[0]).join('')}
+                                        {initials(head.name)}
                                     </div>
                                     <h3>{head.name}</h3>
                                     <span className={styles.title}>{head.title}</span>
