@@ -2,8 +2,9 @@
 
 import { query } from '@/lib/db'
 import { RowDataPacket } from '@/lib/types'
+import { COURSE_FIELDS, isCourseField } from '@/lib/courses'
 
-export type SearchType = 'project' | 'research' | 'event' | 'lab' | 'news' | 'forum'
+export type SearchType = 'project' | 'research' | 'event' | 'lab' | 'news' | 'forum' | 'course'
 
 export interface SearchResult {
     type: SearchType
@@ -28,7 +29,7 @@ export async function globalSearch(searchQuery: string): Promise<SearchResult[]>
     const like = (column: string) => `${column} LIKE ? ESCAPE '\\'`
 
     try {
-        const [projects, research, events, labs, news, topics] = await Promise.all([
+        const [projects, research, events, labs, news, topics, courses] = await Promise.all([
             // Same visibility as the project pages: rejected projects are not listed.
             query<RowDataPacket[]>(
                 `SELECT id, title, category FROM projects
@@ -68,11 +69,18 @@ export async function globalSearch(searchQuery: string): Promise<SearchResult[]>
                  ORDER BY p.createdAt DESC LIMIT ${PER_TYPE}`,
                 [term, term]
             ),
+            query<RowDataPacket[]>(
+                `SELECT id, title, field FROM courses
+                 WHERE ${like('title')} OR ${like('summary')} OR ${like('instructor')}
+                 ORDER BY createdAt DESC LIMIT ${PER_TYPE}`,
+                [term, term, term]
+            ),
         ])
 
         return [
             ...projects.map(p => ({ type: 'project' as const, id: p.id, title: p.title, href: `/projects/${p.id}`, category: p.category })),
             ...events.map(e => ({ type: 'event' as const, id: e.id, title: e.title, href: `/events/${e.id}`, category: e.category })),
+            ...courses.map(c => ({ type: 'course' as const, id: c.id, title: c.title, href: `/courses/${c.id}`, category: COURSE_FIELDS[isCourseField(c.field) ? c.field : 'OTHER'].label })),
             ...labs.map(l => ({ type: 'lab' as const, id: l.id, title: l.name, href: `/lab-booking?labId=${encodeURIComponent(l.id)}`, category: l.label })),
             ...news.map(n => {
                 const achievement = n.type === 'ACHIEVEMENT'

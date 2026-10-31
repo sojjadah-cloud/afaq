@@ -66,6 +66,34 @@ function ensureSchema(database: Database.Database) {
         createdAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
     database.exec('CREATE INDEX IF NOT EXISTS project_updates_projectId_idx ON project_updates (projectId)')
+    const hadCourses = !!database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'courses'").get()
+    database.exec(`CREATE TABLE IF NOT EXISTS courses (
+        id varchar(191) NOT NULL PRIMARY KEY,
+        title varchar(200) NOT NULL,
+        kind varchar(20) NOT NULL DEFAULT 'COURSE',
+        field varchar(40) NOT NULL,
+        summary text NOT NULL,
+        videoUrl varchar(500) NOT NULL,
+        instructor varchar(120) DEFAULT NULL,
+        duration varchar(60) DEFAULT NULL,
+        createdById varchar(191) DEFAULT NULL,
+        createdAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`)
+    database.exec('CREATE INDEX IF NOT EXISTS courses_field_idx ON courses (field)')
+    if (!hadCourses) {
+        // First course, added once when the table is created.
+        database.prepare(
+            `INSERT INTO courses (id, title, kind, field, summary, videoUrl, instructor, createdAt, updatedAt)
+             VALUES (?, ?, 'COURSE', 'AI', ?, ?, ?, strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'), strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'))`
+        ).run(
+            'course_ai_agent_basics',
+            'من الصفر: كيف تبني AI Agent',
+            'دورة مرئية باللغة العربية تشرح بناء وكيل ذكاء اصطناعي (AI Agent) من الصفر خطوة بخطوة، مناسبة للمهتمين بتطبيقات الذكاء الاصطناعي والأتمتة في مشاريعهم.',
+            'https://youtu.be/Zha_WTPDckI',
+            'Tariq Elouzeh | طارق العوزة'
+        )
+    }
     database.exec(`CREATE TABLE IF NOT EXISTS files (
         id varchar(191) NOT NULL PRIMARY KEY,
         name varchar(255) NOT NULL,

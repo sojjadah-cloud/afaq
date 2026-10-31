@@ -11,6 +11,7 @@ const navItems = [
     { href: '/research', label: 'Research', icon: 'fa-book-open' },
     { href: '/forums', label: 'Forums', icon: 'fa-comments' },
     { href: '/equipment', label: 'Equipment', icon: 'fa-gears' },
+    { href: '/courses', label: 'Courses', icon: 'fa-graduation-cap' },
     { href: '/events', label: 'Events', icon: 'fa-calendar-days' },
     { href: '/news', label: 'News', icon: 'fa-newspaper' },
     { href: '/about', label: 'About Us', icon: 'fa-info-circle' },
@@ -19,6 +20,8 @@ const navItems = [
 export default function Nav() {
     const pathname = usePathname()
     const t = useT()
+    // Sections stay highlighted on their sub-pages, e.g. a single course.
+    const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`))
 
     return (
         <nav className={styles.nav} aria-label={t('Main')}>
@@ -27,8 +30,8 @@ export default function Nav() {
                     <li key={item.href}>
                         <Link
                             href={item.href}
-                            className={pathname === item.href ? styles.active : ''}
-                            aria-current={pathname === item.href ? 'page' : undefined}
+                            className={isActive(item.href) ? styles.active : ''}
+                            aria-current={isActive(item.href) ? 'page' : undefined}
                         >
                             <i className={`fa ${item.icon}`} aria-hidden="true"></i>
                             {t(item.label)}

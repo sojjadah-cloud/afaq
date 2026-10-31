@@ -6,6 +6,7 @@ const LINKS = [
     { href: '/projects', label: 'Projects' },
     { href: '/events', label: 'Events' },
     { href: '/equipment', label: 'Workshops & Tools' },
+    { href: '/courses', label: 'Courses & Workshops' },
     { href: '/news', label: 'News' },
     { href: '/research', label: 'Research' },
     { href: '/forums', label: 'Forums' },

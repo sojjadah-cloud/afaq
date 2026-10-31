@@ -22,6 +22,7 @@ const PORTAL_LINKS = [
     { href: '/projects', icon: 'fa-lightbulb', title: 'Innovation Projects', desc: 'From first idea to finished prototype' },
     { href: '/research', icon: 'fa-flask', title: 'Research Hub', desc: 'Publications, theses and ongoing work' },
     { href: '/equipment', icon: 'fa-gears', title: 'Labs & Equipment', desc: 'Browse and book club facilities' },
+    { href: '/courses', icon: 'fa-graduation-cap', title: 'Courses & Workshops', desc: 'Recorded training by field, with videos' },
     { href: '/events', icon: 'fa-calendar-days', title: 'Events', desc: 'Workshops, competitions and seminars' },
     { href: '/forums', icon: 'fa-comments', title: 'Forums', desc: 'Ask, share and collaborate' },
     { href: '/news', icon: 'fa-newspaper', title: 'News & Achievements', desc: 'Club milestones and announcements' },

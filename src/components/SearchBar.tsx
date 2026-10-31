@@ -11,6 +11,7 @@ const TYPE_META: Record<SearchType, { icon: string; label: string }> = {
     project: { icon: 'fa-lightbulb', label: 'Project' },
     event: { icon: 'fa-calendar', label: 'Event' },
     lab: { icon: 'fa-screwdriver-wrench', label: 'Equipment' },
+    course: { icon: 'fa-graduation-cap', label: 'Courses & Workshops' },
     news: { icon: 'fa-newspaper', label: 'News' },
     research: { icon: 'fa-scroll', label: 'Research' },
     forum: { icon: 'fa-comments', label: 'Forum' },
