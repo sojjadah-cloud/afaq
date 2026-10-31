@@ -5,6 +5,8 @@ import EventsClient from './EventsClient'
 import { CalendarEventItem } from './EventCalendar'
 import { todayInOman } from '@/lib/utils'
 import { pageTitle } from '@/lib/metadata'
+import { getT } from '@/i18n/server'
+import { localize } from '@/lib/localized'
 
 export const generateMetadata = () => pageTitle('Events')
 
@@ -12,14 +14,15 @@ export const dynamic = 'force-dynamic'
 
 export default async function EventsPage() {
     const session = await getSession()
+    const { lang } = await getT()
 
-    const rows = await query<RowDataPacket[]>(`
+    const rows = localize(await query<RowDataPacket[]>(`
         SELECT
-            e.id, e.title, e.description, e.category, e.eventType, e.startDate, e.endDate, e.location,
+            e.id, e.title, e.titleAr, e.description, e.descriptionAr, e.category, e.eventType, e.startDate, e.endDate, e.location, e.locationAr,
             (SELECT COUNT(*) FROM event_registrations er WHERE er.eventId = e.id AND er.status = 'REGISTERED') as registrationCount
         FROM events e
         ORDER BY e.startDate ASC
-    `)
+    `), lang)
     const events: CalendarEventItem[] = rows.map(r => ({
         id: r.id,
         title: r.title,

@@ -12,11 +12,12 @@ import { CLUB_SLUG } from '@/lib/sections'
 import { STAGES, StageKey, STATUS_LABELS } from '../stages'
 import { getT } from '@/i18n/server'
 import { formatDay } from '@/i18n/core'
+import { localize, localizeRow } from '@/lib/localized'
 import { recordTitle } from '@/lib/metadata'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    return recordTitle('SELECT title FROM projects WHERE id = ?', id, 'Project')
+    return recordTitle('SELECT title, titleAr FROM projects WHERE id = ?', id, 'Project')
 }
 
 export const dynamic = 'force-dynamic'
@@ -63,7 +64,7 @@ export default async function ProjectDetails({
 
     // Fetch Project Details with Creator Name
     const projects = await query<Project[]>(
-        `SELECT p.*, u.militaryId, sp.fullName as creatorName, d.name as departmentName, d.code as departmentCode
+        `SELECT p.*, u.militaryId, sp.fullName as creatorName, sp.fullNameAr as creatorNameAr, d.name as departmentName, d.code as departmentCode
        FROM projects p
        LEFT JOIN users u ON p.createdById = u.id
        LEFT JOIN student_profiles sp ON u.id = sp.userId
@@ -72,21 +73,22 @@ export default async function ProjectDetails({
         [id]
     )
 
-    const project = projects[0]
-
-    if (!project) {
+    // The raw row feeds the edit form (both languages); the page shows the visitor's language.
+    const rawProject = projects[0]
+    if (!rawProject) {
         notFound()
     }
+    const project = localizeRow(rawProject, lang)
 
     // Fetch Project Members
-    const members = await query<Member[]>(
-        `SELECT pm.userId, pm.role, pm.status, sp.fullName, u.militaryId 
+    const members = localize(await query<Member[]>(
+        `SELECT pm.userId, pm.role, pm.status, sp.fullName, sp.fullNameAr, u.militaryId 
        FROM project_members pm
        JOIN users u ON pm.userId = u.id
        LEFT JOIN student_profiles sp ON u.id = sp.userId
        WHERE pm.projectId = ?`,
         [id]
-    )
+    ), lang)
 
     // Fetch Attachments
     const attachments = await query<RowDataPacket[]>(
@@ -108,26 +110,26 @@ export default async function ProjectDetails({
     // Fetch pending members if owner
     let pendingMembers: any[] = []
     if (isOwner) {
-        pendingMembers = await query(
-            `SELECT pm.userId, sp.fullName, u.militaryId 
+        pendingMembers = localize(await query<RowDataPacket[]>(
+            `SELECT pm.userId, sp.fullName, sp.fullNameAr, u.militaryId 
              FROM project_members pm
              JOIN users u ON pm.userId = u.id
              LEFT JOIN student_profiles sp ON u.id = sp.userId
              WHERE pm.projectId = ? AND pm.status = 'PENDING'`,
             [id]
-        )
+        ), lang)
     }
 
-    const activityRows = await query<RowDataPacket[]>(
-        `SELECT pu.id, pu.type, pu.message, pu.progress, pu.createdAt, u.role as authorRole,
-                COALESCE(sp.fullName, u.militaryId, 'Former member') as authorName
+    const activityRows = localize(await query<RowDataPacket[]>(
+        `SELECT pu.id, pu.type, pu.message, pu.messageAr, pu.progress, pu.createdAt, u.role as authorRole,
+                COALESCE(sp.fullName, u.militaryId, 'Former member') as authorName, sp.fullNameAr as authorNameAr
          FROM project_updates pu
          LEFT JOIN users u ON u.id = pu.userId
          LEFT JOIN student_profiles sp ON sp.userId = pu.userId
          WHERE pu.projectId = ?
          ORDER BY pu.createdAt DESC`,
         [id]
-    )
+    ), lang)
     const activity: ActivityItem[] = activityRows.map(r => ({
         id: r.id, type: r.type, message: r.message, progress: r.progress === null ? null : Number(r.progress),
         createdAt: String(r.createdAt), authorName: r.authorName, authorRole: r.authorRole || '',
@@ -137,17 +139,17 @@ export default async function ProjectDetails({
     const isApprovedMember = isOwner || members.some(m => m.userId === session.userId && m.status === 'APPROVED')
     const supervisorRows = project.supervisorId
         ? await query<RowDataPacket[]>(
-            'SELECT COALESCE(sp.fullName, u.militaryId) as name FROM users u LEFT JOIN student_profiles sp ON sp.userId = u.id WHERE u.id = ?',
+            'SELECT COALESCE(sp.fullName, u.militaryId) as name, sp.fullNameAr as nameAr FROM users u LEFT JOIN student_profiles sp ON sp.userId = u.id WHERE u.id = ?',
             [project.supervisorId]
-        )
+        ).then(rows => localize(rows, lang))
         : []
     const supervisorName = supervisorRows[0]?.name || ''
     const staffOptions = isStaff
         ? await query<RowDataPacket[]>(
-            `SELECT u.id, COALESCE(sp.fullName, u.militaryId) as name FROM users u
+            `SELECT u.id, COALESCE(sp.fullName, u.militaryId) as name, sp.fullNameAr as nameAr FROM users u
              LEFT JOIN student_profiles sp ON sp.userId = u.id
              WHERE u.role IN ('STAFF', 'ADMIN') AND u.isActive = 1 ORDER BY name`
-        )
+        ).then(rows => localize(rows, lang))
         : []
 
     // Approved members for ownership transfer
@@ -301,8 +303,10 @@ export default async function ProjectDetails({
                                 isMember={isMember}
                                 memberStatus={memberStatus}
                                 pendingMembers={pendingMembers}
-                                initialTitle={project.title}
-                                initialDescription={project.description}
+                                initialTitle={rawProject.title}
+                                initialDescription={rawProject.description}
+                                initialTitleAr={rawProject.titleAr || ''}
+                                initialDescriptionAr={rawProject.descriptionAr || ''}
                                 projectStatus={project.status}
                                 approvedMembers={approvedMembers}
                                 isAdmin={session.role === 'ADMIN'}

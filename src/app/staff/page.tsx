@@ -6,6 +6,7 @@ import { RowDataPacket } from '@/lib/types'
 import styles from '../admin/admin.module.css'
 import { getT } from '@/i18n/server'
 import { formatDay } from '@/i18n/core'
+import { localize } from '@/lib/localized'
 import { pageTitle } from '@/lib/metadata'
 
 export const generateMetadata = () => pageTitle('Staff Dashboard')
@@ -37,7 +38,9 @@ export default async function StaffDashboard() {
             b.id, 
             'booking' as type,
             l.name as title,
+            l.nameAr as titleAr,
             COALESCE(sp.fullName, u.email) as userName,
+            sp.fullNameAr as userNameAr,
             b.createdAt
         FROM lab_bookings b
         JOIN labs l ON b.labId = l.id
@@ -45,7 +48,7 @@ export default async function StaffDashboard() {
         LEFT JOIN student_profiles sp ON u.id = sp.userId
         WHERE b.status = 'PENDING'
         ORDER BY b.createdAt ASC
-    `)
+    `).then(rows => localize(rows, lang))
 
     // Get pending project join requests
     const pendingJoinRequests = await query<RowDataPacket[]>(`
@@ -54,7 +57,9 @@ export default async function StaffDashboard() {
             p.id as projectId,
             'join_request' as type,
             p.title,
+            p.titleAr,
             COALESCE(sp.fullName, u.email) as userName,
+            sp.fullNameAr as userNameAr,
             pm.joinedAt as createdAt
         FROM project_members pm
         JOIN projects p ON pm.projectId = p.id
@@ -62,18 +67,18 @@ export default async function StaffDashboard() {
         LEFT JOIN student_profiles sp ON u.id = sp.userId
         WHERE pm.status = 'PENDING'
         ORDER BY pm.joinedAt ASC
-    `)
+    `).then(rows => localize(rows, lang))
 
     // Get user stats
     const [userCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM users')
     const [projectCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM projects')
     const [bookingCount] = await query<RowDataPacket[]>('SELECT COUNT(*) as count FROM lab_bookings WHERE status = \'PENDING\'')
     const supervised = await query<RowDataPacket[]>(
-        `SELECT p.id, p.title, p.status, p.progress, p.updatedAt,
+        `SELECT p.id, p.title, p.titleAr, p.status, p.progress, p.updatedAt,
                 (SELECT MAX(createdAt) FROM project_updates pu WHERE pu.projectId = p.id AND pu.type = 'UPDATE') as lastUpdate
          FROM projects p WHERE p.supervisorId = ? ORDER BY p.updatedAt DESC`,
         [session.userId]
-    )
+    ).then(rows => localize(rows, lang))
 
     return (
         <main className={styles.main}>

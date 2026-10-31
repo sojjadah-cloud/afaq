@@ -7,18 +7,19 @@ import { stripMarkdown } from '@/lib/utils'
 import { STAGES, StageKey, STATUS_LABELS } from './stages'
 import styles from './project-list.module.css'
 import { getT } from '@/i18n/server'
+import { localize } from '@/lib/localized'
 
 export default async function SectionProjects({ stage, sectionSlug }: { stage: StageKey; sectionSlug: string }) {
-    const { t } = await getT()
+    const { t, lang } = await getT()
     const config = STAGES[stage]
     const section = await getProjectSection(sectionSlug)
     if (!section) notFound()
 
     const placeholders = config.statuses.map(() => '?').join(', ')
     const departmentFilter = section.departmentId === null ? 'p.departmentId IS NULL' : 'p.departmentId = ?'
-    const projects = await query<RowDataPacket[]>(
-        `SELECT p.id, p.title, p.description, p.category, p.status, p.progress, p.createdAt,
-                COALESCE(sp.fullName, u.email) as ownerName,
+    const projects = localize(await query<RowDataPacket[]>(
+        `SELECT p.id, p.title, p.titleAr, p.description, p.descriptionAr, p.category, p.status, p.progress, p.createdAt,
+                COALESCE(sp.fullName, u.email) as ownerName, sp.fullNameAr as ownerNameAr,
                 (SELECT COUNT(*) FROM project_members pm WHERE pm.projectId = p.id AND pm.status = 'APPROVED') as memberCount
          FROM projects p
          LEFT JOIN users u ON u.id = p.createdById
@@ -26,7 +27,7 @@ export default async function SectionProjects({ stage, sectionSlug }: { stage: S
          WHERE p.status IN (${placeholders}) AND ${departmentFilter}
          ORDER BY p.updatedAt DESC`,
         section.departmentId === null ? [...config.statuses] : [...config.statuses, section.departmentId]
-    )
+    ), lang)
 
     return (
         <main className={styles.main}>

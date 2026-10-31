@@ -6,6 +6,7 @@ import JoinClub from './JoinClub'
 import { getT } from '@/i18n/server'
 import { formatDay } from '@/i18n/core'
 import { nowInOman } from '@/lib/utils'
+import { localize } from '@/lib/localized'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,23 +60,23 @@ export default async function HomePage() {
         count('SELECT COUNT(*) as count FROM labs WHERE isBookable = 1'),
     ])
 
-    const upcomingEvents = await query<RowDataPacket[]>(
-        `SELECT id, title, category, startDate, location FROM events
+    const upcomingEvents = localize(await query<RowDataPacket[]>(
+        `SELECT id, title, titleAr, category, startDate, location, locationAr FROM events
          WHERE startDate >= ?
          ORDER BY startDate ASC LIMIT 3`,
         [nowInOman()]
-    )
+    ), lang)
 
-    const latestNews = await query<RowDataPacket[]>(
-        `SELECT id, title, summary, type, eventDate FROM club_news
+    const latestNews = localize(await query<RowDataPacket[]>(
+        `SELECT id, title, titleAr, summary, summaryAr, type, eventDate FROM club_news
          ORDER BY eventDate DESC, createdAt DESC LIMIT 3`
-    )
+    ), lang)
 
-    const featuredProjects = await query<RowDataPacket[]>(
-        `SELECT id, title, description, category, status, progress FROM projects
+    const featuredProjects = localize(await query<RowDataPacket[]>(
+        `SELECT id, title, titleAr, description, descriptionAr, category, status, progress FROM projects
          WHERE status IN ('DEVELOPMENT', 'COMPLETED')
          ORDER BY updatedAt DESC LIMIT 3`
-    )
+    ), lang)
 
     const trackRows = await query<RowDataPacket[]>(
         `SELECT category, COUNT(*) as count FROM projects

@@ -31,7 +31,48 @@ function getDb(): Database.Database {
     }
 
     ensureSchema(db)
+    applyArabicContent(db, path.join(dataDir, 'content-ar.json'))
     return db
+}
+
+// Content columns that have an Arabic counterpart named <column>Ar.
+export const ARABIC_COLUMNS: Record<string, string[]> = {
+    projects: ['title', 'description'],
+    events: ['title', 'description', 'location'],
+    club_news: ['title', 'summary', 'location'],
+    research: ['title', 'abstract', 'authors'],
+    labs: ['name', 'shortDesc', 'location'],
+    lab_categories: ['technician'],
+    student_profiles: ['fullName'],
+    forum_posts: ['title', 'content'],
+    project_updates: ['message'],
+}
+
+// Fills the Arabic columns of the bundled demo records from data/content-ar.json.
+// Only empty Arabic fields are written, so translations entered in the portal are never replaced.
+function applyArabicContent(database: Database.Database, file: string) {
+    if (!fs.existsSync(file)) return
+    try {
+        const content = JSON.parse(fs.readFileSync(file, 'utf-8')) as Record<string, Record<string, Record<string, string>>>
+        const fill = database.transaction(() => {
+            for (const [table, records] of Object.entries(content)) {
+                const columns = ARABIC_COLUMNS[table]
+                if (!columns) continue
+                const key = table === 'student_profiles' ? 'userId' : 'id'
+                for (const [id, fields] of Object.entries(records)) {
+                    for (const [column, value] of Object.entries(fields)) {
+                        if (!columns.includes(column) || !value) continue
+                        database.prepare(
+                            `UPDATE ${table} SET ${column}Ar = ? WHERE ${key} = ? AND (${column}Ar IS NULL OR ${column}Ar = '')`
+                        ).run(value, id)
+                    }
+                }
+            }
+        })
+        fill()
+    } catch (error) {
+        console.error('Could not apply Arabic content:', error)
+    }
 }
 
 // Brings databases created from an older seed.sql up to the current schema.
@@ -56,6 +97,10 @@ function ensureSchema(database: Database.Database) {
     addColumn('lab_bookings', 'returnNote', 'text DEFAULT NULL')
     addColumn('events', 'registrationDeadline', 'datetime(3) DEFAULT NULL')
     addColumn('event_registrations', 'attended', 'tinyint(1) NOT NULL DEFAULT 0')
+    // Arabic versions of content; the original columns hold the English text.
+    for (const [table, columns] of Object.entries(ARABIC_COLUMNS)) {
+        for (const column of columns) addColumn(table, `${column}Ar`, 'text DEFAULT NULL')
+    }
     database.exec(`CREATE TABLE IF NOT EXISTS project_updates (
         id varchar(191) NOT NULL PRIMARY KEY,
         projectId varchar(191) NOT NULL,
@@ -81,17 +126,21 @@ function ensureSchema(database: Database.Database) {
         updatedAt datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
     database.exec('CREATE INDEX IF NOT EXISTS courses_field_idx ON courses (field)')
+    for (const column of ['title', 'summary', 'instructor', 'duration']) addColumn('courses', `${column}Ar`, 'text DEFAULT NULL')
     if (!hadCourses) {
         // First course, added once when the table is created.
         database.prepare(
-            `INSERT INTO courses (id, title, kind, field, summary, videoUrl, instructor, createdAt, updatedAt)
-             VALUES (?, ?, 'COURSE', 'AI', ?, ?, ?, strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'), strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'))`
+            `INSERT INTO courses (id, title, titleAr, kind, field, summary, summaryAr, videoUrl, instructor, instructorAr, createdAt, updatedAt)
+             VALUES (?, ?, ?, 'COURSE', 'AI', ?, ?, ?, ?, ?, strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'), strftime('%Y-%m-%d %H:%M:%f', 'now', '+4 hours'))`
         ).run(
             'course_ai_agent_basics',
+            'From Scratch: How to Build an AI Agent',
             'من الصفر: كيف تبني AI Agent',
+            'A video course in Arabic that walks through building an AI agent from scratch, step by step. Suited to members interested in using AI and automation in their projects.',
             'دورة مرئية باللغة العربية تشرح بناء وكيل ذكاء اصطناعي (AI Agent) من الصفر خطوة بخطوة، مناسبة للمهتمين بتطبيقات الذكاء الاصطناعي والأتمتة في مشاريعهم.',
             'https://youtu.be/Zha_WTPDckI',
-            'Tariq Elouzeh | طارق العوزة'
+            'Tariq Elouzeh',
+            'طارق العوزة'
         )
     }
     database.exec(`CREATE TABLE IF NOT EXISTS files (

@@ -165,7 +165,7 @@ export default function ProjectsPage({ initialCounts, sections, openCreate = fal
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="title">{t('Project Title')} *</label>
+                                <label htmlFor="title">{t('Project title (English)')} *</label>
                                 <input
                                     type="text"
                                     id="title"
@@ -173,18 +173,30 @@ export default function ProjectsPage({ initialCounts, sections, openCreate = fal
                                     placeholder={t('Enter project title (max 200 characters)')}
                                     maxLength={200}
                                     required
+                                    dir="ltr"
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label htmlFor="description">{t('Description')} *</label>
+                                <label htmlFor="titleAr">{t('Project title (Arabic)')} *</label>
+                                <input type="text" id="titleAr" name="titleAr" maxLength={200} required dir="rtl" lang="ar" />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="description">{t('Description (English)')} *</label>
                                 <textarea
                                     id="description"
                                     name="description"
                                     placeholder={t('Describe your project (max 1000 words, markdown supported)')}
                                     rows={6}
                                     required
+                                    dir="ltr"
                                 ></textarea>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="descriptionAr">{t('Description (Arabic)')} *</label>
+                                <textarea id="descriptionAr" name="descriptionAr" rows={6} required dir="rtl" lang="ar"></textarea>
                             </div>
 
                             <div className={styles.formGroup}>

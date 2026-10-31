@@ -9,6 +9,7 @@ import styles from './student.module.css'
 import { pageTitle } from '@/lib/metadata'
 import { getT } from '@/i18n/server'
 import { formatDay as formatStoredDay } from '@/i18n/core'
+import { localize } from '@/lib/localized'
 
 export const dynamic = 'force-dynamic'
 export const generateMetadata = () => pageTitle('My Dashboard')
@@ -39,7 +40,7 @@ export default async function StudentProfile() {
     const weekAhead = new Date(Date.parse(today) + 7 * 864e5).toISOString().slice(0, 10)
 
     const users = await query<RowDataPacket[]>(
-        `SELECT u.id, u.militaryId, u.email, u.role, sp.fullName as name, sp.yearLevel, sp.bio,
+        `SELECT u.id, u.militaryId, u.email, u.role, sp.fullName as name, sp.fullNameAr as nameAr, sp.yearLevel, sp.bio,
                 d.name as department, pr.name as programme
          FROM users u
          LEFT JOIN student_profiles sp ON u.id = sp.userId
@@ -48,43 +49,43 @@ export default async function StudentProfile() {
          WHERE u.id = ?`,
         [session.userId]
     )
-    const user = users[0]
+    const user = localize(users, lang)[0]
     if (!user) redirect('/login')
 
     const projects = await query<RowDataPacket[]>(
-        `SELECT p.id, p.title, p.status, p.progress, p.createdById FROM projects p
+        `SELECT p.id, p.title, p.titleAr, p.status, p.progress, p.createdById FROM projects p
          LEFT JOIN project_members pm ON p.id = pm.projectId AND pm.status = 'APPROVED'
          WHERE p.createdById = ? OR pm.userId = ?
          GROUP BY p.id
          ORDER BY p.updatedAt DESC`,
         [user.id, user.id]
-    )
+    ).then(rows => localize(rows, lang))
     const joinRequests = await query<RowDataPacket[]>(
-        `SELECT p.id as projectId, p.title, COALESCE(sp.fullName, u.militaryId) as name
+        `SELECT p.id as projectId, p.title, p.titleAr, COALESCE(sp.fullName, u.militaryId) as name, sp.fullNameAr as nameAr
          FROM project_members pm
          JOIN projects p ON p.id = pm.projectId
          JOIN users u ON u.id = pm.userId
          LEFT JOIN student_profiles sp ON sp.userId = pm.userId
          WHERE pm.status = 'PENDING' AND p.createdById = ?`,
         [user.id]
-    )
+    ).then(rows => localize(rows, lang))
     const bookings = await query<RowDataPacket[]>(
-        `SELECT b.id, l.name as labName, c.key as categoryKey, b.bookingDate, b.timeSlot, b.status, b.returnDate
+        `SELECT b.id, l.name as labName, l.nameAr as labNameAr, c.key as categoryKey, b.bookingDate, b.timeSlot, b.status, b.returnDate
          FROM lab_bookings b
          JOIN labs l ON b.labId = l.id
          JOIN lab_categories c ON c.id = l.categoryId
          WHERE b.userId = ?
          ORDER BY b.bookingDate DESC`,
         [user.id]
-    )
+    ).then(rows => localize(rows, lang))
     const events = await query<RowDataPacket[]>(
-        `SELECT e.id, e.title, e.startDate, e.endDate, e.location, er.attended
+        `SELECT e.id, e.title, e.titleAr, e.startDate, e.endDate, e.location, e.locationAr, er.attended
          FROM event_registrations er
          JOIN events e ON er.eventId = e.id
          WHERE er.userId = ? AND er.status = 'REGISTERED'
          ORDER BY e.startDate DESC`,
         [user.id]
-    )
+    ).then(rows => localize(rows, lang))
     const membership = await query<RowDataPacket[]>(
         'SELECT status, createdAt FROM club_registrations WHERE userId = ? ORDER BY createdAt DESC LIMIT 1',
         [user.id]

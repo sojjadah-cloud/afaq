@@ -11,11 +11,12 @@ import { eventStatus, minute, EVENT_STATUS_LABELS } from '@/lib/eventStatus'
 import { EVENT_TYPES, eventTypeOf } from '@/lib/eventTypes'
 import { getT } from '@/i18n/server'
 import { formatDay as formatStoredDay } from '@/i18n/core'
+import { localizeRow } from '@/lib/localized'
 import { recordTitle } from '@/lib/metadata'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    return recordTitle('SELECT title FROM events WHERE id = ?', id, 'Event')
+    return recordTitle('SELECT title, titleAr FROM events WHERE id = ?', id, 'Event')
 }
 
 export const dynamic = 'force-dynamic'
@@ -54,7 +55,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
         WHERE e.id = ?
     `, [id])
 
-    const event = events[0]
+    const event = events[0] ? localizeRow(events[0], lang) : undefined
     if (!event) notFound()
 
     // Check user registration

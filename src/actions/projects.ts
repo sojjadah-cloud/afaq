@@ -15,25 +15,27 @@ export async function createProject(formData: FormData) {
     const session = await getSession()
     if (!session.isLoggedIn) return { error: 'Not authenticated' }
 
-    const title = formData.get('title') as string
-    const description = formData.get('description') as string
+    const title = String(formData.get('title') || '').trim()
+    const description = String(formData.get('description') || '').trim()
+    const titleAr = String(formData.get('titleAr') || '').trim()
+    const descriptionAr = String(formData.get('descriptionAr') || '').trim()
     const category = formData.get('category') as string
     const status = formData.get('status') === 'DEVELOPMENT' ? 'DEVELOPMENT' : 'START'
     const section = await getProjectSection(String(formData.get('section') || ''))
 
     // Validation
-    if (!title || !description || !category) {
-        return { error: 'All fields are required' }
+    if (!title || !description || !titleAr || !descriptionAr || !category) {
+        return { error: 'Enter the title and description in both English and Arabic' }
     }
     if (!section) {
         return { error: 'Please choose the department or the Scientific Club' }
     }
 
-    if (title.length > 200) {
+    if (title.length > 200 || titleAr.length > 200) {
         return { error: 'Title must be 200 characters or less' }
     }
 
-    const wordCount = description.trim().split(/\s+/).length
+    const wordCount = Math.max(description.split(/\s+/).length, descriptionAr.split(/\s+/).length)
     if (wordCount > 1000) {
         return { error: (await getT()).t('Description exceeds the 1000-word limit (currently {n} words)', { n: wordCount }) }
     }
@@ -51,9 +53,9 @@ export async function createProject(formData: FormData) {
         const projectId = `proj_${Date.now()}`
 
         await query(
-            `INSERT INTO projects (id, title, description, category, status, progress, departmentId, createdById, createdAt, updatedAt)
-             VALUES (?, ?, ?, ?, ?, 0, ?, ?, NOW(), NOW())`,
-            [projectId, title, description, category, status, section.departmentId, session.userId]
+            `INSERT INTO projects (id, title, titleAr, description, descriptionAr, category, status, progress, departmentId, createdById, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NOW(), NOW())`,
+            [projectId, title, titleAr, description, descriptionAr, category, status, section.departmentId, session.userId]
         )
 
         await query(
@@ -145,21 +147,24 @@ export async function editProject(projectId: string, formData: FormData) {
         return { error: 'Cannot edit completed projects' }
     }
 
-    const title = formData.get('title') as string
-    const description = formData.get('description') as string
+    const title = String(formData.get('title') || '').trim()
+    const description = String(formData.get('description') || '').trim()
+    const titleAr = String(formData.get('titleAr') || '').trim()
+    const descriptionAr = String(formData.get('descriptionAr') || '').trim()
 
-    if (!title || !description) return { error: 'Missing fields' }
+    if (!title || !description || !titleAr || !descriptionAr) return { error: 'Enter the title and description in both English and Arabic' }
+    if (title.length > 200 || titleAr.length > 200) return { error: 'Title must be 200 characters or less' }
 
     // Enforce word limit (e.g., 1000 words)
-    const wordCount = description.trim().split(/\s+/).length
+    const wordCount = Math.max(description.split(/\s+/).length, descriptionAr.split(/\s+/).length)
     if (wordCount > 1000) {
         return { error: (await getT()).t('Description exceeds the 1000-word limit (currently {n} words)', { n: wordCount }) }
     }
 
     try {
         await query(
-            'UPDATE projects SET title = ?, description = ?, updatedAt = NOW() WHERE id = ?',
-            [title, description, projectId]
+            'UPDATE projects SET title = ?, titleAr = ?, description = ?, descriptionAr = ?, updatedAt = NOW() WHERE id = ?',
+            [title, titleAr, description, descriptionAr, projectId]
         )
         revalidatePath(`/projects/${projectId}`)
         return { success: true }

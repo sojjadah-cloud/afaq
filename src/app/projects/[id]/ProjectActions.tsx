@@ -25,6 +25,8 @@ export default function ProjectActions({
     isMember,
     initialTitle,
     initialDescription,
+    initialTitleAr = '',
+    initialDescriptionAr = '',
     memberStatus,
     pendingMembers,
     projectStatus,
@@ -38,6 +40,8 @@ export default function ProjectActions({
     pendingMembers: any[]
     initialTitle?: string
     initialDescription?: string
+    initialTitleAr?: string
+    initialDescriptionAr?: string
     projectStatus: string
     approvedMembers?: ApprovedMember[]
     isAdmin?: boolean
@@ -276,20 +280,45 @@ export default function ProjectActions({
                                         <i className="fa-solid fa-times" aria-hidden="true"></i>
                                     </button>
                                     <div className={styles.formGroup}>
-                                        <label htmlFor="edit-title">{t('Project Title')}</label>
+                                        <label htmlFor="edit-title">{t('Project title (English)')}</label>
                                         <input
                                             id="edit-title"
                                             name="title"
                                             defaultValue={initialTitle}
                                             required
+                                            maxLength={200}
+                                            dir="ltr"
                                             className={styles.input}
                                         />
                                     </div>
                                     <div className={styles.formGroup}>
-                                        <label>{t('Description')}</label>
+                                        <label htmlFor="edit-title-ar">{t('Project title (Arabic)')}</label>
+                                        <input
+                                            id="edit-title-ar"
+                                            name="titleAr"
+                                            defaultValue={initialTitleAr}
+                                            required
+                                            maxLength={200}
+                                            dir="rtl"
+                                            lang="ar"
+                                            className={styles.input}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>{t('Description (English)')}</label>
                                         <MarkdownEditor
                                             name="description"
                                             value={initialDescription}
+                                            required
+                                            placeholder={t('Use Markdown to format your description. Insert tables, images, lists, etc.')}
+                                            maxWords={1000}
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>{t('Description (Arabic)')}</label>
+                                        <MarkdownEditor
+                                            name="descriptionAr"
+                                            value={initialDescriptionAr}
                                             required
                                             placeholder={t('Use Markdown to format your description. Insert tables, images, lists, etc.')}
                                             maxWords={1000}

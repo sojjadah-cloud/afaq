@@ -1242,6 +1242,13 @@ const ar: Record<string, string> = {
     // Course overview labels
     'About this course': 'نبذة',
     'Brief overview': 'نبذة',
+
+    // Bilingual content forms
+    'Enter the title and description in both English and Arabic': 'أدخل العنوان والوصف باللغتين الإنجليزية والعربية',
+    'Project title (English)': 'عنوان المشروع (بالإنجليزية)',
+    'Project title (Arabic)': 'عنوان المشروع (بالعربية)',
+    'Description (English)': 'الوصف (بالإنجليزية)',
+    'Description (Arabic)': 'الوصف (بالعربية)',
 }
 
 export default ar

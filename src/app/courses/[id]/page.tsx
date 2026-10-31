@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    return recordTitle('SELECT title FROM courses WHERE id = ?', id, 'Courses & Workshops')
+    return recordTitle('SELECT title, titleAr FROM courses WHERE id = ?', id, 'Courses & Workshops')
 }
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {

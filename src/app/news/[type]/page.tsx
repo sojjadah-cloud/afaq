@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import NewsClient from '../NewsClient'
 import { loadNews } from '../loadNews'
+import { getT } from '@/i18n/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,7 +22,8 @@ export default async function NewsTypePage({ params }: { params: Promise<{ type:
     if (!dbType) notFound()
 
     const session = await getSession()
-    const { items, counts } = await loadNews(dbType)
+    const { lang } = await getT()
+    const { items, counts } = await loadNews(lang, dbType)
 
     return (
         <NewsClient

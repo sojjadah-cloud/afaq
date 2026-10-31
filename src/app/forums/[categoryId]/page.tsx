@@ -8,7 +8,7 @@ import { recordTitle } from '@/lib/metadata'
 
 export async function generateMetadata({ params }: { params: Promise<{ categoryId: string }> }) {
     const { categoryId } = await params
-    return recordTitle('SELECT name as title FROM forum_categories WHERE id = ?', categoryId, 'Forum')
+    return recordTitle('SELECT name as title FROM forum_categories WHERE id = ?', categoryId, 'Forum', true)
 }
 
 export const dynamic = 'force-dynamic'
